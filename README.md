@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2021-11-06 09:59:25
- * @LastEditTime: 2021-11-06 10:04:43
+ * @LastEditTime: 2021-11-07 11:26:05
  * @LastEditors: Please set LastEditors
  * @Description: the summary of 'for greater good'
  * @FilePath: \Software Engineering\forGreaterGood\README.md
@@ -21,8 +21,7 @@ for greater good
 
 - React
 - Node
-- 数据结构
-- 算法
+- 数据结构 + 算法
 - HTTP
 
 ## 已完成
