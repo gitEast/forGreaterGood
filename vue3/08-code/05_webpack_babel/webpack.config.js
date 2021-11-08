@@ -1,7 +1,7 @@
 /*
  * @Author: east
  * @Date: 2021-11-07 13:42:27
- * @LastEditTime: 2021-11-07 19:51:16
+ * @LastEditTime: 2021-11-08 15:01:59
  * @LastEditors: Please set LastEditors
  * @Description: webpack 的配置文件，node 环境下
  * @FilePath: \01_basic_webpack\webpack.config.js
@@ -95,6 +95,15 @@ module.exports = {
           // publicPath: "./build",
         },
       },
+      {
+        test: /\.js$/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env']
+          }
+        }
+      }
     ],
   },
   plugins: [
