@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2021-11-06 09:59:25
- * @LastEditTime: 2021-11-12 17:03:13
+ * @LastEditTime: 2021-11-13 17:09:26
  * @LastEditors: Please set LastEditors
  * @Description: the summary of 'for greater good'
  * @FilePath: \Software Engineering\forGreaterGood\README.md
@@ -34,8 +34,8 @@ for greater good
   - ~~vue3+ts 14~~
   - ~~vue3+ts 15~~
 + 2021-11-13
-  - vue3+ts 16
-  - vue3+ts 17
+  - ~~vue3+ts 16~~
+  - ~~vue3+ts 17~~
   - vue3+ts 18
 + 2021-11-14
   - vue3+ts 19
