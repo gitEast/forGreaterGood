@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2021-11-15 14:52:15
- * @LastEditTime: 2021-11-15 19:46:56
+ * @LastEditTime: 2021-11-16 09:47:26
  * @LastEditors: Please set LastEditors
  * @Description: vue-router 和 Vuex
  * @FilePath: \forGreaterGood\vue3\23-VueRouter和Vuex.md
@@ -107,8 +107,34 @@
   + js 需要管理的状态越来越多，复杂度 ↑
   + 这些状态包括服务器返回的数据、缓存数据、用户操作产生的数据等
   + 也包括一些 UI 的状态，比如元素是否被选中，是否显示加载动效，当前分页
-+ 将组件内部的状态抽离出去，以一个全局单例的方式来管理
++ 将组件内部的状态抽离出去，以一个**全局单例**的方式来管理
   - 在这种模式下，我们的组件树构成了一个巨大的“视图view”
   - 不管在树的哪个位置，任何组件都能获取状态或触发行为
-  - 通过定义和隔离状态管理中的各个概念，并通过强制性的规则来维护视图和状态间的独立性，我们的代码会变得更加结构化和易于维护、跟踪
+  - 通过**定义和隔离状态管理中的各个概念**，并通过**强制性的规则**来维护视图和状态间的**独立性**，我们的代码会变得更加结构化和易于维护、跟踪
+  - 借鉴 Redux、Flux
 
+![vuex 图片](\imgs\23_vuex.jpg)
+
+
+
+
+
+
+## Vue devtool
+> vue 官方提供的工具，方便对于组件或者 vuex 的调试
+
+1. `npm install vuex@next`
+2. 导出仓库
+   ```js
+   import { createStore } from 'vuex'
+
+    const store = createStore()
+
+    export default store
+   ```
+3. 使用
+   ```js
+   import store from './store'
+
+   app.use(store)
+   ```
