@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2021-11-16 15:29:31
- * @LastEditTime: 2021-11-16 17:11:35
+ * @LastEditTime: 2021-11-17 19:33:51
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: \forGreaterGood\vue3\25-vuex和nextTick.md
@@ -47,5 +47,55 @@ setup() {
 + mutation 返回值可以是 Promise 对象
 
 ### module
+```js
+/** store/modules/home.js */
+const homeModule = {
+  namespaced: true,
+  state() {
+    return { homeCounter: 1 }
+  },
+  getters: {
+    doubleHomeCounter(state) {
+      return state.homeCounter * 2
+    }
+  },
+  mutations: {
+    increment(state) {
+      state.homeCounter++
+    }
+  }
+}
+
+export default homeModule
+
+/** store/index.js */
+import { createStore } from 'vuex'
+import homeModule from './modules/home.js'
+
+const store = createStore({
+  state() {
+    return {}
+  },
+  mutations: {},
+  actions: {},
+  modules: {
+    home: homeModule
+  }
+})
+
+export default store
+
+/** 使用 */
+{{ $store.state.home.homeCounter }}
+{{ $store.getters.dobuleHomeCounter }} // 没有 homespaced
+
+export default{
+  methods: {
+    homeIncrement() {
+      this.$store.getters['home/doubleHomeCounter']
+    }
+  }
+}
+```
 
 ## nextTick
