@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2021-11-16 15:29:31
- * @LastEditTime: 2021-11-17 19:33:51
+ * @LastEditTime: 2021-11-19 10:33:38
  * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: \forGreaterGood\vue3\25-vuex和nextTick.md
@@ -9,6 +9,9 @@
 # Vuex 和 nextTick
 
 ## Vuex
++ 异步操作的方案
+  - 组件内完成
+  - Vuex 的 actions 层
 ### actions
 + action 类似于 mutation，不同在于
   - action 提交的是 mutation，而不能直接更改状态
@@ -99,3 +102,6 @@ export default{
 ```
 
 ## nextTick
+
+
+
