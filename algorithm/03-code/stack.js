@@ -1,10 +1,10 @@
 /*
  * @Author: East
  * @Date: 2021-12-08 01:45:00
- * @LastEditTime: 2021-12-08 01:58:11
+ * @LastEditTime: 2021-12-09 00:56:19
  * @LastEditors: Please set LastEditors
  * @Description: 使用数组实现栈结构
- * @FilePath: \forGreaterGood\algorithm\03-code.js
+ * @FilePath: \forGreaterGood\algorithm\03-code\03-code.js
  */
 class Stack {
   stack;
@@ -50,3 +50,5 @@ stack.push(222);
 stack.push(333);
 
 console.log(stack.unstack());
+
+exports = {};
