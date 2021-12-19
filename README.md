@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2021-11-06 09:59:25
- * @LastEditTime: 2021-12-16 08:44:54
+ * @LastEditTime: 2021-12-19 12:03:13
  * @LastEditors: Please set LastEditors
  * @Description: the summary of 'for greater good'
  * @FilePath: \Software Engineering\forGreaterGood\README.md
@@ -14,24 +14,23 @@ for greater good
 ## 当前进度
 
 - JavaScript
+- 数据结构 + 算法
+
+## 未完成目标
+
+- React
+- Node
+- HTTP
+
+## 已完成
+
 - Vue3
   - \+ ts
   - **注意：第 14 节动画，不太会用**
   - **注意：第 20 节源码精读看不懂**
   - **注意：第 20 节源码精读估计看不懂**
 
-## 未完成目标
-
-- React
-- Node
-- 数据结构 + 算法
-- HTTP
-
-## 已完成
-
-当前无已完成任务
-
-### 2021-11 任务
+### 2021-11 任务 --- 实际 2021-12-19 完成
 
 - 2021-11-12
   - ~~vue3+ts 14~~
@@ -81,10 +80,12 @@ for greater good
   - ~~vue3+ts 41~~
 - 2021-12-15
   - ~~vue3+ts 42~~
+- 2021-12-15
+  - vue3+ts 43：怎么说呢，43 是 ECharts 绘图，不想搞
+- 2021-12-19
+  - vue3+ts 44：不是我不想搞，是 jenkins 老是突然退出，我也没办法 23333
 
----
+### 2021-12 任务：JavaScript 数据结构与算法
 
-- 未完成
-
-  - vue3+ts 44
-  - vue3+ts 45
+- 2021-12-19
+  - 24 - 44, 链表 - 双向链表
