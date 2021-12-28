@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2021-11-06 09:59:25
- * @LastEditTime: 2021-12-19 12:03:13
+ * @LastEditTime: 2021-12-23 10:08:18
  * @LastEditors: Please set LastEditors
  * @Description: the summary of 'for greater good'
  * @FilePath: \Software Engineering\forGreaterGood\README.md
@@ -85,7 +85,8 @@ for greater good
 - 2021-12-19
   - vue3+ts 44：不是我不想搞，是 jenkins 老是突然退出，我也没办法 23333
 
-### 2021-12 任务：JavaScript 数据结构与算法
+### 2021-12 任务：JavaScript
 
-- 2021-12-19
-  - 24 - 44, 链表 - 双向链表
+|    日期    | 任务  | 是否完成 |
+| :--------: | ----- | -------- |
+| 2021-12-23 | js 01 |
