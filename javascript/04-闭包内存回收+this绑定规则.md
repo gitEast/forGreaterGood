@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2021-12-30 09:53:39
- * @LastEditTime: 2021-12-31 17:59:55
+ * @LastEditTime: 2022-01-01 15:10:39
  * @LastEditors: Please set LastEditors
  * @Description: 闭包内存回收 + this 的四个绑定规则
  * @FilePath: \forGreaterGood\javascript\04-闭包内存回收+this绑定规则.md
@@ -258,4 +258,41 @@ v8 引擎对闭包的上级作用域中，用不到的属性，会销毁
 
 #### 3. 显式绑定
 
+- 隐式绑定有一个前提条件
+  1. 必须在调用的对象内部有一个对函数的引用(比如一个属性)
+  2. 如果没有这样的引用，在进行调用时，会报找不到该函数的错误
+  3. 正是通过这个引用，间接地将 this 绑定到了这个对象上
+- 如果不希望在**对象内部**包含这个函数的引用，同时又希望在这个对象上进行强制调用，该怎么做？
+  1. js 所有的函数都可以使用 call 和 apply 方法(与 prototype 有关)
+  2. 这两个函数的第一个参数都要求是一个对象，这个对象就是给 this 准备的
+  3. 在调用这个函数时，会将 this 绑定到这个传入的对象上
+- call 和 apply 的区别
+
+  ```js
+  function sum(num1, num2) {
+    console.log(num1 + num2, this);
+  }
+
+  sum.call("call", 20, 30, 40);
+  sum.apply("apply", [20, 30, 40]);
+  ```
+
+- 不同的显式绑定三：bind
+
+  ```js
+  function foo() {
+    console.log(this);
+  }
+
+  var newFoo = foo.bind("aaa");
+  newFoo(); // String("aaa")
+  ```
+
 #### 4. new 绑定
+
+- js 中的函数可以当作一个类的构造函数来使用，即使用 new 关键字
+- 使用 new 关键字来调用函数时，会执行如下的操作：
+  1. 创建一个全新的对象
+  2. 这个新对象会被执行 prototype 连接
+  3. 这个新对象会绑定到函数调用的 this 上(this 绑定在这个步骤完成)
+  4. 如果函数没有返回其他对象，表达式会返回这个新对象
