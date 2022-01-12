@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2022-01-12 13:57:15
- * @LastEditTime: 2022-01-12 16:55:54
+ * @LastEditTime: 2022-01-12 17:46:58
  * @LastEditors: Please set LastEditors
  * @Description: ES6 语法解析 + let + const
  * @FilePath: \forGreaterGood\javascript\13-ES6语法解析+let+const.md
@@ -69,6 +69,86 @@
   - polymorphism：为不同数据类型的实体提供统一的接口，或使用一个单一的符号来表示多个不同的类型
 - coderwhy：不同的数据类型进行同一个操作，表现出不同的行为，就是多态的体现
 
-```js
+### 2. 传统意义上的多态
 
+```ts
+class Shape {
+  getArea() {}
+}
+
+class Rectangle extends Shape {
+  getArea() {
+    return 100;
+  }
+}
+
+class Circle extends Shape {
+  getArea() {
+    return 200;
+  }
+}
+
+var r = new Rectangle();
+var c = new Circle();
+
+function calcArea(shape: Shape) {
+  console.log(shape.getArea());
+}
+
+calcArea(r);
+calcArea(c);
+```
+
+- 要求
+  1. 必须有继承(多态的前提)
+  2. 必须重写母类的方法
+  3. 必须有母类的引用指向女类
+
+### 3. js 面向对象多态
+
+```js
+function calcArea(foo) {
+  console.log(foo.getArea());
+}
+
+var obj1 = {
+  name: "why",
+  getArea: function () {
+    return 100;
+  },
+};
+
+class Person {
+  getArea() {
+    return 1000;
+  }
+}
+var p = new Person();
+
+calcArea(obj1);
+calcArea(p);
+```
+
+## 四、ES6 知识点讲解
+
+### 1. 字面量增强的写法
+
+Enhancee Object Literals 增强对象字面量
+
+```js
+var name = "why";
+var age = 18;
+
+var obj = {
+  // 1. property shorthand (属性的简写)
+  name,
+  age,
+
+  foo: function () {},
+  foo1() {}, // 2. method shorthand (方法的简写)
+  foo2: () => {}, // 这个方法不同，绑定上层作用域的 this
+
+  // 3. computed property name (计算属性名)
+  [name + 123]: "hehehe",
+};
 ```
