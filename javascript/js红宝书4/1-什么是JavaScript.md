@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2022-01-13 17:10:23
- * @LastEditTime: 2022-01-13 17:41:00
+ * @LastEditTime: 2022-01-17 21:36:31
  * @LastEditors: Please set LastEditors
  * @Description: 1. js 历史回顾
                  2. js 是什么
@@ -47,7 +47,7 @@
 
 ## 2. JavaScript 实现
 
-完整的 JavaScript 实现包含以下几个部分：![JavaScript 组成部分](./imgs/1-js组成部分.png)
+完整的 JavaScript 实现包含以下几个部分：![JavaScript 组成部分](imgs/1-js组成部分.png)
 
 - 核心 ECMAScript
 - 文档对象模型 DOM
