@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2022-01-15 20:36:00
- * @LastEditTime: 2022-01-17 17:44:34
+ * @LastEditTime: 2022-01-18 11:32:16
  * @LastEditors: Please set LastEditors
  * @Description: Proxy + Reflect + Vue 的 响应式原理
  * @FilePath: \forGreaterGood\javascript\coderwhy\17-proxy+reflect+响应式原理.md
@@ -187,7 +187,7 @@
    };
 
    obj.name = "code";
-   console.log(obj.name);
+   console.log(obj.name); // 'kobe'
 
    /* 改为 Proxy 拦截 */
    const objProxy = new Proxy(obj, {
@@ -203,76 +203,47 @@
    ```
 
    - 访问过程：
-     1. 进入 `objProxy` 的 `get` 中，返回 `Reflect.get(target, 'name')`
-     2. 访问 `obj` 的 `get name`，返回 `obj._name`
+     1. 进入 `objProxy` 的 `get` 中，返回 `Reflect.get(obj, 'name')`
+     2. 访问 `obj` 的 `get name`，返回 `this._name`(即 `obj._name`)
 
-2. 问题出现：绕了一圈，还是 `obj._name` 在调用
+2. 问题出现：绕了一圈，**还是 `obj._name` 在调用**，而**不是通过代理对象**
 
-   ```js
-   const obj = {
-     _name: "why",
-     get name() {
-       return this._name;
-     },
-     set name(newValue) {
-       this._name = newValue;
-     },
-   };
+   - <span style="color: red">需要将 obj 对象改成 objProxy -- by receiver 参数</span>
 
-   const objProxy = new Proxy(obj, {
-     get(target, key) {
-       console.log("get----------------key---------", key);
-       return Reflect.get(target, key);
-     },
-     set(target, key, newValue) {
-       console.log("set++++++++++key+++++++++++", key);
-       let result = Reflect.set(target, key, newValue);
-       if (result) {
-         console.log("成功设置set------------");
-       }
-     },
-   });
+     ```js
+     const obj = {
+       _name: "why",
+       get name() {
+         return this._name;
+       },
+       set name(newValue) {
+         this._name = newValue;
+       },
+     };
 
-   objProxy.name = "code";
-   console.log(objProxy.name);
-   ```
+     const objProxy = new Proxy(obj, {
+       // (obj, key, objProxy)
+       get(target, key, receiver) {
+         console.log("get----------------key---------", key);
+         return Reflect.get(target, key, receiver);
+       },
+       set(target, key, newValue, receiver) {
+         console.log("set++++++++++key+++++++++++", key);
+         let result = Reflect.set(target, key, newValue, receiver);
+         if (result) {
+           console.log("成功设置set------------");
+         }
+       },
+     });
 
-3. 解决办法：receiver 是创建出来的代理对象
+     objProxy.name = "code";
+     console.log(objProxy.name); // 'code'
+     ```
 
-   ```js
-   const obj = {
-     _name: "why",
-     get name() {
-       return this._name;
-     },
-     set name(newValue) {
-       this._name = newValue;
-     },
-   };
+     - `receiver` 用于改变 `[Getter/Setter]` 函数的 `this`
+     - 完美欸，成功逻辑闭环了，全都是在代理对象里完成
 
-   const objProxy = new Proxy(obj, {
-     get(target, key, receiver) {
-       console.log("get----------------key---------", key);
-       return Reflect.get(target, key, receiver);
-     },
-     set(target, key, newValue, receiver) {
-       console.log("set++++++++++key+++++++++++", key);
-       let result = Reflect.set(target, key, newValue, receiver);
-       if (result) {
-         console.log("成功设置set------------");
-       }
-     },
-   });
-
-   objProxy.name = "code";
-   console.log(objProxy.name);
-   ```
-
-   1. Reflect.get 方法的第三个参数，是绑定的 this
-   2. Reflect.set 方法的第四个参数，是绑定的 this
-   3. 其他方法没有 receiver
-
-## Reflect 中的 constructor 作用
+### Reflect 中的 constructor 作用
 
 ```js
 function Student(name, age) {
@@ -285,29 +256,49 @@ function Teacher() {}
 const stu = new Student();
 console.log(stu); // 类型为Student
 
+// 执行 Student 函数中的内容，但创建出来的对象是 Teacher 对象
+Reflect.constructor(Student, ["name", 18], Teacher);
+
 /**
- * 要求：通过Student类创建实例，但该实例的类型是Teacher
+ * 类 ES6 转 ES5 的代码
+ * 要求：通过 Super 类创建实例，但该实例的类型是 NewTarget
  */
-const student = Reflect.constructor(Student, ["why", age], Teacher);
-console.log(student); // Teacher { name: 'why', age: 18 }
+var Super = _getPrototypeOf(Derived); // Super = Student.__proto__ = Person
+var result;
+if (hasNativeReflectConstruct) {
+  var NewTarget = _getPrototypeOf(this).constructor; // Student.constructor
+  // Person 为目标构造函数
+  // arguments: [name, age] 参数
+  // newTarget: 新创建的对象的原型的 constructor 属性
+  result = Reflect.construct(Super, arguments, NewTarget);
+} else {
+  // Student.__proto__.call(this, name, age) -> Person.call(this, name, age)
+  // -> Student 实例 的 name 和 age，调用了 Person.constructor
+  result = Super.apply(this, arguments);
+}
 ```
 
-## 响应式
+## 三、响应式
+
+### 3.1 什么是响应式？
+
+> 例：m 有一个初始化的值，有一段代码使用了这个值，那么当 m 有一个新值时，这段代码可以**自动重新执行**
 
 ```js
 let m = 100;
 
-// 要自动重新执行的代码
+// 当 m 有新值时，要自动重新执行的代码
 console.log(m);
 console.log(m * 2);
 console.log(m ** 2);
 
 m = 200;
+... // 重新执行代码
 ```
 
-> 例：m 有一个初始化的值，有一段代码使用了这个值，那么当 m 有一个新值时，这段代码可以**自动重新执行**
+- 这段代码**只是针对一个基本变量**，实际使用中更多的其实是**对象的响应式**
 
-### vue3
+### 3.2 vue3
 
 ```js
 /** 对象的响应式 */
@@ -316,12 +307,14 @@ const obj = {
   age: 18,
 };
 
+// 当 name 属性发生改变时，foo 函数自动执行
 function foo() {
   const newName = obj.name;
   console.log("hello, east");
   console.log(obj.name);
 }
 
+// bar 函数不需要响应式
 function bar() {
   console.log("无关函数");
   console.log("普通函数");
@@ -330,10 +323,10 @@ function bar() {
 obj.name = "code";
 ```
 
-1. 一般会封装一个 需要响应式的函数 的函数
+1. 一般会封装一个 需要响应式的函数 的函数 `function watchFn(fn) {}`
 
    ```js
-   // 封装的函数
+   // 需要响应式的函数全都放到一个 数组 中
    const reactiveFns = [];
    function watchFn(fn) {
      reactiveFns.push(fn);
@@ -344,6 +337,7 @@ obj.name = "code";
      age: 18,
    };
 
+   // 需要响应的函数放进 watchFn
    watchFn(function foo() {
      const newName = obj.name;
      console.log("hello, east");
@@ -354,6 +348,7 @@ obj.name = "code";
      console.log("-------------------", obj.name);
    });
 
+   // 需要响应的函数放进 watchFn
    function bar() {
      console.log("无关函数");
      console.log("普通函数");
@@ -368,11 +363,12 @@ obj.name = "code";
 
    1. 缺点
       1. 依赖收集放在了数组(reactives)中，现在只收集 name，后期有了不同的属性，不方便管理
+      2. 手动响应式，宝，真实使用中怎么可能这么做...
 
-2. 使用类收集依赖
+2. 使用类**收集依赖**
 
    ```js
-   // 封装的类
+   // 封装的类，用于收集依赖
    class Depend {
      constructor() {
        this.reactives = [];
@@ -382,6 +378,7 @@ obj.name = "code";
        this.reactives.push(reactiveFn);
      }
 
+     // 通知
      notify() {
        this.reactives.forEach((fn) => {
          fn();
@@ -420,10 +417,10 @@ obj.name = "code";
    ```
 
    1. 优点
-      1. 一个属性对应一个类，便于管理
-      2. 在类中封装 notify 方法，自动
+      1. 一个属性对应一个类，便于管理 --> 结构清晰啦
+      2. 在类中封装 notify 方法，自动 --> 勉强算自动叭 2333
 
-3. 自动监听对象的变化 ---- 监听对象的属性变化 Proxy(vue3) / Object.defineProperty(vue2)
+3. **自动监听对象的变化** ---- 监听对象的属性变化 Proxy(vue3) / Object.defineProperty(vue2)
 
    ```js
    class Depend {
@@ -468,7 +465,7 @@ obj.name = "code";
      console.log("普通函数");
    }
 
-   // 使用Proxy监听属性变化
+   // 使用 Proxy 监听属性变化
    const objProxy = new Proxy(obj, {
      get(target, key, receiver) {},
      set(target, key, newValue, receiver) {
@@ -484,7 +481,16 @@ obj.name = "code";
    objProxy.name = "code";
    ```
 
-4. 依赖收集的管理：一个对象有多个属性 + 有多个对象
+   - 优点：
+
+     1. 不再需要手动 `depend.notify();`
+
+   - 弊端：只有一个 `depend` 对象用于收集所有的依赖，无法区分不同属性 + 不同对象
+
+   - `Proxy`, yyds!
+     - 注意：一旦使用了代理，其余地方都建议用代理对象
+
+4. 依赖收集的管理：一个对象有多个属性 + 有多个对象 ![响应式数据存储结构](./imgs/17_响应式的数据存储结构.png)
 
    1. 我写的
 
@@ -509,12 +515,23 @@ obj.name = "code";
         depend.addDepend(fn);
       }
 
+      function bar() {
+        console.log("无关函数");
+        console.log("普通函数");
+      }
+
+      /** obj对象 */
       const obj = {
         name: "why",
         age: 18,
       };
-
+      const objMap = new Map();
       const nameDepend = new Depend();
+      const ageDepend = new Depend();
+      objMap.set("name", nameDepend);
+      objMap.set("age", ageDepend);
+      /* 收集依赖 */
+      // obj.name
       watchFn(nameDepend, function foo() {
         const newName = obj.name;
         console.log("hello, east");
@@ -523,21 +540,10 @@ obj.name = "code";
       watchFn(nameDepend, function demo() {
         console.log("-------------------", obj.name);
       });
-
-      const ageDepend = new Depend();
+      // obg.age
       watchFn(ageDepend, function () {
         console.log("----------age----------", obj.age);
       });
-
-      function bar() {
-        console.log("无关函数");
-        console.log("普通函数");
-      }
-
-      /** obj对象 */
-      const objMap = new Map();
-      objMap.set("name", nameDepend);
-      objMap.set("age", ageDepend);
 
       /** info对象 */
       const info = {
@@ -550,7 +556,7 @@ obj.name = "code";
       const infoMap = new Map();
       infoMap.set("address", addressDepend);
 
-      // 管理obj对象和info对象
+      // 管理 obj 对象 和 info 对象
       const weakMap = new WeakMap();
       weakMap.set(obj, objMap);
       weakMap.set(info, infoMap);
@@ -562,6 +568,7 @@ obj.name = "code";
           set(target, key, newValue, receiver) {
             let result = Reflect.set(target, key, newValue, receiver);
             if (result) {
+              // 获取对应的 Depend 对象
               const map = weakMap.get(target);
               const depend = map.get(key);
               depend.notify();
@@ -579,154 +586,4 @@ obj.name = "code";
       infoProxy.address = "北京市";
       ```
 
-   2. coderwhy 封装的
-
-      ```js
-      class Depend {
-        constructor() {
-          this.reactives = [];
-        }
-
-        addDepend(reactiveFn) {
-          this.reactives.push(reactiveFn);
-        }
-
-        notify() {
-          this.reactives.forEach((fn) => {
-            fn();
-          });
-        }
-      }
-
-      function bar() {
-        console.log("无关函数");
-        console.log("普通函数");
-      }
-
-      /** 使用Proxy监听属性变化 */
-      // 观察需要响应的函数
-      let activeReactiveFn = null;
-      function watchFn(fn) {
-        activeReactiveFn = fn;
-        fn();
-        activeReactiveFn = null;
-      }
-      // 封装一个获取depend的函数
-      function getDepend(target, key) {
-        let map = weakMap.get(target);
-        // 在对象添加[key]属性时，此时weakMap中没有该属性对应的map
-        if (!map) {
-          map = new Map();
-          weakMap.set(target, map);
-        }
-
-        // 根据key获取depend对象
-        let depend = map.get(key);
-        if (!depend) {
-          depend = new Depend();
-          map.set(key, depend);
-        }
-
-        return depend;
-      }
-      function createProxy(obj) {
-        return new Proxy(obj, {
-          get(target, key, receiver) {
-            const depend = getDepend(target, key);
-            depend.addDepend(activeReactiveFn);
-            return Reflect.get(target, key, receiver);
-          },
-          set(target, key, newValue, receiver) {
-            let result = Reflect.set(target, key, newValue, receiver);
-            if (result) {
-              // const map = weakMap.get(target);
-              const depend = getDepend(target, key);
-              depend.notify();
-            } else {
-              console.log(`${key}属性设置失败`, target);
-            }
-          },
-        });
-      }
-
-      const obj = {
-        name: "why",
-        age: 18,
-      };
-      watchFn(function foo() {
-        console.log("hello, east");
-        console.log(obj.name);
-      });
-      watchFn(function demo() {
-        console.log("-------------------", obj.name);
-      });
-      watchFn(function () {
-        console.log("----------age----------", obj.age);
-      });
-
-      /** info对象 */
-      const info = {
-        address: "广州市",
-      };
-      watchFn(function () {
-        console.log("-------info的address--------", info.address);
-      });
-
-      // 管理obj对象和info对象
-      const weakMap = new WeakMap();
-
-      const objProxy = createProxy(obj);
-      const infoProxy = createProxy(info);
-
-      objProxy.name = "code";
-      objProxy.age = 20;
-      infoProxy.address = "北京市";
-      ```
-
-5. 优化
-
-   1. 可能 watchFn 中传入的函数调用了 n 次相同的属性，该函数被重复添加
-
-      ```js
-      watchFn(() => {
-        console.log(objProxy.name + "-----------------");
-        console.log(objProxy.name + "++++++++");
-      });
-
-      // → 所以需要优化Depnd类的方法存储
-      class Depend {
-        constructor() {
-          this.reactives = new Set();
-        }
-
-        addDepend(reactiveFn) {
-          this.reactives.add(reactiveFn); // Set使用add方法
-        }
-      }
-      ```
-
-### Vue2
-
-```js
-function reactive(obj) {
-  Object.keys(obj).forEach((key) => {
-    let value = obj[key];
-    Obejct.defineProperty(obj, key, {
-      get(target, key, receiver) {
-        const depend = getDepend(target, key);
-        depend.addDepend(activeReactiveFn);
-        return value;
-      },
-      set(target, key, newValue, receiver) {
-        value = newValue;
-        const depend = getDepend(target, key);
-        depend.notify();
-      },
-    });
-  });
-
-  return obj;
-}
-```
-
-## 三、Vue 的响应式原理
+5. 如何自动收集依赖？ --> by `Proxy` 的 `get`，见下一个 md 文件
