@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2022-01-13 17:10:23
- * @LastEditTime: 2022-01-17 21:36:31
+ * @LastEditTime: 2022-01-19 22:22:16
  * @LastEditors: Please set LastEditors
  * @Description: 1. js 历史回顾
                  2. js 是什么
@@ -52,3 +52,42 @@
 - 核心 ECMAScript
 - 文档对象模型 DOM
 - 浏览器对象模型 BOM
+
+1. 核心 ECMAScript
+   - ECMA-262 将这门语言作为一个基准来定义，以便在它之上 再构建 更稳健的脚本语言
+   - **宿主环境(host environment)**
+     - ECMAScript 实现 可能存在的 宿主环境
+       1. Web 浏览器
+       2. Node.js
+       3. Adobe Flash(已被淘汰)
+     - 提供
+       1. ECMAScript 的基准实现
+       2. 与环境自身交互必须的扩展
+          - 扩展(比如 DOM)使用 ECMAScript 核心类型和语法，提供特定于环境的额外功能
+   - 定义了的东西
+     - 语法
+     - 类型
+     - 语句
+     - 关键字
+     - 保留字
+     - 操作符
+     - 全局对象
+   - 版本更迭
+     1. Ed1：Netscape JavaScript1.1 被删去浏览器特定代码 + 少量细微的修改 + 不支持 Unicode 标准 + 对象(如 Date 对象)与平台有关
+     2. Ed2：编校
+     3. Ed3：真正的更新 —— 字符串处理 + 错误定义 + 数值输出 + 正则表达式的支持 + <span style="background: green">支持新的控制语句(?)</span> + `try/catch` 异常处理
+        - 标志着 ECMAScript 作为一门真正的编程语言的时代终于到来
+     4. Ed4：彻底的修订，被抛弃
+     5. Ed5：“ECMAScript 3.1” 提案被接受。厘清 Ed3 存在的歧义 + 增加新功能(原生地解析和序列化 JSON + 方便继承和高级属性定义地方法 + 新的增强 ECMAScript 引擎解释 + 严格模式)
+     6. Ed6：俗称 ES6、ES2015、ES Harmony(和谐版)。正式支持 类 + 模块 + 迭代器 + 生成器 + 箭头函数 + Promise + Reflect + Proxy + 其他新的数据类型
+     7. Ed7：`Array.prototype.includes` + 指数操作符
+     8. Ed8：异步函数(async/await) + SharedArrayBuffer + Atomics API + `Object.values` + `Object.entries` + `Object.getOwnPropertyDescriptors` + 字符串填充方法 + 支持对象字面量最后的逗号
+     9. Ed9：异步迭代 + 剩余和扩展属性(rest, ...args) + 一组新的正则表达式特性 + `Promise finally` + 模板字符串
+     10. Ed10：`Array.prototype.flat` + `Array.prototype.flatMap` + 字符串前后填充 + `Object.fromEntries` + `Symbol.prototype.descriptor` 属性 + 明确 `Function.prototype.toString()` 的返回值 + 固定 `Array.prototype.sort()` 的顺序 + <span style="background: green">解决与 JSON 字符串兼容的问题(?)</span> + `catch` 子句的可选绑定
+   - 符合性 conformance 实现(前两个重要，后两个无所谓)
+     1. 支持 ECMA-262 中描述的所有“类型、值、对象、属性、函数，以及程序语法与语义”
+     2. 支持 Unicode 字符标准
+     3. 增加 ECMA-262 中未提及的“额外的类型、值、对象、属性和函数”
+     4. 支持 ECMA-262 中没有定义的“程序和正则表达式语法”(允许修改和扩展内置的正则表达式特性)
+     - 总而言之，这些条件为 实现 开发者 基于 ECMAScript 开发语言提供了极大的**权限和灵活度**
+   - 浏览器对 ECMAScript 的支持
