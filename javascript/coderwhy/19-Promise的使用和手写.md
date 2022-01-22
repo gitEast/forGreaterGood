@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2022-01-19 17:30:33
- * @LastEditTime: 2022-01-19 17:30:33
+ * @LastEditTime: 2022-01-20 14:40:05
  * @LastEditors: Please set LastEditors
  * @Description: Promise 的使用和手写
  * @FilePath: \forGreaterGood\javascript\coderwhy\19-Promise的使用和手写.md
@@ -11,9 +11,27 @@
 
 ## 一、使用
 
-### 2.5 Promise 的对象方法
+### 1.1 Promise 的对象方法
 
 > 通过 Object.getOwnPropertyDescriptors(Promise.prototype)查看
+
+```js
+/* 简单模拟 then 方法 */
+class Moni {
+  constructor(executor) {
+    const resolve = () => {
+      this.callback();
+    };
+    const reject = () => {};
+
+    executor(resolve, reject);
+  }
+
+  then(callback) {
+    this.callback = callback;
+  }
+}
+```
 
 1. then 方法
 
@@ -26,13 +44,13 @@
       });
 
       promise.then((res) => {
-        console.log("res1", res);
+        console.log("res1:", res); // 'res1: 成功了'
       });
       promise.then((res) => {
-        console.log("res2", res);
+        console.log("res2:", res); // 'res2: 成功了'
       });
       promise.then((res) => {
-        console.log("res3", res);
+        console.log("res3:", res); // 'res3: 成功了'
       });
       ```
 
@@ -119,7 +137,7 @@
            });
          ```
 
-2. catch 方法
+2. catch 方法 -- 异常处理方法
 
    ```js
    const promise = new Promise((resolve, reject) => {
@@ -201,9 +219,9 @@
       ```
       1. then 与 catch 是两次独立的捕获，不会相互影响
       2. 对于 then 方法而言，没有做拒绝的处理 ---- 解决办法：使用上面的方法
-   4. 返回值 ---- 也是返回一个 Promise 对象，并且是 resolve 调用返回值
+   4. 返回值 ---- 也是返回一个 Promise 对象，并且是 **resolve 调用返回值**
 
-3. finally 方法 ---- ES9 新增
+3. finally 方法 ---- ES9 新增，可用于做清除操作
 
    ```js
    const promise = new Promise((resolve, reject) => {
@@ -225,7 +243,9 @@
    1. 无论状态为 fulfilled 还是 reject，都会执行
    2. 无参数
 
-### Promise 的类方法
+### 1.2 Promise 的类方法
+
+> 指可以通过类名直接调用的方法
 
 1. resolve 方法 ---- 将一个值转化为 Promise 对象
 
@@ -249,7 +269,7 @@
    });
    ```
 
-   1. 注意：无论传入什么值都是一样的，捕捉到的错误的参数永远都是传入的值
+   1. 注意：无论传入什么值都是一样的，捕捉到的错误的参数永远都是 `executor` 中 `reject()` 传入的值
 
       ```js
       const promise = Promise.reject({
@@ -287,6 +307,7 @@
    });
 
    // 需求：所有的Promise对象都变成fulfilled时，再拿到结果
+   // 会把 'aaa' 转成 Promise
    Promise.all([p1, p2, p3, "aaa"]).then((res) => {
      console.log(res); // [111, 222, 333, 'aaa']，结果顺序按照数组中的顺序
    });
@@ -373,9 +394,13 @@
    });
 
    // 中断 reject
-   Promise.race([p1, p2, p3]).then((res) => {
-     console.log(res); // 333
-   });
+   Promise.race([p1, p2, p3])
+     .then((res) => {
+       console.log(res); // 333
+     })
+     .catch((err) => {
+       console.log("err:", err);
+     });
    ```
 
    1. 只要有一个 Promise 对象变成 fulfilled 状态，那么就结束
@@ -407,7 +432,7 @@
    ```
 
    1. 至少等到一个 fulfilled
-   2. 如果全都是拒绝，则等到所有都拒绝之后，才执行 catch 方法，并自行 new 了一个 Error
+   2. 如果全都是拒绝，则**等到所有都拒绝之后，才执行 catch 方法，并自行 new 了一个 Error**
 
       ```js
       const p1 = new Promise((resolve, reject) => {
@@ -436,11 +461,14 @@
         });
       ```
 
-## 手写 Promise
+## 二、手写 Promise
+
+> 需要符合 [Promises/A+](https://promisesaplus.com) 规范
 
 1. 结构的设计 ---- 符合一定的规范(减少沟通成本)
 
    ```js
+   /* 状态 */
    const PROMISE_STATUS_PENDING = "pending";
    const PROMISE_STATUS_FULFILLED = "fulfilled";
    const PROMISE_STATUS_REJECTED = "rejected";
@@ -455,11 +483,12 @@
            // this.status = PROMISE_STATUS_FULFILLED;
            // this.value = value;
            // console.log("resolve被调用了");
+
            /** 调用then传进来的回调函数 */
            // 会报错，this.onFulfilled不是一个方法，因为按顺序，then方法还没执行，this.onFulfilled还没绑定上去
            // this.onFulfilled()
 
-           // // 使用定时器解决
+           /* 使用定时器解决 */
            // setTimeout(() => {
            //   this.status = PROMISE_STATUS_FULFILLED;
            //   this.value = value;
@@ -467,7 +496,7 @@
            //   this.onFulfilled(this.value);
            // }, 0);
 
-           // 延迟调用，比setTimeout好
+           /* 延迟调用，比setTimeout好 */
            this.status = PROMISE_STATUS_FULFILLED;
            queueMicrotask(() => {
              this.value = value;
@@ -508,138 +537,4 @@
 
    1. 缺点
       1. 同一个 Promise 对象不支持调用多次
-
-2. then 方法优化
-
-   ```js
-   const STATUS_PENDING = "pending";
-   const STATUS_FULFILLED = "fulfilled";
-   const STATUS_REJECTED = "rejected";
-
-   class MyPromise {
-     constructor(executor) {
-       this.onFulfilledFns = [];
-       this.onRejectedFns = [];
-       this.status = STATUS_PENDING; //默认情况
-       this.value = undefined;
-       this.reason = undefined;
-
-       const resolve = (value) => {
-         queueMicrotask(() => {
-           if (this.status === STATUS_PENDING) {
-             this.status = STATUS_FULFILLED;
-             this.value = value;
-             this.onFulfilledFns.forEach((fn) => {
-               fn(this.value);
-             });
-           }
-         });
-       };
-
-       const reject = (reason) => {
-         queueMicrotask(() => {
-           if (this.status === STATUS_PENDING) {
-             this.status = STATUS_REJECTED;
-             this.reason = reason;
-             this.onRejectedFns.forEach((fn) => {
-               fn(this.reason);
-             });
-           }
-         });
-       };
-
-       executor(resolve, reject);
-     }
-
-     then(onFulfilled, onRejected) {
-       if (this.status === STATUS_FULFILLED && onFulfilled) {
-         onFulfilled(this.value);
-       }
-       if (this.status === STATUS_REJECTED && onRejected) {
-         onRejected(this.reason);
-       }
-
-       if (this.status === STATUS_PENDING) {
-         this.onFulfilledFns.push(onFulfilled);
-         this.onRejectedFns.push(onRejected);
-       }
-     }
-   }
-
-   const promise = new MyPromise((resolve, reject) => {
-     resolve(111);
-     reject(000);
-   });
-
-   promise.then(
-     (res) => {
-       console.log("res1:", res);
-     },
-     (err) => {
-       console.log("err:", err);
-     }
-   );
-
-   promise.then(
-     (res) => {
-       console.log("res2:", res);
-     },
-     (err) => {
-       console.log("err2:", err);
-     }
-   );
-
-   setTimeout(() => {
-     promise.then(
-       (res) => {
-         console.log("res3:", res);
-       },
-       (err) => {
-         console.log("err3:", err);
-       }
-     );
-   }, 5000);
-   ```
-
-   1. 解决同一 Promise 对象的多次调用
-   2. 解决延时调用 then 方法的问题
-   3. 封装一个关于 try-catch 的工具函数
-
-3. catch 方法实现
-   1. 接收 onRejected 回调函数
-   2. 取巧 —— 直接使用 this.then → 出现问题：造成链式调用
-   3. onRejected 回调函数默认执行`throw new Error` → 抛出异常会自动进入下一个 then 方法
-4. finally 方法实现
-   1. 接收 onFinally 回调函数
-   2. 不论如何，finally 都是会调用的
-   3. 给 onFulfilled 回调函数一个默认值
-5. 类方法 —— resolve
-6. 类方法 —— reject
-7. 类方法 —— all
-   1. 接收一个数组，数组元素为 Promise 对象(普通的值与 thenable 对象另外自行实现)
-   2. 返回所有 onFulfilled 的结果 or 返回 onRejected 的结果
-8. 类方法 —— allSettled
-   1. 接收参数：Promise 对象的数组
-   2. 返回每一个 Promise 对象的状态与结果 `{ status: _____, value: ____ }`
-9. 类方法 —— race：有一个 Promise 对象有了结果，即返回该结果
-10. 类方法 —— any
-11. 必须等到一个成功的结果
-12. 如果所有都失败了，则返回所有的错误信息 `new AggreagateError(reasons) --> err.errors`
-
-## 总结
-
-1. Promise 规范
-2. Promise 类设计
-   1. class
-   2. function
-3. 构造函数的规划
-   1. constructor 的逻辑
-4. then 方法的实现 —— 逻辑实现
-5. ...后续就不重要了
-
-## 补充
-
-- Promise/A+ 规范是社区规范 [https://promisesaplus.com]
-  - 在 ES6 之前，社区里有许多人自行实现了 Promise
-
-## 二、手写
+      2. 不支持链式调用
