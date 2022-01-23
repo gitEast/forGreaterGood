@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2022-01-20 14:41:07
- * @LastEditTime: 2022-01-21 10:35:38
+ * @LastEditTime: 2022-01-23 16:43:46
  * @LastEditors: Please set LastEditors
  * @Description: 手写 Promise
  * @FilePath: \forGreaterGood\javascript\coderwhy\20-手写Promise.md
@@ -143,10 +143,30 @@
    3. 封装一个关于 try-catch 的工具函数 `execFunctionWithCatchError`
 
 2. catch 方法实现
+
+   ```js
+   catch(onRejected) {
+     return this.then(undefined, onRejected)
+   }
+   ```
+
    1. 接收 onRejected 回调函数
    2. 取巧 —— 直接使用 this.then → 出现问题：造成链式调用
    3. onRejected 回调函数默认执行`throw new Error` → 抛出异常会自动进入下一个 then 方法
+
+      ```js
+        then(onFulfilled, onRejected) {
+          const defaultOnRejected = err => { throw err}
+          onRejected = onRejected || defaultOnRejected
+        }
+      ```
+
 3. finally 方法实现
+   ```js
+   finally(onFinally) {
+     return this.then(onFinally, onFinally)
+   }
+   ```
    1. 接收 onFinally 回调函数
    2. 不论如何，finally 都是会调用的
    3. 给 onFulfilled 回调函数一个默认值
