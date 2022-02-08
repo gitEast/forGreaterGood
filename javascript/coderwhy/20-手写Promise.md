@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2022-01-20 14:41:07
- * @LastEditTime: 2022-01-23 16:43:46
+ * @LastEditTime: 2022-02-08 11:03:46
  * @LastEditors: Please set LastEditors
  * @Description: 手写 Promise
  * @FilePath: \forGreaterGood\javascript\coderwhy\20-手写Promise.md
@@ -151,37 +151,122 @@
    ```
 
    1. 接收 onRejected 回调函数
-   2. 取巧 —— 直接使用 this.then → 出现问题：造成链式调用
-   3. onRejected 回调函数默认执行`throw new Error` → 抛出异常会自动进入下一个 then 方法
+   2. 取巧 —— 直接使用 this.then
 
-      ```js
-        then(onFulfilled, onRejected) {
-          const defaultOnRejected = err => { throw err}
-          onRejected = onRejected || defaultOnRejected
-        }
-      ```
+      1. 需要判断 `onFulfilled` 函数与 `onRejected` 函数是否存在
+      2. `then` (不带 `onRejected`)方法后使用 `catch`，`catch` 无法正确捕捉异常
+
+         - onRejected 回调函数默认执行`throw new Error` → 抛出异常会自动进入下一个 then 方法
+
+           ```js
+             then(onFulfilled, onRejected) {
+               const defaultOnRejected = err => { throw err}
+               onRejected = onRejected || defaultOnRejected
+             }
+           ```
 
 3. finally 方法实现
    ```js
    finally(onFinally) {
-     return this.then(onFinally, onFinally)
+     return this.then(() => {onFinally()}, () => {onFinally()})
    }
    ```
    1. 接收 onFinally 回调函数
    2. 不论如何，finally 都是会调用的
    3. 给 onFulfilled 回调函数一个默认值
+      ```js
+      const defaultOnFulfilled = (value) => {
+        return value;
+      };
+      onFulfilled = onFulfilled || defaultOnFulfilled;
+      ```
 4. 类方法 —— resolve
+   ```js
+   static resolve(value) {
+     return new Promise((resolve, reject) => resolve(value))
+   }
+   ```
 5. 类方法 —— reject
+   ```js
+   static reject(reason) {
+     return new Promise((resolve, reject) => reject(reason))
+   }
+   ```
 6. 类方法 —— all
+
+   ```js
+   static all(promises) {
+     return new Promise((resolve, reject) => {
+       const values = []
+       promises.forEach(promise => {
+         promise.then(res => {
+           value.push(res)
+           if (values.length === promise.length) {
+             resolve(values)
+           }
+         }, err => {
+           reject(err)
+         }
+         )
+       })
+     })
+   }
+   ```
+
    1. 接收一个数组，数组元素为 Promise 对象(普通的值与 thenable 对象另外自行实现)
    2. 返回所有 onFulfilled 的结果 or 返回 onRejected 的结果
+
 7. 类方法 —— allSettled
+   ```js
+   static allSettled(promises) {
+     const results = []
+     return new Promise(resolve => {
+       promises.forEach(promise => {
+         promise.then(res => {
+           results.push({ status: STATUS_FULFILLED, value: res})
+           if (results.length === promise.length) {
+             resolve(results)
+           }
+         }, err => {
+            results.push({ status: STATUS_REJECTED, value: err})
+            if (results.length === promise.length) {
+             resolve(results)
+           }
+         })
+       })
+     })
+   }
+   ```
    1. 接收参数：Promise 对象的数组
    2. 返回每一个 Promise 对象的状态与结果 `{ status: _____, value: ____ }`
 8. 类方法 —— race：有一个 Promise 对象有了结果，即返回该结果
+   ```js
+   static race(promises) {
+     return new Promise((resolve, reject) => {
+       promises.forEach(promise => {
+         promise.then(resolve, reject)
+       })
+     })
+   }
+   ```
 9. 类方法 —— any
+   ```js
+   static any(promises) {
+     const reasons = []
+     return new Promise((resolve, reject) => {
+       promises.forEach(promise => {
+         promise.then(resolve, err => {
+           reasons.push(err)
+           if (reasons.length === promises.length) {
+             reject(new AggregateError(reasons))
+           }
+         })
+       })
+     })
+   }
+   ```
    1. 必须等到一个成功的结果
-   2. 如果所有都失败了，则返回所有的错误信息 `new AggreagateError(reasons) --> err.errors`
+   2. 如果所有都失败了，则返回所有的错误信息 `new AggregateError(reasons) --> err.errors`
 
 ## 二、总结
 
