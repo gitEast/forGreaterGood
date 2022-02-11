@@ -1,0 +1,64 @@
+<!--
+ * @Author: your name
+ * @Date: 2022-02-10 15:11:59
+ * @LastEditTime: 2022-02-11 10:47:02
+ * @LastEditors: Please set LastEditors
+ * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @FilePath: \forGreaterGood\react\04-code\state.html
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- 移动端适配 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script
+      src="https://unpkg.com/react@17/umd/react.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
+      crossorigin
+    ></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="test"></div>
+
+    <script type="text/babel">
+      // 1. 创建类式组件
+      class Demo extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = { isHot: true };
+          // 强行绑定 this
+          this.demo = this.demo.bind(this);
+        }
+
+        render() {
+          const hot = "炎热";
+          const notHot = "凉爽";
+          const { isHot } = this.state;
+          return (
+            <h2 onClick={this.demo}>
+              今天天气很{this.state.isHot ? hot : notHot}
+            </h2>
+          );
+        }
+
+        demo() {
+          const { isHot } = this.state;
+          this.setState({ isHot: !isHot });
+        }
+      }
+
+      // function demo() {
+      //   console.log("11111111111111111111111111111111111");
+      // }
+      // 2. 渲染组件到页面
+      ReactDOM.render(<Demo />, document.getElementById("test"));
+    </script>
+  </body>
+</html>
