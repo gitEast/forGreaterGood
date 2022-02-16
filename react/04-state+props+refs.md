@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2022-02-10 14:47:22
- * @LastEditTime: 2022-02-11 16:10:24
+ * @LastEditTime: 2022-02-14 10:34:38
  * @LastEditors: Please set LastEditors
  * @Description: state + props + refs
  * @FilePath: \forGreaterGood\react\04-state+props+refs.md
@@ -157,6 +157,8 @@ Demo.defaultProps = {
 
 ## 三、refs
 
+### 3.1 ref
+
 1. 需要做到的样子
 
    ```js
@@ -221,19 +223,127 @@ Demo.defaultProps = {
    );
    ```
 
-### refs 的新写法
+### 3.2 refs 的新写法
 
 - 过时的 API: `String` 类型的 `Refs`
   - 不推荐使用，有问题
     1. 存在效率问题
+
+#### 3.2.1 回调函数形式的 ref
+
 - 推荐使用 回调函数形式的 ref
+
   ```js
-  <input
-    type="text"
-    ref={(currentNode) => {
-      this.input2 = currentNode;
-    }}
-    onBlur={this.showData2}
-    placeholder="失去焦点提示数据"
-  />
+  class Demo extends React.Component {
+    showData2 = () => {
+      const { input2 } = this;
+      alert(input2.value);
+    };
+  }
+
+  render() {
+    return (
+      <input
+        type="text"
+        ref={(currentNode) => {
+          this.input2 = currentNode;
+        }}
+        onBlur={this.showData2}
+        placeholder="失去焦点提示数据"
+      />;
+    )
+  }
   ```
+
+- 回调函数的调用次数
+
+  ```js
+  class Demo extends React.Component {
+    showInfo = () => {
+      const { input1 } = this;
+      alert(input1.value);
+    };
+
+    render() {
+      return (
+        <div>
+          <input
+            ref={(currentNode) => {
+              this.input1 = currentNode;
+              console.log("@", currentNode);
+            }}
+            type="text"
+          />
+          <button onClick={this.showInfo}>点我提示输入的数据</button>
+        </div>
+      );
+    }
+  }
+
+  ReactDOM.render(<Demo />, document.getElementById("test"));
+  ```
+
+  - 如果 `ref` 回调函数是以内联函数的方式定义的，在**更新**过程中，它会被执行两次
+    1. 传入参数 `null`：为了避免上一次挂载内容造成影响，所以有一个清空的动作
+    2. 传入参数 DOM 元素
+    - 因为在每次渲染时会创建一个新的函数实例，所以 React 清空旧的 ref 并且设置新的。
+  - 如果定义成 class 的绑定函数，可以避免上述问题。但是大多数情况下它是无关紧要的
+
+    ```js
+    class Demo extends React.Component {
+      showInfo = () => {
+        const { input1 } = this;
+        alert(input1.value);
+      };
+
+      saveInput = (currentNode) => {
+        this.input1 = currentNode;
+      };
+
+      render() {
+        return (
+          <div>
+            {/* 注释写法
+              <input
+                ref={(currentNode) => {
+                  this.input1 = currentNode;
+                  console.log("@", currentNode);
+                }}
+                type="text"
+              />
+            */}
+            <input ref={this.saveInput} type="text" />
+            <button onClick={this.showInfo}>点我提示输入的数据</button>
+          </div>
+        );
+      }
+    }
+
+    ReactDOM.render(<Demo />, document.getElementById("test"));
+    ```
+
+#### 3.2.2 createRef 的使用
+
+React.createRef 调用后可以返回一个容器，该容器可以存储被 ref 所标识的节点
+
+```js
+class Demo extends React.Component {
+  myRef = React.createRef();
+
+  showInfo = () => {
+    const { current } = this.myRef;
+    alert(current.value);
+  };
+
+  render() {
+    return (
+      <div>
+        <input ref={this.myRef} type="text" />
+        <button onClick={this.showInfo}>点我提示输入的数据</button>
+      </div>
+    );
+  }
+}
+
+ReactDOM.render(<Demo />, document.getElementById("test"));
+```
