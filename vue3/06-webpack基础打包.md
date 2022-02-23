@@ -1,7 +1,7 @@
 <!--
  * @Author: east
  * @Date: 2021-11-06 20:26:52
- * @LastEditTime: 2021-11-07 15:25:42
+ * @LastEditTime: 2022-02-23 14:43:26
  * @LastEditors: Please set LastEditors
  * @Description: webpack 基础打包 and css 打包
  * @FilePath: \vue3\06-webpack基础打包.md
@@ -40,7 +40,7 @@
     1. 执行 webpack 命令，会执行 node_modules 下的.bin 目录
     2. webpack 在执行时是依赖 webpack-cli 的，如果没有安装就会报错
     3. 而在 webpack-cli 中代码执行时，才是真正利用 webpack 进行编译和打包的过程
-    4. 所以在安装 webpack 时，需要同时安装 webpack-cli (第三方的脚手架实际上没有使用 webpack-cli，二十类似于自己的 vue-service-cli 的东西)
+    4. 所以在安装 webpack 时，需要同时安装 webpack-cli (第三方的脚手架实际上没有使用 webpack-cli，而是类似于自己的 vue-service-cli 的东西)
 
 #### 简单使用
 
