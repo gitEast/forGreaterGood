@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2022-03-01 21:28:09
- * @LastEditTime: 2022-03-01 21:39:40
+ * @LastEditTime: 2022-03-06 15:16:15
  * @LastEditors: Please set LastEditors
  * @Description: 做个规划，救命，完全看不下去
  * @FilePath: \forGreaterGood\javascript\js红宝书4\plan.md
@@ -30,3 +30,5 @@ Chapter 3
   - 5.4 - 5.5
   - 6.1 - 6.3
 - 后续不知道啦，看入职后的工作情况
+
+不搞了，感觉眼睛好累

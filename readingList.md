@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2022-02-20 19:27:43
- * @LastEditTime: 2022-02-20 19:34:09
+ * @LastEditTime: 2022-03-06 15:15:15
  * @LastEditors: Please set LastEditors
  * @Description: 书单，也不晓得多少年后才会读的东西
  * @FilePath: \forGreaterGood\readingList.md
@@ -12,3 +12,4 @@
 - 《重构——改善既有代码的设计》
   - 基于 JavaScript 的！！！
 - 《亚马逊逆向工作法》
+- 《Vue 设计与实现》
