@@ -1,7 +1,7 @@
 <!--
  * @Author: East
  * @Date: 2022-03-09 21:12:49
- * @LastEditTime: 2022-03-12 16:07:58
+ * @LastEditTime: 2022-03-14 20:58:50
  * @LastEditors: Please set LastEditors
  * @Description:
                  1. 互连网边缘部分和核心部分的作用
@@ -33,7 +33,7 @@
 
 ### 2.2 因特网发展的三个阶段
 
-![发展阶段](./imgs/Ch1_%E5%8F%91%E5%B1%95%E9%98%B6%E6%AE%B5.png)
+![发展阶段](.\imgs\Ch1_%E5%8F%91%E5%B1%95%E9%98%B6%E6%AE%B5.png)
 
 1. 从单个网络 ARPANET 向互联网发展
    1. 1969 年，第一个分组交换网 ARPANET
