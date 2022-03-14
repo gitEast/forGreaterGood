@@ -33,7 +33,7 @@
 
 ### 2.2 因特网发展的三个阶段
 
-![发展阶段](computer-networks\imgs\Ch1_%E5%8F%91%E5%B1%95%E9%98%B6%E6%AE%B5.png)
+![发展阶段](../computer-networks\imgs\Ch1_%E5%8F%91%E5%B1%95%E9%98%B6%E6%AE%B5.png)
 
 1. 从单个网络 ARPANET 向互联网发展
    1. 1969 年，第一个分组交换网 ARPANET
