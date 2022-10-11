@@ -1,0 +1,150 @@
+{
+  "main": {
+    "id": "e5c198e4bff6629f",
+    "type": "split",
+    "children": [
+      {
+        "id": "a187f474b1106062",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "01-diary/week/2022-week41.md",
+            "mode": "source",
+            "source": false
+          }
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "ec79d152a2e8366f",
+    "type": "split",
+    "children": [
+      {
+        "id": "52014bbe05890185",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9904d497c0a72107",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "8a7e2573e29d1e38",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "f9a6825b4b468411",
+            "type": "leaf",
+            "state": {
+              "type": "starred",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "53e3f33ecdf057c8",
+    "type": "split",
+    "children": [
+      {
+        "id": "192db1664d909f35",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2b8f01a29ba49306",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "01-diary/week/2022-week41.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": false
+              }
+            }
+          },
+          {
+            "id": "3704051ba53a912b",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "01-diary/week/2022-week41.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "0c75e55277b49491",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "25625ed89026e6c7",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "01-diary/week/2022-week41.md"
+              }
+            }
+          },
+          {
+            "id": "b7887989ba41e2e1",
+            "type": "leaf",
+            "state": {
+              "type": "calendar",
+              "state": {}
+            }
+          }
+        ],
+        "currentTab": 3
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "active": "a187f474b1106062",
+  "lastOpenFiles": [
+    "01-diary/week/2022-week40.md",
+    "01-diary/week/2022-week41.md",
+    "02-spirit/02-1 卡片笔记写作法.md",
+    "01-diary/2022年.md",
+    "01-diary/week/2022-week39.md",
+    "notes/week/week40.md",
+    "notes/week/week39.md",
+    "Untitled.md"
+  ]
+}

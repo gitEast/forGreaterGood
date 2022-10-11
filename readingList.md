@@ -1,8 +1,8 @@
 <!--
  * @Author: East
  * @Date: 2022-02-20 19:27:43
- * @LastEditTime: 2022-03-15 22:04:10
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-06-26 20:08:11
+ * @LastEditors: EastWind linxiayoudongfeng@gmail.com
  * @Description: 书单，也不晓得多少年后才会读的东西
  * @FilePath: \forGreaterGood\readingList.md
 -->
@@ -16,3 +16,7 @@
 - 《代码整洁之道》
 - 《代码大全》第二版
 - 《暗时间》
+- 《算法导论》
+- 《UNIX 编程艺术》
+- 《编程珠玑》
+- 《现代操作系统》
