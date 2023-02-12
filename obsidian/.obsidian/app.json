@@ -3,5 +3,6 @@
   "trashOption": "local",
   "newFileLocation": "folder",
   "newFileFolderPath": "00-fleeting",
-  "attachmentFolderPath": "asstes"
+  "attachmentFolderPath": "asstes",
+  "showLineNumber": true
 }

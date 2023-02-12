@@ -1,12 +1,34 @@
 {
-  "collapse-filter": true,
+  "collapse-filter": false,
   "search": "",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
   "showOrphans": true,
   "collapse-color-groups": true,
-  "colorGroups": [],
+  "colorGroups": [
+    {
+      "query": "path:03-learning",
+      "color": {
+        "a": 1,
+        "rgb": 16746567
+      }
+    },
+    {
+      "query": "path:01-diary",
+      "color": {
+        "a": 1,
+        "rgb": 5957150
+      }
+    },
+    {
+      "query": "path:02-spirit",
+      "color": {
+        "a": 1,
+        "rgb": 16370991
+      }
+    }
+  ],
   "collapse-display": true,
   "showArrow": false,
   "textFadeMultiplier": 0,

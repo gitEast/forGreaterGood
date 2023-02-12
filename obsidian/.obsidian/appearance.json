@@ -1,4 +1,9 @@
 {
   "theme": "obsidian",
-  "cssTheme": "Atom"
+  "cssTheme": "Atom",
+  "accentColor": "",
+  "monospaceFontFamily": "Operator Mono,Fira Code",
+  "textFontFamily": "Times New Roman,楷体,新宋体",
+  "translucency": false,
+  "baseFontSize": 15
 }

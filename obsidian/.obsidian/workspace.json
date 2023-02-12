@@ -4,18 +4,24 @@
     "type": "split",
     "children": [
       {
-        "id": "710fd3175498f04c",
-        "type": "leaf",
-        "pinned": true,
-        "state": {
-          "type": "markdown",
-          "state": {
-            "file": "00-fleeting/TypeScript 209.md",
-            "mode": "source",
-            "source": false
-          },
-          "pinned": true
-        }
+        "id": "8a75b88883f3038f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f728057bef497ac4",
+            "type": "leaf",
+            "pinned": true,
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "01-diary/week/2022-week49.md",
+                "mode": "source",
+                "source": false
+              },
+              "pinned": true
+            }
+          }
+        ]
       }
     ],
     "direction": "vertical"
@@ -33,7 +39,9 @@
             "type": "leaf",
             "state": {
               "type": "file-explorer",
-              "state": {}
+              "state": {
+                "sortOrder": "alphabetical"
+              }
             }
           },
           {
@@ -42,7 +50,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "tag:#coderwhy",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -63,7 +71,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 296.49999809265137
+    "width": 231.49999618530273
   },
   "right": {
     "id": "53e3f33ecdf057c8",
@@ -79,7 +87,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "00-fleeting/TypeScript 209.md",
+                "file": "01-diary/week/2022-week49.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -96,7 +104,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "00-fleeting/TypeScript 209.md",
+                "file": "01-diary/week/2022-week49.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -119,7 +127,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "00-fleeting/TypeScript 209.md"
+                "file": "01-diary/week/2022-week49.md"
               }
             }
           },
@@ -132,37 +140,23 @@
             }
           }
         ],
-        "currentTab": 3
-      },
-      {
-        "id": "4b5966e16ba20451",
-        "type": "tabs",
-        "children": [
-          {
-            "id": "bcc803e7719a554c",
-            "type": "leaf",
-            "state": {
-              "type": "graph",
-              "state": {}
-            }
-          }
-        ]
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
-    "width": 303.5
+    "width": 319.5
   },
-  "active": "710fd3175498f04c",
+  "active": "f728057bef497ac4",
   "lastOpenFiles": [
-    "02-spirit/Untitled.md",
-    "03-learning/index.md",
-    "00-fleeting/TypeScript 209.md",
-    "00-fleeting/TypeScript 207-208.md",
-    "03-learning/03-1 TypeScript.md",
-    "02-spirit/02-1 卡片笔记写作法.md",
-    "01-diary/week/2022-week41.md",
-    "asstes/03-1-TypeScript-ts与js的关系.png",
-    "01-diary/week/2022-week40.md",
-    "00-fleeting/2022-10-11.md"
+    "01-diary/week/2022-week48.md",
+    "01-diary/week/2022-week47.md",
+    "01-diary/week/2022-week49.md",
+    "01-diary/2022年.md",
+    "01-diary/week/2022-week46.md",
+    "00-fleeting/前端引言.md",
+    "01-diary/week/2022-week44.md",
+    "00-fleeting/webpack.md",
+    "00-fleeting/Vue3 + TypeScript.md",
+    "01-diary/week/2022-week42.md"
   ]
 }

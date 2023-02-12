@@ -14,7 +14,7 @@
 
 官网：TypeScript is a typed superset of JavaScript that compiles to plain JavaScript.
 
-![[Pasted image 20221012191632.png]]
+![[03-1-TypeScript-ts与js的关系.png]]
 
 - TypeScript -> JavaScript
 	- Babel：一般使用这个
