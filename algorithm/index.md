@@ -51,6 +51,124 @@
 - 补充知识
   1. 早期的 JS 实现数组时，内存不是连续的：以类似链表的方式实现
 
+## 二、栈结构 Stack
+
+### 2.1 特性
+
+- 受限的线性结构
+  - 可以在数组的**任意位置**插入和删除数据 => 对这种任意性加以限制
+  - => 后进先出 Last In First Out LIFO
+- 概念
+  - 栈顶 -- 栈底
+  - 进栈/入栈/压栈 -- 出栈/退栈
+
+### 2.2 代码实现
+
+- 常见操作
+  - `push(element)`: 入栈
+  - `pop()`: 出栈
+  - `peek()`: 返回栈顶元素，不对栈做任何修改
+  - `isEmpty(): boolean`
+  - `size()`
+- 定义栈的接口 IStack
+  ```ts
+  interface IStack<T> {
+    push(element: T): void;
+    pop(): T | undefined;
+    peek(): T | undefined;
+    isEmpty(): boolean;
+    size(): number;
+  }
+  ```
+
+#### 2.2.1 ArrayStack 基于数组实现
+
+```ts
+class ArrayStack<T> implements IStack<T> {
+  private data: T[] = [];
+
+  push(element: T): void {
+    this.data.push(element);
+  }
+  pop(): T | undefined {
+    return this.data.pop();
+  }
+  peek(): T | undefined {
+    return this.data[this.data.length - 1];
+  }
+  isEmpty(): boolean {
+    return this.data.length === 0;
+  }
+  size(): number {
+    return this.data.length;
+  }
+}
+```
+
+#### 2.2.2 LinkedStack 基于链表实现
+
+### 2.3 笔试题
+
+#### 2.3.1 十进制转二进制
+
+```ts
+function decimalToBinary(decimal: number): string {
+  const stack = new ArrayStack<number>();
+
+  while (decimal > 0) {
+    stack.push(decimal % 2);
+    decimal = Math.floor(decimal / 2);
+  }
+
+  let res = '';
+  while (!stack.isEmpty()) {
+    res += stack.pop()!;
+  }
+
+  return res;
+}
+```
+
+#### 2.3.2 有效的括号
+
+```ts
+function isValid(s: string): boolean {
+  const stack = new ArrayStack<string>();
+  const len = s.length;
+  for (let i = 0; i < len; i++) {
+    switch (s[i]) {
+      case '(':
+        stack.push(')');
+        break;
+      case '[':
+        stack.push(']');
+        break;
+      case '{':
+        stack.push('}');
+        break;
+      default:
+        if (s[i] !== stack.pop()) {
+          return false;
+        }
+        break;
+    }
+  }
+  return stack.isEmpty();
+}
+```
+
+## 三、队列结构 Queue
+
+## 四、链表结构 LinkedList
+
+### 4.3 总结
+
+> 对 Array, Stack, Queue, LinkedList 进行对比
+
+|                      | Array | Stack      | Queue      | LinkedList |
+| -------------------- | ----- | ---------- | ---------- | ---------- |
+| 在任意位置插入和删除 | √     | × 后进先出 | × 先进后出 | √          |
+
 ## 八、高阶队列
 
 ### 8.1 双端队列(双向队列)
