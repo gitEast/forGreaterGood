@@ -107,6 +107,8 @@ class ArrayStack<T> implements IStack<T> {
 
 #### 2.2.2 LinkedStack 基于链表实现
 
+TODO
+
 ### 2.3 笔试题
 
 #### 2.3.1 十进制转二进制
@@ -159,6 +161,112 @@ function isValid(s: string): boolean {
 
 ## 三、队列结构 Queue
 
+### 3.1 特性
+
+- 受限的线性结构
+  - 先进先出 First In First Out
+    - 在树的层序遍历中使用
+- 概念
+  - 前端 front
+  - 后端 rear
+
+### 3.2 代码实现
+
+- 常见操作
+  - `enqueue(element)`：入队
+  - `dequeue()`：出队
+  - `peek()`：队列第一个元素
+  - `isEmpty()`
+  - `size()`
+- 定义队列的接口 IQueue
+  ```ts
+  interface IQueue<T> {
+    enqueue(element: T): void;
+    dequeue(): T | undefined;
+    peek(): T | undefined;
+    isEmpty(): boolean;
+    size(): number;
+  }
+  ```
+
+#### 3.2.1 基于数组实现
+
+```ts
+class ArrayQueue<T> implements IQueue<T> {
+  private data: T[] = [];
+
+  enqueue(element: T): void {
+    this.data.push(element);
+  }
+  dequeue(): T | undefined {
+    return this.data.shift();
+  }
+  peek(): T | undefined {
+    return this.data[0];
+  }
+  isEmpty(): boolean {
+    return this.data.length === 0;
+  }
+  size(): number {
+    return this.data.length;
+  }
+}
+```
+
+#### 3.2.1 基于链表实现
+
+> 更合适
+
+### 3.3 笔试题
+
+#### 3.3.1 击鼓传花
+
+> 一组数据，每次数到 n 的人淘汰，直至剩下最后一个人
+
+```ts
+// 烫手山芋（笑
+function hotPotato(names: string[], num: number): number {
+  if (names.length === 0) return -1;
+
+  const queue = new ArrayQueue<string>();
+
+  for (const name of names) {
+    queue.enqueue(name);
+  }
+
+  while (queue.size() > 1) {
+    for (let i = 1; i < num; i++) {
+      queue.enqueue(queue.dequeue()!);
+    }
+    queue.dequeue();
+  }
+
+  const leftName = queue.dequeue()!;
+  const index = names.findIndex((name) => name === leftName);
+  return index;
+}
+```
+
+#### 3.3.2 约瑟夫环
+
+```ts
+function lastRemaining(n: number, m: number): number {
+  const queue = new ArrayQueue<number>();
+  for (let i = 1; i < n + 1; i++) {
+    queue.enqueue(i);
+  }
+
+  while (queue.size() > 1) {
+    for (let i = 1; i < m; i++) {
+      queue.enqueue(queue.dequeue()!);
+    }
+    queue.dequeue();
+  }
+
+  return queue.dequeue()!;
+}
+```
+
 ## 四、链表结构 LinkedList
 
 ### 4.3 总结
@@ -168,6 +276,8 @@ function isValid(s: string): boolean {
 |                      | Array | Stack      | Queue      | LinkedList |
 | -------------------- | ----- | ---------- | ---------- | ---------- |
 | 在任意位置插入和删除 | √     | × 后进先出 | × 先进后出 | √          |
+
+- 抽取相同的接口 IList
 
 ## 八、高阶队列
 
