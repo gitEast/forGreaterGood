@@ -269,7 +269,84 @@ function lastRemaining(n: number, m: number): number {
 
 ## 四、链表结构 LinkedList
 
-### 4.3 总结
+### 4.1 特性
+
+- 数组的缺点
+  1. 创建时需要申请一段**连续的内存空间**，大小固定 => if 不能满足容量需求 => need 扩容
+  2. 在数组的开头 or 中间位置插入数据的成本很高，需要进行大量元素的位移
+- 链表的优点
+  1. 内存空间不是必须连续的 => 实现灵活的内存动态管理
+  2. 不需要在创建时就确定大小，可以无限延伸下去
+  3. 插入和删除数据时，时间复杂度可以达到 O(1)
+- 链表的缺点
+  1. 访问任何一个位置的元素，都需要从头开始访问
+  2. 无法通过下标值直接访问元素，需从头开始访问
+
+### 4.2 代码实现
+
+> ILinkedList 继承自 IList 接口
+
+- 节点类 `Node`
+  - properties
+    - `value`
+    - `next`
+- 链表类 `LinkedList`
+  - properties
+    - `private head`
+    - `private length`
+  - methods
+    - `append(element)`
+    - `traverse()`: 遍历
+    - `insert(position, element): boolean`: 越界情况判断
+    - `removeAt(position): T | null`
+    - `get(position): T | null`
+    - `update(position, element)`
+    - `indexOf(element)`
+    - `remove(element)`
+    - `isEmpty()`
+    - `size(): number`
+    - `private getNode(position): Node<T> | null`
+
+### 4.3 笔试题
+
+#### 4.3.1 删除链表中的节点
+
+> 给一个需要删除的节点，但无法访问第一个节点
+
+```ts
+class ListNode {
+  val: number;
+  next: ListNode | null;
+
+  constructor(val?: number, next?: ListNode | null) {
+    this.val = val === undefined ? 0 : val;
+    this.next = next === undefined ? null : next;
+  }
+}
+
+function deleteNode(node: ListNode | null): void {}
+```
+
+#### 4.3.2 反转链表
+
+```ts
+class ListNode {
+  val: number;
+  next: ListNode | null;
+
+  constructor(val?: number, next?: ListNode | null) {
+    this.val = val === undefined ? 0 : val;
+    this.next = next === undefined ? null : next;
+  }
+}
+
+/** 1. 栈 */
+function reverseList(head: ListNode | null): ListNode | null {}
+/** 2. 迭代 */
+/** 3. 递归 */
+```
+
+### 4.4 总结
 
 > 对 Array, Stack, Queue, LinkedList 进行对比
 
@@ -278,6 +355,33 @@ function lastRemaining(n: number, m: number): number {
 | 在任意位置插入和删除 | √     | × 后进先出 | × 先进后出 | √          |
 
 - 抽取相同的接口 IList
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
+
+```mermaid
+graph TB
+A((IList))
+A1((IStack))
+A2((IQueue))
+A3((ILinkedList))
+A1a((ArrayStack))
+A1b((LinkedStack))
+A2a((ArrayQueue))
+A2b((LinkedQueue))
+A3a((LinkedList))
+
+A --> A1
+A --> A2
+A --> A3
+A1 --> A1a
+A1 --> A1b
+A2 --> A2a
+A2 --> A2b
+A3 --> A3a
+```
 
 ## 八、高阶队列
 

@@ -14,10 +14,14 @@ for greater good
 ## 当前进度
 
 - 数据结构 + 算法
+  - P45
+- React
+  - P167
+- JavaScript 高级
+  - P69
 
 ## 未完成目标
 
-- React
 - Node
 - HTTP
 - 计算机网络
