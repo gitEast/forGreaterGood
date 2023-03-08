@@ -66,6 +66,44 @@
     3. 不能快速找到哈希表中的最大值 or 最小值
 - 树
 
+### 0.3 延申
+
+### 0.3.1 二叉搜索树
+
+> 二叉搜索树的节点为类(以 Person 为例)
+
+- 比较大小：对类添加一个方法 `valueOf()`
+  - 比较时才有效，`===` 没有意义且为 `false`
+
+```ts
+class Person {
+  name: string;
+  age: number;
+
+  constructor(name: string, age: number) {
+    this.name = name;
+    this.age = age;
+  }
+
+  valueOf() {
+    return this.age;
+  }
+}
+```
+
+- 打印出想要的数据格式
+
+```ts
+import { PrintableNode } from 'hy-algokit';
+
+class TreeNode<T> extends Node<T> implements PrintableNode {
+  get value() {
+    const data = this.data as Product;
+    return data.name + data.age;
+  }
+}
+```
+
 ## 一、线性结构 - 数组
 
 ### 1.1 线性结构 Linear List
@@ -649,6 +687,53 @@ A3 --> A3a
       - 基于队列
     - `dfs(vertex)`: Depth-First Search 深度优先搜索
       - 基于栈 or 递归
+
+## 八、高阶链表
+
+### 8.1 循环链表
+
+> 基于单向链表重构而成
+
+- 单向链表
+  ```ts
+  interface ILinkedList<T> extends IList<T> {
+    append(value: T): void;
+    traverse(): void;
+    insert(value: T, position: number): boolean;
+    removeAt(position: number): T | null;
+    get(position: number): T | null;
+    update(value: Ｔ, position: number): boolean;
+    indexOf(value: T): number;
+    remove(value: T): T | null;
+  }
+  ```
+  - 属性
+    - private 属性 -> protected 属性
+    - 新增 tail 属性，总是指向尾部
+  - 方法
+    - 重构
+      - `append`
+      - `insert`
+      - `removeAt`
+      - `traverse`
+    - 新增
+      - `private isTail(node: Node<T>)`
+- CircularLinkedList
+  - 方法
+    - 重新实现
+      - `append`
+      - `removeAt`
+
+### 8.2 双向链表
+
+- 节点
+  ```ts
+  class DoubleNode<T> extends Node<T> {}
+  ```
+- DoublyLinkedList
+  - 方法
+    - `prepend`
+    - `postTraverse`：从尾部开始遍历
 
 ## 八、高阶队列
 
