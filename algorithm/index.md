@@ -66,9 +66,9 @@
     3. 不能快速找到哈希表中的最大值 or 最小值
 - 树
 
-### 0.3 延申
+### 0.3 延伸
 
-### 0.3.1 二叉搜索树
+#### 0.3.1 二叉搜索树
 
 > 二叉搜索树的节点为类(以 Person 为例)
 
@@ -103,6 +103,13 @@ class TreeNode<T> extends Node<T> implements PrintableNode {
   }
 }
 ```
+
+### 0.4 一些网站
+
+- 在线数据结构演练
+  - [https://www.cs.usfca.edu/~galles/visualization/Algorithms.html](https://www.cs.usfca.edu/~galles/visualization/Algorithms.html)
+  - [https://visualgo.net/en/heap?slide=1](https://visualgo.net/en/heap?slide=1)
+  - [http://btv.melezinek.cz/binary-heap.html](http://btv.melezinek.cz/binary-heap.html)
 
 ## 一、线性结构 - 数组
 
@@ -734,6 +741,76 @@ A3 --> A3a
   - 方法
     - `prepend`
     - `postTraverse`：从尾部开始遍历
+
+## 九、堆结构 Heap
+
+### 9.1 介绍
+
+- 一种特殊的树形数据结构，使用**完全二叉树**来实现
+  - 基本使用二叉堆
+    - 最大堆：每一个节点都 <= child 节点
+    - 最小堆：每一个节点都 >= child 节点
+- 最值问题(适用)
+  - 方案选择
+    - if 数组/链表：O(n)
+      - 可以通过排序，但排序时间复杂度最小的算法是 O(nlogn)
+    - if 哈希表：哒咩
+    - if 二叉搜索树：O(logn)
+      - 需要维护好树的平衡时，时间复杂度才是 O(logn)
+  - Top K 问题
+    - 常用解决方案：排序算法、快速选择算法、堆结构
+- 二叉堆
+  - 用树形结构表示 -> 一棵完全二叉树
+  - 实现方式 -> 数组
+    - 节点索引关系
+      - root：`i = 0`
+      - parent: `Math.floor((i - 1) / 2)`
+      - left child: `2 * i + 1`
+      - right child: `2 * i + 2`
+
+### 9.2 核心概念
+
+- 最大堆
+  - insert: 每次插入元素后，需要对堆进行重构，以维护最大堆的性质
+    - **上滤 percolate up**:
+      1. 将新元素与其 parent 元素进行比较
+      2. if 新元素 <= parent 元素，符合最大堆特性，跳出循环
+      3. else swap(新元素，parent 元素)，并再次比较新元素与 新的 parent 元素
+      4. 循环结束条件：新元素到达根节点位置
+  - extract: 每次删除元素后，需要对堆进行重构，以维护最大堆的性质
+    1. 交换 root 与最后一个节点
+    2. **下滤 percolate down**:
+       1. 与 Max(leftChild、rightChild) 比较
+       2. if root < Max => 交换位置，再次进入步骤 1
+       3. else 跳出循环
+       4. 循环结束条件：不存在 leftChild (because of 完全二叉树的特性) === 是叶子节点
+  - In-place heap construction: 原地建堆，指建立堆的过程中，不使用额外的内存空间，直接在原有数组上进行操作
+    1. 从第一个非叶子节点开始，进行下滤操作
+
+### 9.3 代码实现
+
+- Heap
+  - 常见属性
+    - `data`: 数组，存储堆中元素
+    - `length`
+  - 常见方法
+    - `private swap(i: number, j: number): void`: 交换
+    - `insert(value)`
+    - `heapify_up()`: 上滤
+    - `extract/delete()`: 从堆中删除最大/最小元素
+    - `heapify_down()`: 下滤
+    - `peek()`
+    - `isEmpty()`
+    - `size()`
+    - `buildHeap(arr: T[])`: 通过一个列表来构造堆(原地建堆)
+- 数据模拟：`[19, 100, 36, 17, 3, 25, 1, 2, 7]`
+- 数据打印
+
+  ```ts
+  import { cbtPrint } from 'hy-algokit';
+
+  cbtPint(arr);
+  ```
 
 ## 八、高阶队列
 
