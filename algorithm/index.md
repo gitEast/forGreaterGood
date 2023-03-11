@@ -812,11 +812,19 @@ A3 --> A3a
   cbtPint(arr);
   ```
 
-## 八、高阶队列
+## 十、高阶队列
 
-### 8.1 双端队列(双向队列)
+### 10.1 双端队列(双向队列)
 
-### 8.2 优先级队列 Priority Queue
+#### 10.1.2 代码实现
+
+- ArrayDeque
+  - 继承自 ArrayQueue
+  - 方法
+    - `addFront(value: T)`
+    - `removeBack(): T | undefined`
+
+### 10.2 优先级队列 Priority Queue
 
 - 概念
   - 通过优先级的大小，决定出队顺序
@@ -824,6 +832,9 @@ A3 --> A3a
     - **堆**，最常用的实现方式
 - 实现
   1. PriorityNode(可为任意类)
+     - 属性
+       - `priority: number`
+       - `value`
      - 方法
        - `valueOf()`: 用于比较大小(js 的特性)
   2. PriorityQueue
