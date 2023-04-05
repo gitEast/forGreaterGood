@@ -98,7 +98,7 @@ class BinaryHeap<T> implements IHeap<T> {
   }
 
   buildHeap(): void {
-    let index = Math.floor((this.length - 1 - 1) / 2);
+    let index = Math.floor(this.length / 2 - 1);
     while (index >= 0) {
       this.percolate_down(index);
       index--;

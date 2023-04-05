@@ -847,21 +847,21 @@ A3 --> A3a
        - `isEmpty()`
        - `size()`
 
-## 九、平衡二叉树
+## 十一、平衡二叉树
 
 - 平衡树 Balanced Tree
   - 一种特殊的二叉搜索树
-  - 目的：通过一些特殊的技巧来维护**树的平衡**，从而保证树的搜索、插入、删除等操作的时间复杂度都很低
+  - 目的：通过一些特殊的技巧来维护**树的高度平衡**，从而保证树的搜索、插入、删除等操作的时间复杂度都很低
     - if 平衡，时间复杂度 O(logN)
     - if 不平衡，-> 近似链表结构 -> 时间复杂度 O(N)
 - 保持平衡的方法
   1. 限制插入、删除的节点(不允许这样的操作) --> 真是个大聪明...
   2. 随机插入 or 删除后，通过某种方式观察树是否平衡
-     - if 不平衡，通过特定的方式，让树保持平衡
+     - if 不平衡，通过特定的方式调整树的结构，使其保持平衡
 - 常见的平衡二叉搜索树
   - AVL 树
     - 搜索效率高于红黑树，但插入和删除操作效率低于红黑树
-    - 通常用于各种需要**高效查询的数据结构**
+    - 通常用于各种需要**高效查询的数据结构**：计算机图形学、数学计算和计算机科学研究中的一些算法
   - 红黑树
     - 被广泛用于操作系统内核、数据库、编译器等软件中的数据结构
     - 原因：插入、删除、查找操作都具有较低的时间复杂度
@@ -869,61 +869,78 @@ A3 --> A3a
   - Treap
   - B-树
 
-### 9.1 AVL 树
+### 11.1 AVL 树
 
-- 概念
-  - 由 G.M.Adelson-Velsky 和 E.M.Landis 在 1962 年发明
-  - 一种**自平衡二叉树**
-    - 二叉搜索树的一个变体
-    - 在保证二叉搜索树性质的同时，通过**旋转**操作保证树的平衡
-  - 权值
-    - 每个节点都有一个权值，该权值代表了已该节点为根节点的左右子树高度差
-    - 在 AVL 树中，任意节点的权值只有三种可能：1 or -1 or 0
-    - 又名 平衡因子
-  - 三个节点
-    - grand/root
-    - 轴心 Pivot / parent
-    - current
-- 实现
-  - AVLTreeNode
-    - 属性
-      - `value`
-      - `left`
-      - `right`
-      - `parent`
-    - 方法
-      - `getHeight()`：获取每个节点的高度
-      - `getBalanceFactor()`：权重，左边高度 - 右边高度
-      - **`get isBalanced()`：直接判断当前节点是否平衡**
-      - `public get higherChild()`：获取高度更高的子节点
-        - if leftChildHeight === rightChildHeight, 当前节点为左子节点就返回 this.left，否则 this.right
-          - 一般做法
-          - 实际上如果左右子树高度相等，基本不会来到这个函数
-      - `rightRotation()`：右旋转(this === root)
-    - 可以直接继承自 TreeNode
-  - AVLTree
-    - 树的情况与旋转：(从不平衡节点自上而下观察)
-      1. 左左情况 -> 右旋
-         - root.left + pivot.left
-         1. 处理 pivot
-         2. 处理 pivot.right
-         3. 处理 root
-         4. 处理 pivot 的挂载(不同情况)
-            1. pivot.parent 为 `undefined` or `null`
-            2. pivot 是父节点的左子节点
-            3. pivot 是父节点的右子节点
-      2. 右右情况 -> 左旋
-      3. 左右情况 -> 左旋，右旋
-      4. 右左情况 -> 右旋，左旋
-    - 方法
-      - `rebalance(root: AVLTree<T>)`：根据不平衡节点的情况(LL/RR/LR/RL)让子树平衡
-      - `protected createNode(value: T): AVLTreeNode<T>`：模板模式
-      - 重构二叉搜索树的 `insert` 方法
-      - `checkBalance(node: AVLTreeNode<T>)`：模板方法 again
-        - 添加与删除导致的优化
-      - 重构二叉搜索树的 `delete` 方法
+#### 11.1.1 概念
 
-### 9.2 红黑树 Red-black Tree
+- 由 G.M.Adelson-Velsky 和 E.M.Landis 在 1962 年发明
+- 一种**自 self 平衡二叉树**
+  - 二叉搜索树的一个变体
+  - 在保证二叉搜索树性质的同时，通过**旋转**操作保证树的平衡
+- 权值
+  - 每个节点都有一个权值，该权值代表了已该节点为根节点的左右子树高度差
+  - 在 AVL 树中，任意节点的权值只有三种可能：1 or -1 or 0
+  - 又名 平衡因子
+- 三个节点
+  - grand/root
+  - 轴心 Pivot / parent
+  - current
+
+#### 11.1.2 学习过程
+
+1. AVL 树节点的封装
+2. AVL 树的旋转情况
+3. 写出不同情况下进行的不同旋转操作
+4. 写出插入操作后，树的再平衡操作
+5. 写出删除操作后，树的再平衡操作
+
+#### 11.1.3 实现
+
+- AVLTreeNode
+  - 继承自 TreeNode(Binary Search Tree 中)
+  - 属性
+    - `value`
+    - `left`
+    - `right`
+    - `parent`
+  - 方法
+    - `private getHeight()`：获取每个节点的高度
+    - `private getBalanceFactor()`：平衡因子 —— **权重**，左边高度 - 右边高度
+    - **`get isBalanced()`：直接判断当前节点是否平衡**
+    - `public get higherChild()`：获取高度更高的子节点
+      - if leftChildHeight === rightChildHeight, 当前节点为左子节点就返回 this.left，否则 this.right
+        - 一般做法
+        - 实际上如果左右子树高度相等，基本不会来到这个函数
+    - `rightRotation()`：右旋转(this === root)
+      1. 处理 pivot 节点
+      2. 处理 pivot.right
+      3. 处理 this(即 root)
+      4. 挂载 pivot
+    - `leftRotation()`: 左旋
+- AVLTree
+  - 树的情况与旋转：(从不平衡节点自上而下观察) ![rotationAnalysis](./imgs/11-1_rotationAnalysis.png)
+    1. 左左情况 -> 右旋 ![LL](./imgs/11-1_LL.png)
+       - root.left + pivot.left
+       1. 处理 pivot
+       2. 处理 pivot.right
+       3. 处理 root
+       4. 处理 pivot 的挂载(不同情况)
+          1. pivot.parent 为 `null`
+          2. pivot 是父节点的左子节点
+          3. pivot 是父节点的右子节点
+    2. 右右情况 -> 左旋 ![RR](./imgs/11-1_RR.png)
+    3. 左右情况 -> 左旋，右旋
+    4. 右左情况 -> 右旋，左旋
+  - 方法
+    - `rebalance(root: AVLTreeNode<T>)`：根据不平衡节点的情况(LL/RR/LR/RL)让子树平衡
+    - `protected createNode(value: T): TreeNode<T>`：模板模式(在 BSTree 中新增)
+    - 重构二叉搜索树的 `insert` 方法
+    - `checkBalance(node: AVLTreeNode<T>)`：模板方法 again
+      - 添加与删除导致的优化
+      - BSTree 实际不做任何操作
+    - 重构二叉搜索树的 `delete` 方法
+
+### 11.2 红黑树 Red-black Tree
 
 - 概念
   - 1972 年由鲁道夫·贝尔发明，被称为**对称二叉 B 树**
@@ -939,7 +956,7 @@ A3 --> A3a
     5. **从任一节点到其每个叶子节点的所有路径都包含相同数目的黑色节点**
        - in order to 保证红黑树的平衡性
        - 前面的性质可以说都是为这一条服务
-    - => 确保了红黑树的关键特性：从根到叶子的最长可能路径，不会超过最短可能路径的两倍长。原因如下：
+    - => 确保了红黑树的关键特性：**从根到叶子的最长可能路径，不会超过最短可能路径的两倍长**。原因如下：
       - 性质 5 决定了最长路径和最短路径必须拥有相同的黑色节点数量
       - 路径最短时：全部是黑色节点 n 个
       - 路径最长时：黑色节点 n 个，红色节点 n - 1 个
@@ -954,15 +971,18 @@ A3 --> A3a
   - 它们的搜索、删除、添加时间复杂度都是 O(logn)，但在细节上会有一些差异
   - => 红黑树综合效率更高
 
-### 9.3 AVL 树 和 红黑树的区别
+### 11.3 AVL 树 和 红黑树的区别
 
 | 性质     | AVL 树          | 红黑树   |
 | -------- | --------------- | -------- |
 | 节点标识 | 权值            | 颜色     |
 | 平衡性   | -1 <= 权值 <= 1 | 基本平衡 |
 
-## 十、排序算法 Sorting Algorithm
+## 十二、排序算法 Sorting Algorithm
 
+- 计算机排序的特点：
+  1. 需要有严密的逻辑和特定的指令；
+  2. 只能一步步解决具体问题和遵循一些简单的规则。
 - 定义：
   - 通俗：研究如何对一个集合进行高效排序的算法
   - 维基：在计算机科学与数学中，一个排序算法是一种能将一串资料按照特定排序方式排列的算法
@@ -974,9 +994,11 @@ A3 --> A3a
   - 稳定性：稳定排序算法会让原本有相等键值的记录维持相对次序
   - 排序的方法：插入、交换、选择、合并等等
 
-### 10.1 冒泡排序 Bubble Sort
+### 12.1 冒泡排序 Bubble Sort
 
-#### 10.1.1 思路
+最简单的排序算法
+
+#### 12.1.1 思路
 
 ![冒泡排序图解](./imgs/10-1_%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F.png)
 
@@ -986,12 +1008,34 @@ A3 --> A3a
 
 => 最大的元素会经由交换慢慢“浮”到数组的尾端，故名“冒泡排序”
 
-#### 10.1.2 代码
+#### 12.1.2 代码
 
 - es6 交换代码：`[m, n] = [n, m]`
 - 如果在前一轮没有交换，则代表数组已经有序，无需再比较
 
-#### 10.1.3 总结
+```ts
+function bubbleSort(list: number[]): number[] {
+  const newList = [...list];
+
+  const len = newList.length;
+  for (let i = 0; i < len; i++) {
+    let swapped = false;
+
+    for (let j = 0; j < len - i - 1; j++) {
+      if (newList[j] > newList[j + 1]) {
+        [newList[j], newList[j + 1]] = [newList[j + 1], newList[j]];
+        swapped = true;
+      }
+    }
+
+    if (!swapped) break;
+  }
+
+  return newList;
+}
+```
+
+#### 12.1.3 总结
 
 - 时间复杂度
   - 最好情况：O(n)
@@ -1002,17 +1046,17 @@ A3 --> A3a
 - 在实际应用中，冒泡排序效率很低，并不常用
   - 会被其他更高效的排序算法所替代，如快速排序、归并排序...
 
-### 10.2 选择排序 Selection Sort
+### 12.2 选择排序 Selection Sort
 
-#### 10.2.1 思路
+#### 12.2.1 思路
 
 1. 在未排序的数列中找到最小(大)元素，然后将其存放到数列的起始位置
 2. 再从剩余未排序的元素中继续寻找最小(大)元素，然后放到已排序序列的末尾
 3. 以此类推，直至所有元素均排序完毕
 
-#### 10.2.2 代码
+#### 12.2.2 代码
 
-#### 10.2.3 总结
+#### 12.2.3 总结
 
 - 时间复杂度
   - 最好情况：O(n²)
@@ -1023,9 +1067,9 @@ A3 --> A3a
 - 在实际应用中，效率很低，并不常用
   - 会被其他更高效的排序算法所替代，如快速排序、归并排序...
 
-### 10.3 插入排序 Insertion Sort
+### 12.3 插入排序 Insertion Sort
 
-#### 10.3.1 思路
+#### 12.3.1 思路
 
 1. 假设数组的第一个元素已经排好序了
 2. 从第二个元素开始，不断与前面的有序数组元素进行比较
@@ -1034,9 +1078,9 @@ A3 --> A3a
 5. 以此类推，以至整个数组都有序
 6. 循环步骤 2-5，直至最后一个元素
 
-#### 10.3.2 代码
+#### 12.3.2 代码
 
-#### 10.3.3 总结
+#### 12.3.3 总结
 
 - 时间复杂度
   - 最好情况：O(n)
@@ -1046,11 +1090,11 @@ A3 --> A3a
   - if 数组部分有序，插入排序可以比冒泡和选择更快
   - if 数组完全逆序，则插入排序的时间复杂度更高
 
-### 10.4 **归并排序 Merge Sort**
+### 12.4 **归并排序 Merge Sort**
 
 熟练程度：掌握
 
-#### 10.4.1 思路
+#### 12.4.1 思路
 
 1. 将待排序的数组分成若干个子数组
 2. 将相邻的子数组归并成一个有序数组
@@ -1058,7 +1102,7 @@ A3 --> A3a
 
 - 分治法：将大问题分解成小问题
 
-#### 10.4.2 代码
+#### 12.4.2 代码
 
 #### 10.4.3 总结
 
@@ -1071,13 +1115,13 @@ A3 --> A3a
 - 需要额外的数组空间
   - 但在每次函数调用完即销毁
 
-### 10.5 **快速排序 Quick Sort**
+### 12.5 **快速排序 Quick Sort**
 
 熟练程度：掌握
 
 - 又称划分交换排序 Partition-exchange Sort
 
-#### 10.5.1 思路
+#### 12.5.1 思路
 
 - 基于分治思想
 
@@ -1086,9 +1130,36 @@ A3 --> A3a
 3. 对左右两部分分别进行递归调用快速排序
 4. 最终将整个数组排序
 
-#### 10.5.2 代码
+#### 12.5.2 代码
 
-#### 10.5.3 总结
+```ts
+function quickSort(arr: number[]): number[] {
+  const newArr = [...arr];
+
+  partition(0, newArr.length - 1);
+
+  function partition(left: number, right: number) {
+    if (left >= right) return;
+
+    const pivot = newArr[right];
+
+    let i = left;
+    let j = right - 1;
+    while (i <= j) {
+      if (newArr[i] < pivot) i++;
+      if (newArr[j] > pivot) j--;
+      if (i <= j) swap(newArr, i, j);
+    }
+    swap(newArr, i, right);
+    partition(left, j);
+    partition(i + 1, right);
+  }
+
+  return newArr;
+}
+```
+
+#### 12.5.3 总结
 
 - 时间复杂度：主要取决于**基准元素的选择**、**数组的划分**、**递归深度**等因素
   - 最好情况：O(nlogn)
@@ -1098,11 +1169,11 @@ A3 --> A3a
   - 平均情况：O(nlogn)
 - 原地排序算法，不需要额外的数组空间
 
-### 10.6 **堆排序 Heap Sort**
+### 12.6 **堆排序 Heap Sort**
 
 熟练程度：掌握
 
-#### 10.6.1 思路
+#### 12.6.1 思路
 
 - 基于比较的排序算法，核心思想：使用二叉堆来维护一个有序序列
   - 常用最大堆(保证每个节点都比它的子节点大)
@@ -1117,17 +1188,48 @@ A3 --> A3a
 - 时间复杂度：O(nlogn)
 - 空间复杂度：O(1)
 
-#### 10.6.2 代码
+#### 12.6.2 代码
 
-#### 10.6.3 总结
+```ts
+function heapSort(arr: number[]): number[] {
+  const newArr = [...arr];
+  const n = newArr.length;
+  buildHeap(newArr);
+  for (let i = n - 1; i >= 0; i--) {
+    swap(newArr, i, 0);
+    heapify_down(0, i - 1);
+  }
+  return newArr;
+
+  function buildHeap(arr: number[]) {
+    const start = Math.floor(arr.length / 2 - 1);
+    for (let i = start; i >= 0; i--) heapify_down(i, n);
+  }
+
+  function heapify_down(index: number, n: number) {
+    while (index * 2 + 1 < n) {
+      const leftIndex = index * 2 + 1;
+      const rightIndex = leftIndex + 1;
+      let largerIndex = leftIndex;
+      if (rightIndex < n && newArr[rightIndex] > newArr[leftIndex])
+        largerIndex = rightIndex;
+      if (newArr[largerIndex] > newArr[index]) swap(newArr, largerIndex, index);
+      else break;
+      index = largerIndex;
+    }
+  }
+}
+```
+
+#### 12.6.3 总结
 
 - 高效的排序算法
 - 但排序过程不稳定
 - 可以应用于大规模数据的排序
 
-### 10.7 希尔排序 Shell Sort
+### 12.7 希尔排序 Shell Sort
 
-#### 10.7.1 思路
+#### 12.7.1 思路
 
 1. 定义一个增量序列 d1, d2, ..., dk，一般增量序列最后一个元素为 1，即 dk = 1
 2. 以 dk 为间隔将待排序的序列分成 dk 个子序列，对每个子序列进行插入排序
@@ -1141,12 +1243,23 @@ A3 --> A3a
     - 增量算法：`9*4^i - 9*2^i + 1`
     - 最坏复杂度：O(N^4/3)；平均复杂度：O(N^7/6)
 
-#### 10.7.2 代码
+#### 12.7.2 代码
 
-#### 10.7.3 总结
+#### 12.7.3 总结
 
 - 从历史角度而言，是一种非常重要的排序算法，解除了人们对于排序算法时间复杂度 O(n²) 的固有认知
 - 时间复杂度取决于步长序列的选择，目前最优的步长序列仍未被证明，因此该排序算法的时间复杂度依然是一个开放的问题
+
+#### 12.8 总结
+
+| 名称     | 数据对象    | 稳定性         | 时间复杂度                     | 额外空间复杂度 |
+| -------- | ----------- | -------------- | ------------------------------ | -------------- |
+| 冒泡排序 | 数组        | √              | O(n^2)                         | O(1)           |
+| 选择排序 | 数组 + 链表 | 数组 ×, 链表 √ | O(n^2)                         | O(1)           |
+| 插入排序 | 数组 + 链表 | √              | O(n^2)                         | O(1)           |
+| 堆排序   | 数组        | ×              | O(nlogn)                       | O(1)           |
+| 归并排序 | 数组 + 链表 | √              | 数组 O(nlog^2n), 链表 O(nlogn) | O(1)           |
+| 希尔排序 | 数组        | √              | 平均 O(nlog n), 最坏 O(n^2)    | O(1)           |
 
 ## 十四、动态规划 Dynamic Programming
 
