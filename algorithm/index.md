@@ -1261,17 +1261,18 @@ function heapSort(arr: number[]): number[] {
 | 归并排序 | 数组 + 链表 | √              | 数组 O(nlog^2n), 链表 O(nlogn) | O(1)           |
 | 希尔排序 | 数组        | √              | 平均 O(nlog n), 最坏 O(n^2)    | O(1)           |
 
-## 十四、动态规划 Dynamic Programming
+## 十三、动态规划 Dynamic Programming
 
 简称 DP
 
-### 14.1 概念
+### 13.1 概念
 
 - 定义
-  - 维基：是一种在数学、管理科学、计算机科学、经济学和生物信息学中使用的，通过把原问题分解为相对简单的子问题的方式求解复杂问题的方法。
+  - 维基：是一种在数学、管理科学、计算机科学、经济学和生物信息学中使用的，通过**把原问题分解为相对简单的子问题**的方式求解复杂问题的方法。
     - 分而治之：子问题互相独立
     - 动态规划：第二个问题求解时需要用到第一个问题的解 => 即，各个问题之间相互有联系
 - 核心思想：将问题划分为若干个子问题，并在计算子问题的基础上，逐步构建出原问题的解
+  - dp 数组
 - 步骤：
   1. 定义状态
      - 表示子问题的解
@@ -1279,11 +1280,18 @@ function heapSort(arr: number[]): number[] {
   3. 初始化状态
   4. 计算原问题的解(最终答案)
 
-### 14.2 认识动态规划
+### 13.2 认识动态规划
 
 > 以斐波那契数列为例
 
 1. 递归算法
+   ```ts
+   function fib(n: number): number {
+     if (n === 0 || n === 1) return n;
+     return fib(n - 1) + fib(n - 2);
+   }
+   ```
+   - 效率太低：大量的重复计算
 2. 记忆化搜索 Memorization
    - 将结果存储在某一个数组中
    ```ts
@@ -1296,7 +1304,7 @@ function heapSort(arr: number[]): number[] {
    ```
 3. 动态规划
    ```ts
-   function fib(n: number) {
+   function fib(n: number): number {
      const memo: number[] = [];
      for (let i = 0; i <= n; i++) {
        if (i <= 1) memo[i] = i;
@@ -1307,13 +1315,13 @@ function heapSort(arr: number[]): number[] {
    ```
    1. 定义状态：dp 数组保留斐波那契数列中每一个位置对应的值(状态)
       - dp[x] 表示 x 位置对应的值(状态)
-   2. 状态转移方程：dp[i] = dp[i - 1] + dp[i - 2]
+   2. 状态转移方程：`dp[i] = dp[i - 1] + dp[i - 2]`
       - 一般写在循环中
    3. 设置初始化状态：dp[0]/dp[1]
    4. 计算最终的结果
    ```ts
-   // 最终版
-   function fib(n: number) {
+   // 改进版
+   function fib(n: number): number {
      const dp: number[] = [0, 1];
      for (let i = 2; i <= n; i++) {
        dp[i] = dp[i - 1] + dp[i - 2];
@@ -1324,21 +1332,373 @@ function heapSort(arr: number[]): number[] {
 4. 动态规划 - 状态压缩
    - f(n) = f(n - 1) + f(n - 2)
    ```ts
-   function fib(n: number): numbaer {
+   // 最终版
+   function fib(n: number): number {
      if (n <= 1) return n;
      let prev = 0;
      let current = 1;
      for (let i = 2; i <= n; i++) {
        const newValue = prev + current;
        prev = current;
-       current = prev;
+       current = newValue;
      }
      return current;
    }
    ```
 
-### 14.3 案例练习
+### 13.3 案例练习
 
 1. 爬楼梯(跳台阶)
+   ```ts
+   function upstairs(n: number): number {
+     const dp: number[] = [0, 1, 2];
+     for (let i = 3; i <= n; i++) {
+       dp[i] = dp[i - 1] + dp[i - 2];
+     }
+     return dp[i];
+   }
+   // 改进版
+   function upstairs2(n: number): number {
+     if (n <= 2) return n;
+     let previous = 1;
+     let current = 2;
+     for (let i = 3; i <= n; i++) {
+       const newValue = previous + current;
+       previous = current;
+       current = newValue;
+     }
+     return current;
+   }
+   ```
 2. 买卖股票的最佳时机
+
+   ```ts
+   function maxProfit(prices: number[]): number {
+     const dp: number[] = [];
+     const n = prices.length;
+     dp[0] = 0;
+     let minPrice = prices[0];
+     for (let i = 1; i < n; i++) {
+       dp[i] = prices[i] - minPrice;
+       minPrice = Math.min(prices[i], minPrice);
+     }
+     return Math.max(...dp);
+   }
+   // 状态压缩
+   function maxProfit2(prices: number[]): number {
+     const n = prices.length;
+     let minPrice = prices[0];
+     let maxValue = 0;
+     for (let i = 1; i < n; i++) {
+       maxValue = Math.max(prices[i] - minPrice, maxValue);
+       minPrice = Math.min(prices[i], minPrice);
+     }
+     return maxValue;
+   }
+   maxProfit([7, 1, 5, 3, 6, 0, 4]);
+   ```
+
 3. 最大子数组和
+   ```ts
+   function maxArray(nums: number[]) {
+     const n = nums.length;
+     let preValue = nums[0];
+     let max = preValue;
+     for (let i = 1; i < n; i++) {
+       preValue = Math.max(nums[i], nums[i] + preValue);
+       max = Math.max(preValue, max);
+     }
+     return max;
+   }
+   ```
+
+## 十四、Leetcode 练习
+
+### 14.1 字符串相关
+
+1. 最长公共前缀
+
+   - 题目：编写一个函数来查找字符串数组中的最长公共前缀。如果不存在公共前缀，返回字符串 `""`
+   - 示例：
+     - 示例一
+       - 输入：`strs = ['flower', 'flow', 'flight']`
+     - 输出：`'fl'`
+     - 示例二
+       - 输入：`strs = ['dog', 'racecar', 'car']`
+     - 输出：`''`
+
+   ```ts
+   function longestCommonPrefit(strs: string[]): string {
+     if (!strs.length) return '';
+
+     let prefix = strs[0];
+     for (let i = 1; i < strs.length; i++) {
+       while (strs[i].indexOf(prefix) !== 0) {
+         prefix = prefix.slice(0, prefix.length - 1);
+         if (!prefix.length) return '';
+       }
+     }
+
+     return prefix;
+   }
+   ```
+
+2. 无重复字符的最长子串
+
+   - 题目：给定一个字符串 `s`，起你找出其中不含有重复字符的最长字串的长度
+   - 示例
+     - 示例一
+       - 输入：`s = 'abcabcbb'`
+       - 输出： 3
+     - 示例二
+       - 输入：`s = 'bbbbb'`
+       - 输出：1
+   - 解题思路：双指针
+     - right 指针的作用：从头扫描到尾部
+     - left 指针的指向？
+       - 默认指向 0 的位置
+       - 在发现 right 指针出现了重复的字符时，指向重复字符的下一个字符
+
+   ```ts
+   function lengthOfLongestSubstring(s: string): number {
+     if (!s) return 0;
+
+     const n = s.length;
+     const map = new Map<string, number>();
+     let maxLength = 0;
+     let left = 0;
+     for (let right = 0; right < n; right++) {
+       const rightChar = s[right];
+       if (map.has(rightChar) && map.get(rightChar)! >= left) {
+         left = map.get(rightChar)! + 1;
+       }
+       map.set(rightChar, right);
+       maxLength = Math.max(right - left + 1, maxLength);
+     }
+
+     return maxLength;
+   }
+   ```
+
+3. 最长回文子串
+   - 题目：一个字符串 `s`，找到 `s` 中最长的回文子串
+     - 如果字符串的反序和原始字符串相同，则该字符串称为回文字符串
+   - 示例
+     - 示例一
+       - 输入：`s = 'babad'`
+       - 输出： `bab` / `aba`
+     - 示例二
+       - 输入：`s = 'cbbd'`
+       - 输出：`bb`
+   ```ts
+   function longestPalindrome(s: string): string {
+     if (s.length <= 1) return s;
+     return '';
+   }
+   ```
+
+### 14.2 栈相关
+
+1. 二叉树展开为链表
+
+   - 题目：给出二叉树的根节点 root，请将它展开为一个单链表
+     - 展开后的单链表应该同样使用 TreeNode，其中 right 子指针指向链表中的下一个节点，而左子指针始终为 null
+     - 展开后的单链表应该与二叉树先序遍历顺序相同
+
+   ```ts
+   export default class TreeNode {
+     val: number;
+     left: TreeNode | null;
+     right: TreeNode | null;
+     constructor(
+       val?: number,
+       left?: TreeNode | null,
+       right?: TreeNode | null
+     ) {
+       this.val = val === undefined ? 0 : val;
+       this.left = left === undefined ? null : left;
+       this.right = right === undefined ? null : right;
+     }
+   }
+
+   function flatten(root: TreeNode | null): void {
+     if (!root) return;
+   }
+   ```
+
+2. 逆波兰表达式求值
+
+   ```ts
+   function evalRPN(tokens: string[]): number {
+     const stack: number[] = [];
+     for (const token of tokens) {
+       switch (token) {
+         case '+':
+           const num2 = stack.pop()!;
+           const num1 = stack.pop()!;
+           stack.push(num1 + num2);
+           break;
+         case '-':
+           const num2 = stack.pop()!;
+           const num1 = stack.pop()!;
+           stack.push(num1 - num2);
+           break;
+         case '*':
+           const num2 = stack.pop()!;
+           const num1 = stack.pop()!;
+           stack.push(num1 * num2);
+           break;
+         case '/':
+           const num2 = stack.pop()!;
+           const num1 = stack.pop()!;
+           stack.push(Math.trunc(num1, num2));
+           break;
+         default:
+           stack.push(Number(token));
+           break;
+       }
+     }
+   }
+   ```
+
+### 14.3 队列相关
+
+1. 用两个栈实现队列
+   - 题目：用两个栈实现一个队列。队列声明如下，请实现它的两个函数 `appendTail` 和 `deleteHead`，分别完成在队列尾部插入整数和在队列头部删除整数的功能(若队列中没有元素，`deleteHead` 操作返回 -1)
+     - 示例
+       - 示例一：
+         - 输入：`['CQueue', 'appendTail', 'deleteHead', 'deleteHead']`, `[[], [3], [], [], []]`
+         - 输出：`[null, null, 3, -1, -1]`
+       - 示例二：
+         - 输入：`['CQueue', 'deleteHead', 'appendTail', 'appendTail', 'deleteHead', 'deleteHead']`, `[[], [], [5], [], []]`
+         - 输出：`[null, -1, null, null, 5, 2]`
+2. 滑动窗口最大值
+
+   - 题目：一个整数数组 `nums`，有一个大小为 k 的滑动窗口从数组最左侧移动到最右侧，你只能看到在滑动窗口内的 k 个数字。滑动窗口每次只向右移动一位。返回滑动窗口中的最大值
+   - 示例：
+     - 示例一：
+       - 输入：`nums = [1, 3, -1, -3, 5, 3, 6, 7]`, k = 3
+       - 输出：`[3, 3, 5, 5, 6, 7]`
+
+   ```ts
+   function maxSlidingWindow(nums: number[], k: number): number[] {
+     const n = nums.length;
+     // 放索引
+     const deque: number[] = [];
+     const res: number[] = [];
+
+     for (let i = 0; i < n; i++) {
+       // 将元素放入到队列的尾部
+       while (deque.length && nums[i] >= nums[deque[deque.length - 1]]) {
+         deque.pop();
+       }
+       deque.push(i);
+       // 判断目前队列的头部元素的索引是否在范围之内
+       while (deque[0] <= i - k) {
+         deque.shift();
+       }
+       if (i >= k - 1) {
+         res.push(nums[deque[0]]);
+       }
+     }
+     return res;
+   }
+   ```
+
+### 14.4 链表相关
+
+1. 删除链表中的某个节点
+
+   - 题目：给出一个链表，删除链表的倒数第 `n` 个节点，并且返回链表的头节点
+   - 示例
+     - 示例一：
+       - 输入：`head = [1, 2, 3, 4, 5], n = 2`
+       - 输出：`[1, 2, 3, 5]`
+   - 思路：快慢指针
+
+   ```ts
+   class ListNode {
+     val: number;
+     next: ListNode | null;
+     constructor(val?: number, next?: ListNode | null) {
+       this.val = val === undefined ? 0 : val;
+       this.next = next === undefined ? null : next;
+     }
+   }
+
+   function removeNthFromEnd(
+     head: ListNode | null,
+     n: number
+   ): ListNode | null {}
+   ```
+
+2. 两两交换链表中的节点
+   ```ts
+   function swapPairs(head: ListNode | null): ListNode | null {
+     return null;
+   }
+   ```
+
+### 14.5 树相关
+
+1. 前序遍历：栈 / 递归
+2. 中序遍历
+3. 后序遍历
+4. 层序遍历：队列
+5. 翻转二叉树
+   - 题目：给一棵树的根节点，翻转，然后返回它的根节点
+   ```ts
+   function invertTree(root: TreeNode | null): TreeNode | null {}
+   ```
+6. 二叉树中的最大路径和
+
+   ```ts
+   function maxPathSum(root: TreeNode | null): number {
+     let maxSum = -Infinity;
+
+     // 深度优先：定义内部函数进行递归操作
+     function dfs(node: TreeNode | null) {
+       if (!node) return 0;
+
+       // 左右子树计算可以提供的非 0 最大值
+       const leftSum = Math.max(dfs(node.left), 0);
+       const rightSum = Math.max(dfs(node.right), 0);
+
+       // 当前节点中能获取到的最大值
+       const pathSum = node.val + leftSum + rightSum;
+       maxSum = Math.max(pathSum, maxSum);
+
+       // 返回当前节点能给父节点提供的最大值
+       return node.val + Math.max(leftSum, rightSum);
+     }
+
+     dfs(root);
+
+     return maxSum;
+   }
+   ```
+
+### 14.6 动态规划相关
+
+1. 不同的路径
+
+   ```ts
+   function uniquePaths(m: number, n: number): number {
+     // 1. 定义状态 dp 的二维数组
+     const dp: number[][] = Array.from({ length: m }, () => Array(n).fill(0));
+     // 2. 设置初始化值
+     for (let i = 0; i < m; i++) dp[i][0] = 1;
+     for (let i = 0; i < n; i++) dp[0][i] = 1;
+     // 3. 状态转移求解
+     for (let i = 1; i < m; i++) {
+       for (let j = 1; j < n; j++) {
+         dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+       }
+     }
+     // 4. 最终的结果
+     return dp[m - 1][n - 1];
+   }
+   ```
+
+2. 礼物的最大价值
+3. 最长递增子序列 Longest Increasing Subsequence
