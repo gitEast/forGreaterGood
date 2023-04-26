@@ -20,7 +20,9 @@
      - 使用 Node 进行服务器渲染
      - ReactVR -> 虚拟现实 Web 应用程序
 
-### 1.2 入门初尝试
+### 1.2 初尝试
+
+#### 1.2.1 改变文本
 
 初始文本 “Hello World”，点击按钮“改变文本”后，改为“Hello React”
 
@@ -70,7 +72,7 @@
       }
       ```
 
-   4. 类组件优化
+   4. 类组件优化 1.0
 
       ```js
       class App extends React.Component {
@@ -82,7 +84,7 @@
             message: 'Hello World'
           };
         }
-        
+
         // 组件方法
         // 渲染内容 render 方法
         render() {
@@ -100,6 +102,118 @@
       root.render(<App />);
       ```
 
+   5. 类组件优化 2.0
+
+      ```js
+      class App extends React.Component {
+        // 组件数据
+        constructor() {
+          super();
+          this.state = {
+            message: 'Hello World'
+          };
+
+          // 对需要绑定的方法，提前绑定好 this
+          this.btnClick = this.btnClick.bind(this);
+        }
+
+        // 组件方法(实例方法)
+        btnClick() {
+          // 内部完成了两件事情：1. 将 state 中的 message 修改；2. 自动重新执行 render 函数
+          this.setState({
+            message: 'Hello React'
+          });
+        }
+
+        render() {
+          return (
+            <div>
+              <h2>{this.state.message}</h2>
+              <button onClick={this.btnClick}>修改文本</button>
+            </div>
+          );
+        }
+      }
+
+      const root = ReactDOM.createRoot(document.querySelector('#root'));
+      root.render(<App />);
+      ```
+
+#### 1.2.2 循环
+
+电影列表
+
+```js
+class App extends React.Component {
+  constructor() {
+    super();
+
+    this.state = {
+      movies: ['非分熟女', '千机变', '双子神偷', '精武家庭']
+    };
+  }
+
+  render() {
+    return (
+      <div>
+        <h2>电影列表</h2>
+        <ul>
+          {this.state.movies.map((movie) => (
+            <li>{movie}</li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
+  const root = ReactDOM.createRoot(document.querySelector('#root'))
+  root.render(<App />)
+}
+```
+
+#### 1.2.3 计数器案例
+
+```js
+const root = ReactDOM.createRoot(document.querySelector('#root'));
+root.render(<App />);
+
+class App extends React.Component {
+  constructor() {
+    super();
+
+    this.state = {
+      counter: 100
+    };
+  }
+
+  increament() {
+    const { counter } = this.state;
+    this.setState({
+      counter: counter++
+    });
+  }
+
+  decreament() {
+    const { counter } = this.state;
+    this.setState({
+      counter: counter--
+    });
+  }
+
+  render() {
+    return (
+      <div>
+        <h2>counter: {this.state.counter}</h2>
+        <div>
+          <button onClick={() => increment()}> +1 </button>
+          <button onClick={() => decrement()}> -1 </button>
+        </div>
+      </div>
+    );
+  }
+}
+```
+
 ### 1.3 一些总结与定义
 
 - 组件化
@@ -110,3 +224,56 @@
       - 调用 `this.setState` 方法更新数据，并通知 React 进行 update 操作
         - update 操作时会重新调用 render 函数
     - 不参与界面更新的数据
+  - 事件绑定
+    - 注意 `this` 的绑定
+      - 类中独立函数调用，`this` 指向 `undefined`
+
+## 二、JSX
+
+### 2.1 认识 JSX
+
+- JSX 是什么？
+  - 一种 JavaScript 的语法扩展，也在很多地方被称为 JavaScript XML(看起来就是一段 XML 语法)
+  - 用于描述 UI 界面，完全可以和 JavaScript 融合在一起使用
+  - 不同于 Vue 中的模板语法，不需要专门学习一些特定的指令(v-for, v-if, v-else...)
+- Why React choose JSX?
+  - React 认为渲染逻辑本质上与其他 UI 逻辑存在内在耦合
+    - for examples
+      1. UI 需要绑定事件
+      2. UI 需要展示数据状态
+      3. 某些状态发生改变时，需要改变 UI
+    - so 与其分开，不如在组件(Component)里组合它们
+
+### 2.2 基本语法
+
+1. 注释：注意括号
+   ```jsx
+   {
+     /* */
+   }
+   ```
+2. 插入内容(作为元素内容)
+
+   1. 当变量是 Number, String, Array 类型时，可以直接显示
+   2. 当变量是 null, undefined, Boolean 类型时，内容为空
+
+      - 如果希望可以显示 null, undefined, Boolean 类型，那么需要转成字符串
+
+        ```js
+        const aaa = undefined;
+        const bbb = null;
+        const ccc = true;
+
+        console.log(String(aaa)); // 'undefined'
+        console.log(bbb + ''); // 'null'
+        console.log(ccc.toString()); // 'true'
+        ```
+
+   3. Object 对象类型不能作为子元素(not valid as a React child)
+
+3. 绑定属性
+   - 基本属性
+   - `class`:
+     - `<div className={className}></div>`
+     - 第三方库 classnames
+   - `style`: `<div style={{fontSize: '16px'}}></div>`
