@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>购物车案例</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+      table,
+      th,
+      td {
+        border: 1px solid #666;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 5px 10px;
+        text-align: center;
+      }
+
+      span {
+        margin: 0 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      class BookCart extends React.Component {
+        constructor() {
+          super();
+
+          this.state = {
+            books: [
+              {
+                name: '《房思琪的初恋乐园》',
+                date: '2006-09',
+                price: 85.0,
+                count: 1
+              },
+              {
+                name: '《母职的再生产》',
+                date: '2006-02',
+                price: 59.0,
+                count: 1
+              },
+              {
+                name: '《父权制与资本主义》',
+                date: '2008-10',
+                price: 39.0,
+                count: 1
+              },
+              { name: '《东方学》', date: '2000-11', price: 100.0, count: 1 }
+            ]
+          };
+        }
+
+        changeCount(index, isAdd) {
+          const books = this.state.books.slice();
+
+          books[index].count += isAdd ? 1 : -1;
+
+          this.setState({
+            books
+          });
+        }
+
+        removeBook(index) {
+          const books = this.state.books.filter((book, idx) => idx !== index);
+          this.setState({
+            books
+          });
+        }
+
+        getTotalPrice(books) {
+          return books.reduce(
+            (prev, book) => prev + book.count * book.price,
+            0
+          );
+        }
+
+        render() {
+          const { books } = this.state;
+          const bookTrs = books.map((book, index) => (
+            <tr key={book.name}>
+              <td>{index + 1}</td>
+              <td>{book.name}</td>
+              <td>{book.date}</td>
+              <td>￥{book.price}</td>
+              <td>
+                <button
+                  disabled={book.count <= 1}
+                  onClick={() => this.changeCount(index)}
+                >
+                  -
+                </button>
+                <span>{book.count}</span>
+                <button onClick={() => this.changeCount(index, true)}>+</button>
+              </td>
+              <td>
+                <button onClick={() => this.removeBook(index)}>移除</button>
+              </td>
+            </tr>
+          ));
+
+          return (
+            <div>
+              <table>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>书籍名称</th>
+                    <th>出版日期</th>
+                    <th>价格</th>
+                    <th>购买数量</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>{bookTrs}</tbody>
+              </table>
+              <h2>总价格：￥{this.getTotalPrice(books)}</h2>
+            </div>
+          );
+        }
+      }
+
+      const container = document.getElementById('root');
+      const root = ReactDOM.createRoot(container);
+      root.render(<BookCart />);
+    </script>
+  </body>
+</html>
