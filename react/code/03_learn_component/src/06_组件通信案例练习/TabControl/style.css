@@ -1,0 +1,7 @@
+.tab-control {
+  display: flex;
+}
+
+.tab-control .item {
+  flex: 1;
+}

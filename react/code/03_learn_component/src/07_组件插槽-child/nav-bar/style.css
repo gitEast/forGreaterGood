@@ -1,0 +1,23 @@
+h3 {
+  margin: 0;
+  padding: 0;
+}
+
+.nav-bar {
+  display: flex;
+  width: 400px;
+  height: 80px;
+  line-height: 80px;
+  text-align: center;
+}
+
+.nav-bar .left,
+.nav-bar .right {
+  width: 80px;
+  background-color: bisque;
+}
+
+.nav-bar .center {
+  flex: 1;
+  background-color: brown;
+}

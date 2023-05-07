@@ -419,3 +419,185 @@ jsx 代码 -> ReactElement 对象 -> 真实 DOM
       - scripts/start.js
       - scripts/test.js
   - **注意：不可逆**
+
+## 四、React 组件化开发（一）
+
+### 4.1 React 的组件化
+
+- 分类
+  1. 根据组件的定义方式
+     - 函数组件 Functional Component
+     - 类组件 Class Component
+  2. 根据组件内部是否有状态需要维护
+     - 无状态组件 Stateless Component
+     - 有状态组件 Stateful Component
+  3. 根据组件的不同职责
+     - 展示型组件 Presentational Component
+       - 只展示内容
+     - 容器型组件 Container Component
+       - 多种功能：维护状态、发送网络请求、...
+  - 主要关注数据逻辑和 UI 展示的分离
+    - 函数组件、无状态组件、展示型组件主要关注 UI 的展示
+    - 类组件、有状态组件、容器型组件主要关注数据逻辑
+
+#### 4.1.1 类组件
+
+- 要求
+  1. 组件名称大写字母开头
+  2. 需要继承自 React.Component
+  3. 必须实现 render 函数
+- render 方法的返回值：jsx 语法
+  - React 元素
+    - 通过 jsx 语法编写的代码会被编译成 React.createElement，所以返回的就是一个 React 元素
+  - 组件或者 fragments
+  - Portals
+  - 字符串 or 数值类型
+  - 布尔类型 or null or undefined
+    - 不显示内容
+
+快捷命令：`r + c + e`
+
+#### 4.1.2 函数组件
+
+- return 的值 与 类组件 render 函数返回值一致
+
+  ```jsx
+  function App() {
+    return <h2>App Functional Component</h2>;
+  }
+
+  export default App;
+  ```
+
+- 与类组件相比的特点(无 hook 情况下)
+  - 没有生命周期
+  - 没有 `this` 关键字
+    - 无 `this.state`, `this.setState()` 等用法
+  - 没有内部状态
+
+### 4.2 React 组件生命周期
+
+- 生命周期
+  - 事物创建到销毁的整个过程，被称为是 **生命周期**
+  - React 组件也有自己的生命周期 -> 了解组件的生命周期，可以在最合适的地方完成自己想要的功能
+  - 生命周期是一个抽象的概念，在其整个过程中，分成了很多个阶段
+- 生命周期函数
+  | 阶段 | 函数 | 具体调用时期 |
+  | --- | ---- | ------ |
+  | 装载阶段 Mount | componentDidMount | 组件第一次在 DOM 树中被渲染的过程 |
+  | 更新过程 Update | ComponentDidUpdate | 组件状态发生变化，重新更新渲染的过程 |
+  | 卸载过程 Unmount | componentWillUnmount | 组件从 DOM 树中被移除的过程 |
+- 实例创造过程
+  1. 执行构造方法 constructor
+     - if 不初始化 state or 不进行方法的绑定，不需要实现 constructor 方法
+     - 通常只做两件事
+       1. 通过给 `this.state` 赋值对象来初始化内部的 state
+       2. 为事件绑定实例`this`
+  2. `getDerivedStateFromProps()`
+     - 如果初始化的 state 需要依赖于 props
+  3. 执行 render 方法
+  4. `shouldComponentUpdate()`
+     - 返回值
+       - `true`: 执行 render 函数
+       - `false`: 不执行 render 函数
+     - 可用于性能优化
+  5. `getSnapshotBeforeUpdate()`
+     - 在 React 更新 DOM 之前回调的一个函数
+     - 用于保存数据
+       - 如 获取 DOM 更新前的一些数据(滚动位置...)
+  6. 挂载 mount (componentDidMount)
+     - 时机：在组件挂载后(插入 DOM 树中)立即调用
+     - 推荐在此处进行的操作
+       - 依赖于 DOM 的操作可以在这里进行
+       - 发送网络请求
+       - 添加一些订阅(需要在 componentWillUnmount 取消订阅)
+  7. 更新 update (`componentDidUpdate(prevProps, prevState, snapshot)`)
+     - 更新后会被立即调用，首次渲染不执行
+  8. 卸载 unmount (componentWillUnmount)
+     - 执行必要的清理操作
+
+### 4.3 React 组件间的通信
+
+#### 4.3.1 嵌套关系
+
+- 组件之间存在嵌套关系
+  - 组件化 ![组件嵌套关系](./imgs/%E7%BB%84%E4%BB%B6%E5%B5%8C%E5%A5%97%E5%85%B3%E7%B3%BB.png)
+    1. 对组件进行拆分，拆分成一个个小的组件；
+    2. 再将这些组件组合嵌套在一起，最终形成应用程序。
+
+#### 4.3.2 parent 与 child 通信
+
+- parent -> child
+
+  - parent: `属性=值` 的形式传递给 child 组件
+    ```jsx
+    <MainBanner banners={banners} />
+    ```
+  - child: `props` 参数
+
+    ```jsx
+    class MainBanner extends Component {
+      constructor(props) {
+        super(props);
+      }
+
+      render() {
+        const { banners } = this.props;
+      }
+    }
+    ```
+
+- child -> parent
+  - 见 `./03_learn_component/src/05_组件通信child-parent`
+- 参数 propTypes
+
+  - 作用：类型限制
+
+  ```jsx
+  import PropTypes from 'prop-types';
+
+  MainBanner.defaultProps = {
+    banners: []
+  };
+
+  MainBanner.propTypes = {
+    banners: PropTypes.array.isRequired
+  };
+  ```
+
+### 4.4 React 组件插槽用法
+
+- 方案实现
+
+  1. 组件的 child 元素
+     - 见 `./03_learn_component/src/07_组件插槽-child`
+     - 注意：传入多个时 `this.props.children` 才是数组，一个时是该 React 对象
+  2. props 属性传递 React 元素
+
+     ```jsx
+     <NavBar leftSlot={<h2>1111</h2>} />;
+
+     const { leftSlot } = this.props;
+     ```
+
+### 4.5 React 非 parent-child 的通信
+
+#### 4.5.1 Context
+
+- 设计目的：共享那些对于一个**组件树**而言是“全局”的数据
+  - 全局数据：当前认证的用户、主题、首选语言...
+- 在组件之间共享此类值，而不必显式地通过组件树的逐层传递 props
+- 使用方式：见 ``
+  1. 创建上下文 `const [context] = React.createContext()`
+  2. 上下文.Provider 包裹 child 元素
+     - 需要提供的数据 `value={}`
+  3. 在后代元素中拿取
+     - 类组件
+       1. 设置组件的 contextType 为某一个 Context: `[DescendantComponent].contextType = [context]`
+       2. 从 `this.context` 拿取
+     - 函数组件
+       - 使用 `<ThemeContext.Consumer>{value => ...}</ThemeContext.Consumer>`
+  4. 使用多个 Context
+     - 使用 `[Context].Consumer` 进行嵌套
+
+### 4.6 setState 的使用详解
