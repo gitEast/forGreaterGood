@@ -600,4 +600,54 @@ jsx 代码 -> ReactElement 对象 -> 真实 DOM
   4. 使用多个 Context
      - 使用 `[Context].Consumer` 进行嵌套
 
+#### 4.5.2 Event Bus
+
+#### 4.5.3 redux
+
+以后再说。
+
 ### 4.6 setState 的使用详解
+
+- React 中没有数据劫持，通过 `setState()` 方法调用 `render()` 方法
+  - `shouldComponentUpdate()` -> 可用于控制是否调用 `render()`
+    - `PureComponent` 帮助判断数据是否真的改变 -> 真，更新组件；否则，不更新
+- `setState()` 传入的参数
+  - 第一个
+    - 对象
+    - 回调函数
+      - 优点
+        1. 编写新的 state 逻辑
+        2. 会将之前的 state 和 props 传递进来
+           - 该 state 为同步更新的 state
+  - 第二个：回调函数
+    - 在数据更新(合并)之后，获取到对应的结果执行一些逻辑代码
+- 是异步调用
+
+  - **选择异步的原因**
+    1. 可以显著提升性能
+       - if 每次调用 setState 都进行一次更新，那么意味着 render 方法会被频繁调用，界面重新渲染
+       - 最好的办法应该是，获取到多个更新，之后**批量更新**
+    2. 如果同步更新了 state，但还没执行 render 方法，那么 state 和 props 不能保持同步
+       - because child 组件的 props 需要 parent 组件 render 传入
+       - 当 state 和 props 不能保持一致时，会在开发中产生很多问题
+  - React18 之前有时是 同步调用
+    ```jsx
+    setTimeout(() => {
+      this.setState({ message: 'hello' });
+      console.log(this.state.message);
+    });
+    ```
+    - setTimeout 等回调
+    - DOM 原生事件
+  - React 18 之后强制同步
+
+    ```jsx
+    import { flushSync } from 'react-dom';
+
+    flushSync(() => {
+      this.setState({ message: 'hello' });
+    });
+    console.log(this.state.message);
+    ```
+
+    - flushSync 内部仍是批处理
