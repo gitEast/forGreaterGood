@@ -651,3 +651,326 @@ jsx 代码 -> ReactElement 对象 -> 真实 DOM
     ```
 
     - flushSync 内部仍是批处理
+
+## 五、React 组件开发（二）
+
+### 5.1 React 性能优化 SCU
+
+#### 5.1.1 React 更新机制
+
+- 渲染流程
+  - JSX -> 虚拟 DOM -> 真实 DOM
+- 更新流程
+  - props/state 改变 -> render 函数重新执行 -> 产生新的 DOM 树 -> 新旧 DOM 树进行 diff -> 计算出差异进行更新 -> 更新到真实的 DOM
+- diff 算法
+  - if 进行完全比较，则时间复杂度为 O(n^2) -> 开销过于昂贵，React 的更新性能会变得非常低效
+  - 优化至 O(n)
+    1. 同层节点之间相互比较，不会跨节点比较
+    2. 不同类型的节点，产生不同的树结构
+    3. 开发中，可以通过 key 来指定哪些节点在不同的渲染中保持稳定
+       - 在最后位置插入数据 -> 意义不大
+       - 注意事项
+         1. key 唯一
+         2. 不要使用随机数(if 使用随机数，下一次 render 时，会重新生成一个数字)
+         3. 使用 index 作为 key，对性能没有优化
+
+#### 5.1.2 SCU 优化
+
+- `shouldComponentUpdate()`
+  - 简称 SCU
+  - 参数
+    1. `nextProps`
+    2. `nextState`
+  - 根据返回值 true/false 判断是否重新调用 render 方法
+- 类组件
+  - PureComponent
+    - 出现的原因：
+      - if 每个变化都需要在 `shouldComponentUpdate()` 中进行判断 -> 烦死了烦死了(孙悟空.gif)
+    - 将 `class` 继承自 `PureComponent` 帮助实现上述判断
+    - **浅层比较**
+      - 只比较第一层，不比较深层
+  - 内部原理：
+    1. 给原型加上 `isPureComponent = true` => 当为 pureComponent 时，进入 `shallowEqual(newValue, oldValue)` 函数
+    2. 比较 newVal 和 oldValue 是否为同一个对象：地址，keys.length， key-value
+- 函数组件
+
+  - 使用 `memo()`
+
+    ```jsx
+    import { memo } from 'react';
+
+    const Profile = memo(function (props) {
+      console.log('profile render');
+      return <h2>Profile: {props.message}</h2>;
+    });
+
+    export default Profile;
+    ```
+
+### 5.2 获取 DOM/组件 方式
+
+#### 5.2.1 获取 DOM
+
+- `this.refs.xxx`
+
+  ```jsx
+  import { PureComponent } from 'react';
+
+  class App extends PureComponent {
+    getNativeDOM() {
+      console.log(this.refs.hello);
+    }
+
+    render() {
+      return (
+        <div>
+          <h2 ref="hello">Hello World</h2>
+          <button onClick={(e) => this.getNativeDOM()}>获取DOM</button>
+        </div>
+      );
+    }
+  }
+  ```
+
+- `createRef()`
+
+  ```jsx
+  import { PureComponent, createRef } from 'react';
+
+  class App extends PureComponent {
+    constructor() {
+      super();
+
+      this.helloRef = createRef();
+    }
+
+    getNativeDOM() {
+      console.log(this.helloRef.current);
+    }
+
+    render() {
+      return (
+        <div>
+          <h2 ref={this.helloRef}>Hello World</h2>
+          <button onClick={(e) => this.getNativeDOM()}>获取DOM</button>
+        </div>
+      );
+    }
+  }
+  ```
+
+- 渲染完毕属性自动回调函数(开发中推荐)
+
+  ```jsx
+  import { PureComponent } from 'react';
+
+  class App extends PureComponent {
+    constructor() {
+      super();
+
+      this.helloEl = createRef();
+    }
+
+    getNativeDOM() {
+      console.log(this.helloEl);
+    }
+
+    render() {
+      return (
+        <div>
+          <h2 ref={(el) => (this.helloEl = el)}>Hello World</h2>
+          <button onClick={(e) => this.getNativeDOM()}>获取DOM</button>
+        </div>
+      );
+    }
+  }
+  ```
+
+#### 5.2.2 获取组件实例
+
+```jsx
+import { PureComponent, createRef, forwardRef } from 'react';
+
+class HelloWorld extends PureComponent {
+  test() {
+    console.log('test');
+  }
+
+  render() {
+    return <h2>Hello World</h2>;
+  }
+}
+
+const HelloWorldFunc = forwardRef(function (props, ref) {
+  render() {
+    return <h2 ref={ref}>Hello World</h2>;
+  }
+});
+
+class App extends PureComponent {
+  constructor() {
+    super();
+
+    this.hwRef = createRef();
+  }
+
+  getComponent() {
+    console.log(this.hwRef.current);
+    this.hwRef.current.test();
+  }
+
+  render() {
+    return (
+      <div>
+        <HelloWord ref={this.hwRef} />
+        <button onClick={(e) => this.getComponent()}>获取DOM</button>
+      </div>
+    );
+  }
+}
+```
+
+### 5.3 受控和非受控组件
+
+表单元素一旦绑定 `value`(state 中的值)，立即变成受控组件；否则为非受控组件
+
+#### 5.3.1 受控组件
+
+- 详细解释
+  - 在 HTML 中，表单元素通常自己维护 state，并根据用户输入进行更新(浏览器操控)
+  - 而在 React 中，可变状态(mutable state) 通常保存在组件的 state 属性中，并且只能通过 `setState()` 更新
+  1. 将两者结合起来，使 React 的 state 称为 **唯一数据源**
+  2. 渲染表单的 React 组件还控制着用户输入过程中表单发生的操作
+  3. 被 React 以这种方式控制取值的表单输入元素，就叫做 **“受控组件”**
+- 案例：见 `./code/03_learn_component/src/15_受控和非受控组件/App.jsx`
+  1. `input`
+  2. `checkbox` 多选
+  3. `select` 多选
+
+#### 5.3.2 非受控组件
+
+通过 `ref` 获取非受控组件的值——即，操作 DOM
+
+### 5.4 React 的高阶组件
+
+- 定义
+  - Higher-Order Components，简称 HOC
+  - 高阶组件是参数为组件，返回值为新组件的函数
+- 特点
+  - 对参数组件做了一层**拦截(增强)**
+    1. props
+    2. context
+    3. 鉴权
+- 一种设计模式
+  - 高阶组件并不是 React API 的一部分，而是基于 React 的组合特性而形成的设计模式
+  - 在一些 React 第三方库中比较常见
+    - redux 中的 connect
+    - react-router 中的 withRouter
+- 编写模板
+
+  ```jsx
+  function higherOrderComponent(WrapperComponent) {
+    class NewComponent extends PureComponent {
+      render() {
+        return <WrapperComponent />;
+      }
+    }
+
+    // 改变组件的名字
+    NewComponent.displayName = 'Coderwhy';
+
+    return NewComponent;
+  }
+  ```
+
+  - 见 `./code/03_learn_component/src/16_React高阶组件`
+
+- 组件之间的复用方式
+  - Mixin：早期 React 提供，目前已不再建议使用
+    1. Mixin 可能会相互依赖、相互耦合，不利于代码维护
+    2. 不同的 Mixin 中的方法可能会相互冲突
+    3. Mixin 非常多时，组件处理起来比较麻烦，甚至还要为其做相关处理，这样会给代码造成滚雪球式的复杂性
+  - HOC 的缺陷
+    1. 需要在原组件上进行包裹 or 嵌套，如果大量使用 HOC，会产生非常多的嵌套，使调试变得困难
+    2. HOC 可以劫持 props，在不遵守约定的情况下可能造成冲突
+  - Hooks 的出现是开创性的，解决了很多 React 之前存在的问题
+
+### 5.5 portals 和 fragment
+
+```html
+<body>
+  <div id="App"></div>
+  <div id="east"></div>
+</body>
+```
+
+```jsx
+import React, { PureComponent } from 'react';
+import { createPortal } from 'react-dom';
+
+export class App extends PureComponent {
+  render() {
+    return (
+      <div className="app">
+        <h1>App</h1>
+        {createPortal(<h2>App H2</h2>, document.querySelector('#east'))}
+      </div>
+    );
+  }
+}
+
+export default App;
+```
+
+- 可用于 Modal
+
+#### 5.5.2 fragment
+
+```jsx
+import { PureComponent, Fragment } from 'react';
+
+export class App extends PureComponent {
+  render() {
+    return (
+      <Fragment>
+        <h2>我是 App 的标题</h2>
+        <p>我是 App 的内容</p>
+      </Fragment>
+    );
+  }
+}
+
+export default App;
+```
+
+- 多个根
+- `Fragment` 不渲染
+
+### 5.6 StrictMode 模式
+
+- 一个用来突出显示应用程序中潜在问题的工具
+  1. 与 `Fragment` 一样，`StrictMode` 不会渲染任何可见的 UI
+  2. 它为其后代元素触发额外的检查和警告
+  3. 严格模式检查仅在开发模式中运行，不会影响生产构建
+- 严格模式检查
+  1. 识别不安全的生命周期
+  2. 使用过时的 ref API
+  3. 检查意外的副作用
+     - 组件的 `constructor` 会被调用两次
+     - 严格模式下故意进行的操作，查看是否会产生副作用
+  4. 使用废弃的 `findDOMNode` 方法
+  5. 检测过时的 context API
+
+```jsx
+import { StrictMode } from 'react';
+import ReactDOM from 'react-dom/client';
+
+import App from './App.jsx';
+
+const root = ReactDOM.createRoot(document.getElementById('#root'));
+root.render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+);
+```
