@@ -861,6 +861,7 @@ class App extends PureComponent {
     1. props
     2. context
     3. 鉴权
+    4. 生命周期
 - 一种设计模式
   - 高阶组件并不是 React API 的一部分，而是基于 React 的组合特性而形成的设计模式
   - 在一些 React 第三方库中比较常见
@@ -1070,3 +1071,104 @@ const { books } = this.state
   }
 </Transition>
 ```
+
+## 七、编写 CSS 的方式
+
+### 7.1 React 中 CSS 的概述
+
+- 组件化
+  - but CSS 的设计就不是为组件化而生的
+  - 要求：
+    1. 可以编写局部 CSS：具备自己的作用域，不会随意污染其他组件
+    2. 可以编写动态的 CSS：可以获取当前组件的一些状态，根据状态的变化生成不同的 CSS 样式
+    3. 支持所有的 CSS 特性：伪类、动画、媒体查询...
+    4. 编写简洁，最好符合一贯的 CSS 风格特点
+- 官方没有给出统一的样式风格
+- 方案
+  - 内联样式：小驼峰命名属性的 JavaScript 对象
+    - 优点
+      1. 样式之间不会有冲突
+      2. 可以动态获取当前 state 中的状态
+    - 缺点
+      1. 写法上都需要使用小驼峰标识
+      2. 某些样式没有提示
+      3. 大量的样式，代码混乱
+      4. 某些样式无法编写：伪类、伪元素...
+  - 普通 CSS 文件
+    - 缺点
+      1. 全局样式，样式之间会相互层叠
+  - CSS Module
+    - 基于 webpack 配置的环境下都可以使用：webpack.config.js 中的 `modules: true`
+  - CSS in JS
+  - classnames 库
+    - 安装：`npm install classnames`
+- craco 库加载 less
+
+  - 配置 webpack
+
+  1. 安装：`npm install @craco/craco`
+     - 注意版本支持
+  2. package.json 修改
+     ```json
+     {
+       "script": {
+         "start": "craco start",
+         "build": "craco build",
+         "test": "craco test"
+       }
+     }
+     ```
+  3. 安装 craco-less 支持：`npm install craco-less`
+  4. 创建文件 `craco.config.js`
+
+     ```js
+     const CracoLessPlugin = require('craco-less');
+
+     module.exports = {
+       plugins: [
+         {
+           plugin: CracoLessPlugin,
+           options: {
+             lessLoaderOptions: {
+               lessOptions: {
+                 modifyVars: { '@primary-color': '#1da57a' },
+                 javascriptEnabled: true
+               }
+             }
+           }
+         }
+       ]
+     };
+     ```
+
+### 7.2 CSS in JS
+
+- 通过 js 来为 CSS 赋予一些能力，包括类似于 CSS 预处理器一样的样式嵌套、函数定义、逻辑复用、动态修改状态等等
+- 目前流行的 CSS-in-JS 库
+  - `styled-components`
+  - `emotion`
+  - `glamorous`
+- `styled-components` 使用
+
+  1. 安装: `npm install styled-components`
+
+- ES6 标签模板字符串
+
+  1. 基本使用
+     ```js
+     const name = 'east';
+     const age = 23;
+     const str = `my name is ${name}, my age is ${age}`;
+     ```
+  2. 在函数中调用
+
+     ```js
+     function foo(...args) {
+       console.log(args);
+     }
+
+     const name = 'east';
+     const age = 23;
+     foo(name, age, 'my name'); // ['east', 23, 'my name']
+     foo`my name is ${name}, age is ${age}`; // [['my name is ', ', age is ', ''], 'east', 23]
+     ```
