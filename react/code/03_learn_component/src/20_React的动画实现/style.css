@@ -1,0 +1,8 @@
+.east-enter {
+  opacity: 0;
+}
+
+.east-enter-active {
+  opacity: 1;
+  transition: opacity 2s ease;
+}

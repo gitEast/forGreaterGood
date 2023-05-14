@@ -974,3 +974,99 @@ root.render(
   </StrictMode>
 );
 ```
+
+## 六、React 的过渡动画
+
+### 6.1 过渡动画
+
+> React 社区提供 `react-transition-group` 用于过渡动画
+
+- 安装
+  - `npm install react-transition-group --save`
+- 包含四个组件
+  - Transition
+    - 与平台无关的组件(不一定要结合 CSS)
+  - CSSTransition
+    - 在前端开发中，通常使用 CSSTransition 来完成过渡动画效果
+  - SwitchTransition
+    - 两个组件的显示和隐藏切换时使用
+  - TransitionGroup
+    - 将多个动画组件包裹其中，一般用于列表中元素的动画
+
+### 6.2 CSSTransition 使用
+
+- 属性
+  - `in: bool`: show or not
+  - `className: string`: 自行编写的 CSS 动画样式
+  - `timeout: number/object`
+    - `{ appear: 500, enter: 1000, exit: 2000 }`
+  - `unmountOnExit: bool`: 退出时卸载组件
+  - `appear`: 是否在第一次出现时有动画
+  - `nodeRef`: child 元素的 ref
+    - 防止 `react-transition-group` 使用的过期 API 在严格模式下报错
+- 状态
+  - appear
+    - 第一次出现时
+  - enter
+    - 进入
+    - 动画流程：
+      1. [className]-enter
+      2. [className]-enter-active
+      3. [className]-enter-done
+  - exit
+    - 动画流程：
+      1. [className]-exit
+      2. [className]-exit-active
+      3. [className]-exit-done
+- 钩子函数
+  - `onEnter`：开始进入动画
+  - `onEntering`: 正在执行进入动画
+  - `onEntered`: 执行进入结束
+  - `onExit`
+  - `onExting`
+  - `onExited`
+
+### 6.3 SwitchTransition
+
+- 使用场景
+  - 有一个按钮在 on 和 off 之间切换，希望 on 先从左侧退出，off 再从右侧进入
+    - vue 中为 `vue transition modes`
+
+```jsx
+import { SwitchTransition, CSSTransition } from 'react-transition-group';
+
+<SwitchTransition mode="out-in">
+  <CSSTransition
+    key={isLogin ? 'exit' : 'login'}
+    className="login"
+    timeout={1000}
+  >
+    <button onClick={() => this.setState({ isLogin: !isLogin })}>
+      {isLogin ? '退出' : '登录'}
+    </button>
+  </CSSTransition>
+</SwitchTransition>;
+```
+
+### 6.4 TransitionGroup
+
+- 属性
+  - `component: string`: 包裹的标签类型
+
+```jsx
+import { TransitionGroup, CSSTransition } from 'react-transition-group'
+
+const { books } = this.state
+
+<Transition component="ul">
+  {
+    books.map((book, index) => {
+      return (
+        <CSSTransition key={index} className="bookAdd" timeout={1000}>
+          <li>{item.name}-{item.price}</li>
+        </CSSTransition>
+      )
+    })
+  }
+</Transition>
+```
