@@ -652,7 +652,7 @@ jsx 代码 -> ReactElement 对象 -> 真实 DOM
 
     - flushSync 内部仍是批处理
 
-## 五、React 组件开发（二）
+## 五、React 组件化开发（二）
 
 ### 5.1 React 性能优化 SCU
 
@@ -1172,3 +1172,295 @@ const { books } = this.state
      foo(name, age, 'my name'); // ['east', 23, 'my name']
      foo`my name is ${name}, age is ${age}`; // [['my name is ', ', age is ', ''], 'east', 23]
      ```
+
+## 八、Redux 使用(一)
+
+- why need redux?
+  1. JavaScript 开发的应用程序，已经变得越来越复杂 -> 需要管理的状态越来越多、越来越复杂
+  2. 管理不断变化的 state 是非常困难的
+     - 状态之间相互存在依赖，View 页面也有可能会引起状态的变化
+     - 难以追踪和控制
+  3. React 在视图层帮助解决了 DOM 的渲染，但 state 依然需要自己来管理
+     - UI = render(state)
+  - Redux 是 JavaScript 的状态容器，提供了可预测的状态管理
+
+### 8.1 核心思想
+
+- 核心思想
+  - store
+  - action
+    - 一个普通的 JavaScript 对象，用于描述这次更新的 type 和 content
+    - 所有数据的变化，必须通过派发 (dispatch) action 来更新
+  - reducer
+    - 纯函数
+    - 作用：将传入的 state 和 action 结合起来生成一个新的 state
+- 三大原则
+  - 单一数据源
+    - 整个应用程序的 state 被存储在一棵 object tree 中
+    - 方便维护、追踪、修改 state
+  - state 只读
+    - 唯一修改 state 的方法只能是触发 action
+    - => 保证所有的修改都被集中化处理，并且按照严格的顺序来执行，不需要担心 race condition(竟态)的问题
+  - 使用纯函数来执行修改
+    - reducer 将 旧 state 和 actions 联系在一起，返回一个新的 state
+    - reducer 可以拆分成多个小的 reducers，分别操作 state tree 的一部分
+    - reducer 必须是纯函数
+
+### 8.2 基本使用
+
+见 `./code/05-0_learn_redux/src`
+
+### 8.3 React 结合 Redux
+
+`npm install react-redux`
+`connect(mapStateToProps, mapDispatchToProps)(Component)`
+
+### 8.4 异步操作
+
+banners 和 recommends 数据：http://123.207.32.32:8000/home/multidata
+
+- 网络请求
+
+  1. `componentDidMount` 中执行
+  2. `mapDispatchToProps` 中，从 action object 变为允许派发一个函数
+
+     1. 安装 redux-thunk(中间件): `npm install redux-thunk`
+     2. redux 使用中间件增强 store:
+
+        ```js
+        import { createStore, applyMiddleware } from 'redux';
+        import thunk from 'redux-thunk';
+
+        const store = createStore(reducer, applyMiddleware(thunk));
+        ```
+
+     3. 允许派发一个函数
+        ```js
+        export const fetchHomeMultidataAction = () => {
+          return (dispatch, getState) => {
+            const store = getState();
+          };
+        };
+        ```
+
+### 8.5 redux-devtool
+
+安装插件 react-devtool 和 redux-devtool
+
+- 打开 redux-devtool
+
+  ```js
+  import { compose } from 'redux';
+  const composeEnhancers =
+    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+
+  const store = createStore(reducer, composeEnhancers(applyMiddleware(thunk)));
+  ```
+
+### 8.6 reducer 的模块拆分
+
+- 拆分前提
+  - 不同独立模块的数据 -> 文件臃肿
+  - 不同人员同时操作数据 -> 代码冲突
+- 拆分的分类依据
+  - modules: 模块划分
+  - features: 特性划分
+- 合并 reducers
+
+  ```js
+  import {
+    createStore,
+    applyMiddleware,
+    compose,
+    combineReducers
+  } from 'redux';
+
+  const reducer = combineReducers({
+    counter: counterReducer,
+    home: homeReducer
+  });
+  const store = createStore(reducer, composeEnhancers(applyMiddleware(thunk)));
+  ```
+
+- 使用
+  ```js
+  const counterState = store.getState().counter;
+  const homeState = store.getState().home;
+  ```
+
+### 8.7 redux 实现原理
+
+#### 8.7.1 combineReducers
+
+> reducer 函数
+
+1. 返回值是一个对象，store 的 state
+
+## 九、Redux 使用(二)
+
+### 9.1 认识 Redux Toolkit
+
+- 官方推荐的 redux 工具包
+  - 推出原因
+    1. redux 的编写逻辑过于繁琐和麻烦
+    2. 代码通常拆分在多个文件
+  - 旨在称为编写 Redux 逻辑的标准方式，从而解决上面提到的问题
+  - 简称 RTK
+- 安装：`npm install @reduxjs/toolkit react-redux`
+- 核心 API
+  - `configureStore`
+    - 默认包含 redux-thunk，并启用 Redux Devtools Extension
+  - `createSlice`
+  - `createAsyncThunk`
+- 使用
+
+  1. `store/index.js`
+
+     ```js
+     import { configureStore } from '@reduxjs/toolkit';
+
+     const store = configureStore({
+       reducer: {}，
+       devTools: false // 默认为 true，开启
+     });
+
+     export default store;
+     ```
+
+  2. 使用 `createSlice` 创建 slice
+     1. 属性
+        - `name: string`
+        - `initialState: object`
+        - `reducers: obejct`
+     2. 导出该 slice.reducer
+  3. 导入 reducer
+
+### 9.2 ReduxToolkit 重构
+
+### 9.3 ReduxToolkit 异步
+
+#### 9.3.1 使用
+
+- `createAsyncThunk`
+
+  ```js
+  import { createAsyncThunk } from '@reduxjs/toolkit';
+
+  const fetchHomeMultidataAction = createAsyncThunk(
+    'fetch/homeMultidata',
+    async (extraInfo, { dispatch, getState }) => {
+      const res = await axios.get('http://123.207.32.32:8000/home/multidata');
+    }
+  );
+  ```
+
+  - 被 dispatch 时有三种状态
+    - `pending`
+    - `fulfilled`
+    - `rejected`
+    ```js
+    const homeSlice = createSlice({
+      extraReducers: {
+        [fetchHomeMultidataAction.pending]() {},
+        [fetchHomeMultidataAction.fulfilled](state, { payload }) {
+          state.banners = payload.data.banner.list;
+        },
+        [fetchHomeMultidataAction.rejected]() {}
+      },
+      // 另一种写法
+      extraReducers: (builder) => {
+        builder.addCase(
+          fetchHomeMultidataAction.pending,
+          (satate, action) => {}
+        );
+      }
+    });
+    ```
+
+#### 9.3.2 immer.js
+
+- 对比
+  - 原来：reducer 需要返回新的 state
+  - 现在：直接改变 `state.counter = state.counter + 5`
+- 原来浅拷贝存在的问题
+  1. 过大的对象，浅拷贝会造成性能的浪费
+  2. 浅拷贝后的对象，在深层改变时，依然会对之前的对象产生影响
+- Redux Toolkit 底层使用 immerjs 库来保证数据的不可变性
+
+### 9.4 connect 高阶组件实现
+
+1. 接收两个参数：`mapStateToProps`, `mapDispatchToProps`
+2. 返回一个函数 —— 高阶组件
+3. 将 state 和 dispatch 传入新组件中
+4. 监听数据的改变
+   ```js
+   constructor(props) {
+    super(props)
+    this.state = mapStateToProps(store.getState())
+   }
+   componentDidMount() {
+    store.subscribe(() => this.setState(mapStateToProps(store.getState())))
+   }
+   ```
+5. 减少与 store 的耦合
+
+   ```js
+   import { createContext } from 'react';
+
+   const StoreContext = createContext();
+
+   export default StoreContext;
+   ```
+
+### 9.5 中间件的实现原理
+
+- 日志打印
+
+  ```js
+  function log(store) {
+    const next = store.dispatch;
+
+    function logAndDispatch(action) {
+      next(action);
+    }
+
+    // mokey patching: 篡改现有的代码，对整体的执行逻辑进行修改
+    store.dispatch = logAndDispatch;
+  }
+  ```
+
+- redux-thunk 实现
+
+  ```js
+  function thunk(store) {
+    const next = store.dispatch;
+
+    function dispatchThunk(action) {
+      if (typeof action === 'function') {
+        action(store.dispatch);
+      } else {
+        next(action);
+      }
+    }
+
+    store.dispatch = dispatchThunk;
+  }
+  ```
+
+- applyMiddleware
+  ```js
+  function applyMiddleware(store, ...fns) {
+    fns.forEach((fn) => fn(store));
+  }
+  ```
+
+### 9.6 React 状态管理选择
+
+- 状态管理方式
+  - 组件中自己的 state 管理
+  - Context 数据的共享状态
+  - Redux 管理应用状态
+- Dan 采用的 state 管理方案
+  - UI 相关的组件内部可以维护的状态，在组件内部自己维护
+  - 大部分需要共享的状态，都交给 redux 来管理和维护
+  - 从服务器请求的数据(包括请求的操作)，交给 redux 来维护
