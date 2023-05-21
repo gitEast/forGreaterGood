@@ -1464,3 +1464,144 @@ banners 和 recommends 数据：http://123.207.32.32:8000/home/multidata
   - UI 相关的组件内部可以维护的状态，在组件内部自己维护
   - 大部分需要共享的状态，都交给 redux 来管理和维护
   - 从服务器请求的数据(包括请求的操作)，交给 redux 来维护
+
+## 十、React-Router 路由
+
+> 基于 React Router 6
+
+### 10.1 React-Router 的基本使用
+
+路由最核心的是 映射关系 path => component。
+
+- 安装 `npm install react-router-dom`
+- `import { BrowserRouter, HashRouter, useParams } from 'react-router-dom';`
+  - BrowserRouter: history 模式
+  - HashRouter: hash 模式
+- `import { Routes, Route, Link, NavLink, Navigate, Outlet, useNavigate, useLocation, useSearchParams } from 'react-router-dom'`
+  - `<Routes />`
+    - 包裹 `<Route/>`
+  - `<Route/>`
+    - `path`
+    - `element`
+  - `<Link />`: 跳转路径
+    - `to`: path
+    - `replace`
+    - `reloadDocument: boolean`: 是否需要加载页面，默认 false
+  - `<NavLink />`(以下为比 `Link` 标签更多的属性)
+    - `style`: 函数，接收一个对象，对象包括 `isActive` 属性
+    - `className`
+  - `<Navigate />`
+    - 用于路由的重定向
+      - if 这个组件出现，自动跳转对应的 `to` 路径
+  - `<Outlet />`
+    - 路由嵌套的占位元素
+  - `useNavigate`
+    - 一个 hook 函数
+      - hook 函数特点：**只能在函数式组件内使用**
+    - 作用：手动跳转路由
+  - `useParams`
+    - 作用：拿取路由上的参数
+  - `useLocation`
+    - `search`: queryStrings
+  - `useSearchParams`
+    - 标准 hook
+    - `const [searchParams] = useSearchParams()`
+
+### 10.2 Router 的参数传递
+
+- 方法一：动态路由
+
+  - 路由
+    ```jsx
+    <Route path="/detail/:id" element={<Detail />} />
+    ```
+  - 页面跳转
+    ```jsx
+    navigateToDetail(id) {
+      const { navigate } = this.props.router
+      navigate('/detail/' + id)
+    }
+    ```
+  - 页面获取参数
+
+    ```jsx
+    const { params } = this.props.router;
+    params.id;
+    ```
+
+- 方法二：
+
+  - 路由
+    ```jsx
+    <Link to="/user?name=why&age=18" />
+    ```
+  - withRoute 高阶组件
+
+    ```jsx
+    const [searchParams] = useSearchParams();
+    const query = Object.fromEntries(searchParams);
+
+    const router = { navigate, params, location, query };
+    ```
+
+  - 获取参数
+    ```jsx
+    const { searchParams } = this.props.router;
+    ```
+
+### 10.3 Router 的配置方式
+
+- 基本使用
+
+```js
+const routes = [
+  {
+    path: '/',
+    element: <Navigate to="/home" />
+  },
+  {
+    path: '/home',
+    element: <Home />,
+    children: [
+      {
+        path: '/home',
+        element: <Navigate to="/home/recommend" />
+      },
+      {
+        path: '/home/recommend',
+        element: <HomeRecommend />
+      }
+    ]
+  }
+];
+
+import { useRoutes } from 'react-router-dom';
+useRoutes(routes);
+```
+
+- 分包懒加载
+
+  ```js
+  import { lazy } from 'react';
+
+  const About = lazy(() => import('../pages/About'));
+
+  const route = {
+    path: '/about',
+    element: <About />
+  };
+  ```
+
+  - 会报错，程序无法确定异步组件是否被下载
+
+    ```jsx
+    import { Suspense } from 'react';
+
+    root.render(
+      <HashRouter>
+        <Suspense fallback={<h3>Loading</h3>}>
+          <App />
+        </Suspense>
+      </HashRouter>
+    );
+    ```
