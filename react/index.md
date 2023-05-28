@@ -1605,3 +1605,360 @@ useRoutes(routes);
       </HashRouter>
     );
     ```
+
+## 十一、React Hooks
+
+- 函数式组件存在的缺陷
+  1. 组件不会被重新渲染：修改 message 之后，组件不知道自己要重新渲染
+     - 类组件通过 `setState` 可以知道
+  2. 如果页面重新渲染，函数会被重新执行：但是，第二次执行时，又重置了变量
+  3. 没有类似于生命周期的回调函数
+- 类组件的缺点
+  1. class 组件会随着业务的增多，越来越复杂
+     - componentDidMount 中可能包括：网络请求、事件监听...
+     - 因为逻辑往往混在一起，强行拆分会造成过度设计，增加代码的复杂度
+  2. 难以理解 class
+     - this 的指向
+     - 类 和 实例对象的关系
+  3. 组件复用状态很难
+     - 为了一些状态的复用，可能需要使用高阶函数
+
+### 11.1 认识 Hooks
+
+- 作用：在不编写 class 的情况下，使用 state 以及其他的 React 特性
+- 使用场景
+  - 基本可以代替之前所有使用 class 组件的地方
+  - Hooks 完全向下兼容，可以渐进式来使用
+  - Hook 只能在函数组件中使用，不能在类组件 or 函数组件之外的地方使用
+- hook in(钩入)
+  - 钩入 React State
+  - 钩入生命周期
+  - 钩入...
+- 使用规则
+  1. 只能在函数最外层调用 hook
+     - 不能在循环、条件判断 or 子函数中调用
+  2. 只能在 React 的函数组件 or 自定义的 hook(`use[Function]`) 中调用 hook
+     - 不能再其他 JavaScript 函数中调用
+
+### 11.2 State/Effect (最重要)
+
+#### 11.2.1 State Hook
+
+```jsx
+import { useState } from 'react';
+
+const CounterHook = memo(() => {
+  const [counter, setCounter] = useState(0);
+
+  function changeCounter(num) {
+    setCounter(counter + num);
+  }
+
+  return (
+    <div>
+      <h3>Counter: {counter}</h3>
+      <button onClick={(e) => changeCounter(1)}>+1</button>
+      <button onClick={(e) => changeCounter(5)}>+5</button>
+    </div>
+  );
+});
+```
+
+- 参数：初始值，默认为 `undefined`
+- 返回值：数组，包含两个元素
+  - 元素一：当前状态的值
+  - 元素二：设置状态值的函数
+
+#### 11.2.2 Effect Hook
+
+> 用于执行副作用
+> 可以模拟 class 组件的生命周期，又更强大
+
+```jsx
+import { useEffect } from 'react';
+
+const App = memo(() => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    // 传入的回调函数，会在组件被渲染完成后，自动执行
+    // 网络请求、DOM 操作、...
+
+    // type EffectCallback = () => (void | (() => void | undefined))
+    return () => {
+      // 被重新渲染 or 卸载组件时调用
+    };
+  });
+
+  return (
+    <div>
+      <h3>Counter: {counter}</h3>
+      <button onClick={(e) => setCount(count + 1)}>+1</button>
+    </div>
+  );
+});
+```
+
+- 一个函数式组件中，可以存在多个 `useEffect`
+  - 各功能逻辑独立
+    - 容易抽取到一个自定义 hook 中 => 复用
+  - 按照定义顺序，依次调用
+- Effect 性能优化
+  - 诉求：某些代码希望执行一次即可，某些多次执行有一定的性能问题
+  - 解决：第二个数组参数
+    - 作用：确定受谁的影响 -- 该 `useEffect` 在哪些 state 发生变化时，才重新执行
+    - 范例
+      - `[]`: 不受任何影响，只执行一次
+      - `[count]`: 受 `count` 影响
+
+### 11.3 Context/Reducer
+
+#### 11.3.1 Context Hook
+
+- 之前的使用
+  - [classComponent].contextType = [context]
+  - [context].Consumer
+- `useContext`
+  ```jsx
+  const user = useContext(UserContext);
+  const theme = useContext(ThemeContext);
+  ```
+
+#### 11.3.2 Reducer Hook
+
+> 不是 redux 的替代品
+
+```jsx
+function reducer(state, action) {
+  switch (action.type) {
+    case 'increment':
+      return { ...state, count: state.count + 1 };
+    default:
+      return state;
+  }
+}
+
+const [state, dispatch] = useReducer(reducer, { count: 0 });
+```
+
+- 仅仅是 `useState` 的一种替代方案
+  1. 在某些场景下，if state 的处理逻辑比较**复杂**，可以通过 `useReducer` 来对其进行拆分
+  2. 这次修改的 state 需要依赖之前的 state 时也可以使用
+
+### 11.4 Callback/Memo
+
+#### 11.4.1 Callback Hook
+
+> 用于性能优化
+
+```jsx
+import { useCallback } from 'react';
+
+const App = memo(() => {
+  // 看上去好像有性能优化，每次返回的都是同一个函数 => 但是，传入的参数函数每次都被重新定义
+  // 第二个参数
+  const increment = useCallback(() => {
+    setCount(count + 1);
+  }, [count]);
+
+  return (
+    <div>
+      <h2>计数：{count}</h2>
+      <button onClick={increment}>+1</button>
+    </div>
+  );
+});
+```
+
+- 注意闭包陷阱
+- 用于与 child 组件无关的变量改变 的性能优化
+  - props 函数
+- if child 组件内部依然有许多其他不相干的数据
+
+  - 结合 `useRef` 使用
+
+  ```jsx
+  import { useRef } from 'react';
+
+  const App = memo(() => {
+    const [count, setCount] = useState(0);
+
+    const countRef = useRef();
+    countRef.current = count;
+
+    const increment = useCallback(() => {
+      setCount(countRef.current + 1);
+    }, []);
+
+    return (
+      <div>
+        <h2>计数：{count}</h2>
+        <button onClick={increment}>+1</button>
+      </div>
+    );
+  });
+  ```
+
+#### 11.4.2 Memo Hook
+
+类似于 `useCallback`，但 `useMemo` 是对返回结果做优化
+
+- 使用场景
+  1. 进行大量的计算操作，是否有必要每次渲染时都重新计算结果
+  2. 对 child 组件传递相同内容的对象时，使用 `useMemo` 进行性能的优化
+
+### 11.5 Ref/LayoutEffect
+
+#### 11.5.1 Ref Hook
+
+```jsx
+import { memo, useRef } from 'react';
+
+const App = memo(() => {
+  const titleRef = useRef();
+
+  function showTitleDom() {
+    console.log(titleRef.current); // 当前元素
+  }
+
+  return (
+    <div>
+      <h2 ref={titleRef}>Hello World</h2>
+      <button onClick={showTitleDom}>查看 title 的 dom</button>
+    </div>
+  );
+});
+```
+
+- 结合 `useImperativeHandle`
+  - 限制对 ref 元素的操作，见 `./code/09_learn_reacthooks/src`
+  - （好适合写库啊
+
+#### 11.5.2 LayoutEffect
+
+- `useEffect` 与 `useLayoutEffect` 的区别
+  - `useEffect`: 在 DOM 更新之后执行
+    - 流程: Component => Component Rendered => Rendered component is printed in Screen => **the useEffects runs**
+  - `useLayoutEffect`: 会阻塞 DOM 的更新
+    - 流程: Component => Component Rendered => **the useLayoutEffect runs** => Rendered component is printed in Screen
+
+### 11.6 自定义 Hooks 使用
+
+- 要求
+  1. 函数名需要以 `use` 开头
+- 案例练习
+
+  1. 获取滚动位置
+
+     ```jsx
+     import { useState, useEffect } from 'react';
+
+     function useScrollPosition() {
+       const [scrollX, setScrollX] = useState(0);
+       const [scrollY, setScrollY] = useState(0);
+
+       useEffect(() => {
+         function handleScroll() {
+           console.log(window.scrollX, window.scrollY);
+         }
+
+         window.addEventListener('scroll', handleScroll);
+
+         return () => {
+           window.removeEventListener('scroll', handleScroll);
+         };
+       }, []);
+
+       return [scrollX, scrollY];
+     }
+     ```
+
+  2. localStorage 使用
+
+     ```jsx
+     import { useState, useEffect } from 'react';
+
+     function useLocalStorage(key) {
+       const [data, setData] = useState(() => {
+         const item = localStorage.getItem(key);
+         if (!item) return '';
+         return JSON.parse(item);
+       });
+
+       useEffect(() => {
+         localStorage.setItem(key, JSON.stringify(data));
+       }, data);
+
+       return [data, setData];
+     }
+     ```
+
+### 11.7 redux hooks
+
+> 对 react-redux 中 connect 函数使用的改进
+
+- 安装: `npm install @reduxjs/toolkit react-redux`
+- `useSelector`
+
+  ```jsx
+  const { message } = useSelector(
+    (state) => ({
+      message: state.counter.message
+    }),
+    (prevState, state) => {}
+  );
+
+  import { v } from 'react';
+  const { message } = useSelector(
+    (state) => ({
+      message: state.counter.message
+    }),
+    shallowEqual
+  );
+  ```
+
+  - 默认监听整个 `state`
+  - 第二个参数
+    - `shallowEqual`: 浅层比较
+
+- `useDispatch`
+
+### 11.8 useId
+
+- SPA 单页面富应用的缺点
+  1. 首屏的渲染速度
+  2. SEO 优化
+- SSR 同构应用
+  - 同构应用：一套代码既可以在服务端运行又可以在客户端运行
+  - 现代 SSR 的一种表现形式
+    1. 当用户发出请求时，先在服务端通过 SSR 渲染出首页的内容
+    2. 对应的代码同样可以在客户端被执行
+    3. 执行的目的包括事件绑定等以及其他页面切换时也可以在客户端被渲染
+    - 即 进行 SSR 时，页面会呈现为 HTML
+      - 但仅 HTML 不足以使页面具有交互性(没有 JavaScript 事件来处理程序响应用户操作)
+      - UI 框架会在浏览器中加载和呈现页面
+- useId
+  - 用于生成横跨服务器和客户端的稳定的唯一 ID 的同时，避免 hydration 不匹配的 hook
+    - 即 避免 hydration mismatch
+
+### 11.9 18 版本推出的新 hooks
+
+#### 11.9.1 useTransition
+
+推迟任务优先级
+
+```jsx
+import { useTransition } from 'react';
+
+const [pending, startTransition] = useTransition();
+
+function valueChangeHandle(event) {
+  startTransition(() => {
+    const keyword = event.target.value;
+  });
+}
+```
+
+#### 11.9.2 useDefferredValue
+
+接受一个值，并返回该值的新副本，该副本将推迟到更紧急的更新之后
