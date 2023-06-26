@@ -106,6 +106,41 @@
 
 ### 1.3 event 模块-事件处理
 
+#### 1.3.1 介绍
+
+- Node 中的核心 API 都是基于异步事件驱动的
+  - 在这个体系中，某些对象（发射器 Emitters）发出某一个事件
+  - 可以监听这个事件（监听器 Listeners），并且传入回调函数，这个回调函数会在监听到事件时调用
+- events 对象
+  - emitter.on(eventName, listener): 监听事件，也可以使用 addListener
+  - emitter.off(eventName, listener): 移除事件监听，也可以使用 removeListener
+  - emitter.emit(eventName[, ...args]): 发出事件，可以携带参数
+
+#### 1.3.2 使用
+
+```js
+const EventEmitter = require('events');
+const emitter = new EventEmitter();
+
+// 监听
+emitter.on('custom', (...args) => {
+  console.log('监听到 custom 事件', args);
+});
+// 发射
+setTimeout(() => {
+  emitter.emit('custom');
+}, 2000);
+```
+
+#### 1.3.3 其他方法
+
+- `eventNames()`
+- `getMaxListeners()`: 返回当前 EventEmitter 对象最大的监听器数量
+  - `setMaxLsteners(num)`: 可以修改，默认为 10
+- `listenerCount(eventName)`
+- `listeners(eventName)`
+- ...
+
 ### 1.4 认识二进制和 buffer
 
 ### 1.5 Buffer 的创建方式
