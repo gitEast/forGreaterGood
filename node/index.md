@@ -253,3 +253,124 @@ console.log(buf.toString()); // df
       1. 判断剩余长度是否足够填充这个字符串
       2. if 不够，通过 `createPool` 创建新的空间
       3. if 足够，直接使用，但之后要进行 `poolOffset` 的偏移变化
+
+## 二、Web 服务器开发、文件上传
+
+### 2.1 Stream 的读写操作
+
+#### 2.1.1 认识 Stream
+
+- Stream 定义
+  - 连续字节的一种表现形式和抽象概念
+  - 流应该是可读的、可写的
+- Why need Stream?
+  - 直接读写文件的方式(`readFile`, `writeFile`) 虽然简单，但无法控制一些细节的操作
+    - 细节操作
+      - 例：从什么位置开始读，读到什么位置，一次性读取多少个字节
+    - 读到某个位置后，暂停读取，某个时刻恢复继续读取
+    - 这个文件非常大，比如一个视频文件，一次性全部读取并不合适
+- 基于流实现的对象
+  - http 模块的 Request 和 Response 对象
+- 所有的流都是 EventEmitter 的实例
+- Node.js 中有四种基本流类型
+  - Writable: 可以向其写入数据
+    - `fs.createWriteStream()`
+  - Readable: 可以从中读取数据
+    - `fs.createReadStream()`
+  - Duplex: 同时为 Readable 和 Writable
+    - `net.Socket`
+  - Transform: Duplex 可以在写入和读取数据时修改 or 转换数据
+    - `zlib.createDeflate()`
+
+#### 2.1.2 Readable
+
+```js
+// 1. 通过流读取文件
+const readStream = fs.createReadStream('./aaa.txt', {
+  start: 8,
+  end: 20,
+  highWaterMark: 3 // 每次读取 [highWaterMark] 个字节就回调，默认 64kb
+}); // [8, 20]
+
+// 2. 监听读取到的数据
+readStream.on('data', (data) => {
+  console.log(data);
+  console.log(data.toString());
+
+  readStream.pause(); // 暂停
+
+  setTimeout(() => {
+    readStream.resume(); // 重启
+  }, 2000);
+});
+
+// 3. 其他事件监听
+readStream.on('open', (fd) => {
+  console.log('通过流将文件打开');
+  console.log('文件描述符:', fd);
+});
+readStream.on('end', () => {
+  console.log('已经读取到 end 位置');
+});
+readStream.on('close', () => {
+  console.log('文件读取结束，并且被关闭');
+});
+```
+
+#### 2.1.2 Writable
+
+```js
+const fs = require('fs');
+
+// 一次性写入
+fs.writeFile(
+  './bbb.txt',
+  'hello world',
+  {
+    encoding: 'utf-8',
+    flag: 'a+'
+  },
+  (err) => {
+    console.log('写入文件结果:', err);
+  }
+);
+
+// 1. 通过流写入数据
+const writeStream = fs.createWriteStream('./ccc.txt', {
+  flag: 'a+',
+  start: 5
+});
+
+// 2. 写入
+writeStream.write('kobe byrant', (err) => {
+  console.log('写入完成');
+});
+
+// 3. 需要手动关闭
+writeStream.close();
+
+// 4. end 方法：操作一 将最后的内容写入到文件；操作二 关闭文件
+writeStream.end('哈哈哈');
+```
+
+#### 2.1.3 pipe 管道
+
+```js
+const fs = require('fs');
+
+const readStream = fs.createReadStream('./aaa.txt');
+const writeStream = fs.createWriteStream('./aaa_copy.txt');
+
+// 在可读流和可写流之间建立一个管道
+readStream.pipe(writeStream);
+```
+
+### 2.2 http 模块 web 服务
+
+### 2.3 request 请求对象
+
+### 2.4 response 响应对象
+
+### 2.5 axios node 中使用
+
+### 2.6 文件上传的细节分析
