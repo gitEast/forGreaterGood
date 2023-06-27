@@ -143,6 +143,113 @@ setTimeout(() => {
 
 ### 1.4 认识二进制和 buffer
 
+#### 1.4.1 二进制
+
+1. 计算机中所有的内容最终都会使用 二进制 来标识
+2. 常规前端开发都是在处理文本
+   - what about 媒体文件(img, video, ...)？
+     - 实际上我们处理的是图片的 url 地址，仍然是一串文本
+     - 浏览器负责获取这个图片，最终渲染图片
+3. 但服务器是处理二进制的
+   - 服务器要处理的本地文件类型相对较多
+     - 例 1：某一个保存文本的文件并不是使用 `utf-8` 进行编码的，而是使用 `GBK` ，那么我们必须读取到它们的二进制数据，再通过 `GBK` 转换成对应的文字
+     - 例 2：需要读取的是一张图片数据（二进制），再通过某些手段对图片数据进行二次处理（裁剪、格式转换、旋转、添加滤镜），Node 中有一个 Sharp 的库，就是读取图片或者传入图片的 Buffer 对其进行再处理
+     - 例 3：在 Node 中通过 TCP 建立长连接，TCP 传输的是字节流，我们需要将数据转成字节再进行传入，并且需要知道传输字节的大小（客户端需要根据大小来判断读取多少内容）
+
+#### 1.4.2 Buffer 和二进制
+
+- Node 为了方便开发者直接操作二进制的数据，提供了一个全局类 Buffer
+  - 可以将 Buffer 看成是一个存储二进制的数组，这个数组的每一项，都可以存储 8 位二进制
+- why 8 位？
+  - 在计算机中，很少会直接操作一位二进制，因为一位二进制存储的数据非常有限
+  - so 通常会把 8 位合在一起作为一个单元，这个单元被称为一个字节 byte
+  - which means 1byte = 8bit, 1kb = 1024byte, 1M = 1024kb
+  - 示例
+    1. 很多编程语言中，int 类型是 4 个字节，long 类型是 8 个字节
+    2. TCP 传输的是字节流，在写入和读取时都需要说明字节的个数
+    3. RGB 的值分别都是 255，所以本质上也是用一个字节来存储的
+- 存储方式
+  - 八位 -> 两个十六进制字符
+
 ### 1.5 Buffer 的创建方式
 
+```js
+// 1. 不推荐的方式
+const buf = new Buffer('hello');
+
+// 2. 推荐的方式
+const buf2 = Buffer.from('world'); // 一个字母一个字节
+
+// 3. 字符串中包含中文
+const buf3 = Buffer.from('你好啊'); // 一个中文需要三个字节(复杂的需要四个字节)
+
+// 4. 手动指定 Buffer 创建过程的编码，默认使用 uft-8
+const buf4 = Buffer.from('哈哈哈', 'uft16le'); // 两个字节表示一个中文
+// 4.2 解码
+console.log(buf4.toString('utf8')); // 解析错误，很有可能乱码
+
+// 5. 更详细的创建方法：占据内存空间的大小
+const buf5 = Buffer.alloc(8); // 8 个字节大小
+buf5[0] = 100;
+buf5[1] = 0x66;
+console.log(buf.toString()); // df
+```
+
 ### 1.6 Buffer 的源码解析
+
+> Buffer 的创建过程 —— Node 的性能优化之一
+
+1. 事实上创建 Buffer 时，并不会频繁地像操作系统申请内存，它会先默认申请一个 8 \* 1024 个字节大小的内存，即 8kb
+
+   ```js
+   Buffer.poolSize = 8 * 1024;
+   let poolSize, poolOffset, allocPool;
+
+   const encodingsMap = ObjectCreate(null);
+   for (let i = 0; i < encodings.length; ++i) {
+     encodingsMap[encoding[i]] = i;
+   }
+
+   function createPool() {
+     poolSize = Buffer.poolSize;
+     allocPool = createUnsafeBuffer(poolSize).buffer;
+     markAsUntransferable(allocPool);
+     poolOffset = 0;
+   }
+   createPool();
+   ```
+
+2. if 调用 `Buffer.from` 申请 Buffer(以字符串创建为例)
+
+   1. from 方法
+
+      ```js
+      Buffer.from = function from(value, encodingOrOffset, length) {
+        if (typeof value === 'string') {
+          return fromString(value, encodingOrOffset);
+        }
+
+        // ... 其他代码
+      };
+      ```
+
+   2. fromString 方法
+      ```js
+      function fromString(string, encoding) {
+        let ops;
+        if (typeof encoding !== 'string' || encoding.length === 0) {
+          if (string.length === 0) return new FastBuffer();
+          ops = encodingOps.uft8;
+          encoding = undefined;
+        } else {
+          ops = getEncodingOps(encoding);
+          if (ops === undefined) throw new ERR_UNKNOWN_ENCODING(encoding);
+          if (string.length === 0) return new FastBuffer();
+        }
+        return fromStringFast(string, ops);
+      }
+      ```
+   3. fromStringFast 方法
+      1. 判断剩余长度是否足够填充这个字符串
+      2. if 不够，通过 `createPool` 创建新的空间
+      3. if 足够，直接使用，但之后要进行 `poolOffset` 的偏移变化
