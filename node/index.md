@@ -337,7 +337,7 @@ fs.writeFile(
 
 // 1. 通过流写入数据
 const writeStream = fs.createWriteStream('./ccc.txt', {
-  flag: 'a+',
+  flags: 'r+', // 'a+' 在 mac OS 上没有问题，Windows 上有兼容性问题，需改为 'r+'
   start: 5
 });
 
@@ -367,10 +367,304 @@ readStream.pipe(writeStream);
 
 ### 2.2 http 模块 web 服务
 
+- 开源的 Web 服务器
+  - Nginx
+  - Apache(静态)
+  - Apache Tomcat
+  - Node.js
+
+#### 2.2.1 基本使用
+
+- 步骤
+  1. 创建一个 http 对应的服务器
+  2. 开启对应的服务器，并且告知需要监听的端口
+
+```js
+const http = require('http');
+
+const server = http.createServer((request, response) => {
+  response.end('hello world');
+});
+
+server.listen(8000, () => {
+  console.log('服务器已经开启成功了');
+});
+```
+
+- `htt.createServer()`
+  - 返回 服务器对象
+    ```js
+    function createServer(opts, requestListener) {
+      return new Server(opts, requestListener);
+    }
+    ```
+- `(request, response) => {}`
+  - request -- 可读流
+    - url
+    - method
+    - headers
+    - 请求携带的数据
+  - response -- 可写流
+- `.listen(port, host, successCallback)`
+  - port -- 要求 1025 ~ 65535
+    - 1024 及以下：特殊服务
+    - 65535 以上：端口最多用 2 个字节(256 \* 256)表示，超标了
+    - 可以不传，系统会默认分配
+  - host
+    - `localhost`
+      - 本质上是一个域名，通常被解析为 `127.0.0.1`
+    - `127.0.0.1`
+      - 回环地址(Loop Back Address)，主机自己发出去的包，直接被自己接收
+        - 正常的数据包：应用层 -> 传输层 -> 网络层 -> 数据链路层 -> 物理层
+        - 回环地址：直接在网络层被获取，不经过数据链路层与物理层
+      - 监听 127.0.0.1 时，在同一个网段下的主机，通过 ip 地址是不能访问的
+    - `0.0.0.0`
+  - 成功开启才会回调该函数
+- 可以在一个文件里创建多个服务器
+
+#### 2.2.2 补充
+
+1. 测试工具 -- postman
+   - Why not browser?
+     - 浏览器会发送两次请求，第一次是正常请求，第二次请求 favicon.icon 图标 => 容易干扰
+     - 只能测试 get 请求
+   - postman
+     - 可以测试各种类型的请求
+2. nodemon
+   - 类似于热更新
+   - `nodemon xxx.js`
+
 ### 2.3 request 请求对象
+
+```js
+const http = require('http');
+
+const server = http.createServer((request, response) => {
+  url.method; // 'POST' | 'GET'
+  url.headers;
+
+  /* url */
+  const url = req.url;
+  // 1. url 的区分
+  if (url === '/login') {
+    response.end('登录成功');
+  } else if (url === '/products') {
+  } else if (url === '/main') {
+  }
+});
+
+server.listen(8000, () => {
+  console.log('服务器已经成功开启');
+});
+```
+
+1. 区分不同 url
+2. 区分不同 method
+3. 处理请求参数
+
+   1. query 类型
+
+      ```js
+      const url = require('url');
+      const qs = require('querystring'); // 建议使用 URLSearchParams
+
+      // url: http://localhost:8000/home/list?offset=100&size=20
+      const urlString = request.url;
+      const urlInfo = url.parse(urlString);
+      console.log(urlInfo.query, urlInfo.pathname); // offset=100&size=20, /home/list
+      const queryInfo = qs.parse(urlInfo.query); // { offset: '100', size: '20' }
+      ```
+
+   2. body 类型
+
+      ```js
+      // url: http://localhost:8000/login
+      // body: { name: 'east', password: '123456' }
+      let isLogin = false;
+
+      request.on('data', (dataString) => {
+        const loginInfo = JSON.parse(dataString);
+        if (loginInfo.name === 'east' && loginInfo.password = '123456') {
+          isLogin = true
+        } else {
+          isLogin = false
+        }
+      });
+
+      request.on('end', () => {
+        if (isLogin) {
+          response.end('登录成功，欢迎回来')
+        } else {
+          response.end('账号或密码错误，请重新输入')
+        }
+      })
+      ```
+
+4. headers
+   1. content-type
+      - application/x-www-form-urlencoded: 表示数据被编码成以 `&` 分割的键值对，同时以 `=` 分割 key 和 value
+      - application/json: 表示是一个 json 类型
+      - text/plain: 文本类型
+      - application/xml: xml 类型
+      - multipart/form-data: 上传文件
+   2. content-length
+      - calculated when request is sent
+   3. keep-alive
+      - http 是基于 TCP 协议的，但通常在进行一次请求和响应后会立刻中断
+      - 在 http1.0 中，if want to 继续保持连接
+        1. 浏览器需要在请求头中添加 `connection: keep-alive`
+        2. 服务器要在响应头中添加 `connection: keep-alive`
+        3. 当客户端再次请求时，就会使用同一个连接，直至一方中断连接
+      - 在 http1.1 中，所有连接默认都是 `connection: keep-alive`
+        - Node 中默认 5s
+   4. accept-encoding: 告知服务器客户端支持的文件压缩格式
+      - 例如：js 文件可以使用 gzip 编码，对应 `.gz` 文件
+   5. accept: 告知服务器客户端可接受的文件格式类型
+   6. user-agent: 客户端相关信息
+   7. authorization: token
 
 ### 2.4 response 响应对象
 
-### 2.5 axios node 中使用
+- 正常写出流必须调用 `close()` 方法
+- response 不需要调用 `close()`，但一定要调用 `end()`
+  - 否则，if 不设置超时时间，客户端会一直等待
+- Http Status Code (Http 状态码)
+  - 200 -- OK
+  - 201 -- Created POST 请求，创建新的资源
+  - 301 -- Moved Permanetly 请求资源的 url 已经修改，响应中会给出新的 url
+  - 400 -- Bad Request 客户端的错误，服务器无法或者不进行处理
+  - 401 -- Unauthorized 未授权的错误，必须携带请求的身份信息
+  - 403 -- Forbidden 客户端没有权限访问，被拒接
+  - 404 -- Not Found 服务器找不到请求的资源
+  - 500 -- Internal Server Error 服务器遇到了不知道如何处理的情况
+  - 503 -- Service Unavailable 服务器不可用，可能处于维护 or 重载状态，暂时无法访问
+  ```js
+  response.statusCode = 403;
+  response.writeHead(401);
+  ```
+- 设置数据类型及编码格式
+
+  ```js
+  response.setHeader('Content-Type', 'application/json;charset=uft8;');
+
+  // response.end('明朝有意抱琴来');
+  response.end('{ "message": "明朝有意抱琴来" }');
+
+  response.writeHead(200, {
+    'Content-Type': 'application/json;charset=uft8;'
+  });
+  ```
+
+### 2.5 axios 在 node 中使用
+
+#### 2.5.1 介绍 axios
+
+- 在浏览器中
+  - XHR: XMLHttpRequest
+  - fetch
+- 在 Node 中
+  - http 模块
+
+#### 2.5.2 使用
+
+1. 创建项目 `npm init -y`
+2. 安装 `npm install axios`
+3. http 模块使用
+
+   ```js
+   const http = require('http');
+
+   // 1. 使用 http 模块发送 get 请求
+   http.get('http://localhost:8000', (res) => {
+     // res 为可读流
+     res.on('data', (data) => {
+       console.log(data); // 字节
+       console.log(data.toString()); // 文字
+     });
+   });
+
+   // 2. 使用 http 模块发送 post 请求
+   const request = http.request(
+     {
+       method: 'POST',
+       hostname: 'localhost',
+       port: 8000
+     },
+     (res) => {
+       res.on('data', (data) => {});
+     }
+   );
+   request.end(); // 必须调用 end 方法，表示写入内容完成
+   ```
+
+4. axios 库使用
+
+   ```js
+   const axios = require('axios');
+
+   axios.get('http://localhost:8000').then((res) => {
+     console.log(res.data); // 具体内容
+   });
+   ```
 
 ### 2.6 文件上传的细节分析
+
+```js
+// 1. 创建 server 服务器
+const server = http.createServer((req, res) => {
+  req.setEncoding('binary');
+
+  // 分隔符
+  const boundary = req.headers['content-type']
+    .split('; ')[1]
+    .replace('boundary=', '');
+
+  // 2. 客户端传递的数据是表单数据(请求体)
+  let formData = '';
+  req.on('data', (data) => {
+    formData += data;
+  });
+
+  req.on('end', () => {
+    const imgType = 'image/jpeg';
+    const imageTypePosition = formData.indexOf(imgType) + imgType.length;
+    const imageData = formData
+      .substring(imageTypePosition)
+      .replace(/^\s\s*/, '')
+      .subtring(0, imageData.indexOf(`--${boundary}--`));
+    fs.writeFile('./bar.png', imageData, 'binary', () => {
+      console.log('文件存储成功');
+      res.end('文件上传成功');
+    });
+  });
+});
+
+server.listen(8000, () => {
+  console.log('服务器开启成功');
+});
+```
+
+1. 字符表示难以理解，以二进制方式显示 `req.setEncoding('binary')`
+2. 表单数据中存在多种问题，如果上传一张图片，获取的数据不仅仅只是图片数据
+   1. 有分隔符 `boundary` -- 需要截取
+   2. 有表单数据格式
+   3. 也有可能数据太多，一次 `data` 读取不完 -- 需要拼接
+3. 写入图片文件
+
+实际开发中会使用插件
+
+## 二、Express 框架
+
+### 2.1 Express 认识初体验
+
+### 2.2 Express 中间件使用
+
+### 2.3 Express 请求和响应
+
+### 2.4 Express 路由的使用
+
+### 2.5 Express 的错误处理
+
+### 2.6 Express 的源码解析
+
+### 2.7
