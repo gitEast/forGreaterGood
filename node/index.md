@@ -655,9 +655,237 @@ server.listen(8000, () => {
 
 ## 二、Express 框架
 
+> Web 框架
+
 ### 2.1 Express 认识初体验
 
+- 基于原生的一些封装
+  - 例如 http 模块
+    1. URL 判断、Method 判断、参数处理、逻辑代码处理等，都需要自行处理和封装
+    2. 所有的内容都放在一起，会非常混乱
+- express 与 koa
+  - 都是 TJ 主导开发，都很流行
+  - express 先出现，稍有些笨重
+  - koa 更为先进
+- express 的核心 -- 中间件
+  - 可以通过一些实用工具和中间件来扩展自己的功能
+- 基本使用
+
+  1. 脚手架安装
+
+     ```shell
+     # 安装脚手架
+     npm install -g express-generator
+     # 创建项目
+     express express-demo
+     # 安装依赖
+     npm install
+     # 启动项目
+     node bin/www
+     ```
+
+  2. 从零搭建
+
+     1. `npm init -y`
+     2. `npm install express`
+     3. index.js
+
+        ```js
+        const express = require('express');
+
+        // 1. 创建 express 的服务器
+        const app = express();
+
+        // 2. 客户端访问 URL
+        app.post('/login', (req, res) => {
+          res.end('登录成功，欢迎回来');
+        });
+        app.get('/home', (req, res) => {
+          res.end('首页的轮播图/推荐数据列表');
+        });
+
+        // last. 启动服务器，并且监听端口
+        app.listen(9000, () => {
+          console.log('express 服务器启动成功');
+        });
+        ```
+
 ### 2.2 Express 中间件使用
+
+#### 2.2.1 介绍
+
+- Express 是一个路由和中间件的 Web 框架，本身功能非常少
+  - Express 应用程序本质上是一系列中间件函数的调用
+- 中间件
+
+  - 本质：传递给 express 的一个回调函数
+  - 接收三个参数
+    - 请求对象 request
+    - 响应对象 response
+    - next 函数(在 express 中定义的用于执行下一个中间件的函数)
+  - 执行的任务
+
+    1. 执行任何代码：打印、查询数据、判断逻辑
+    2. 更改 request 和 response
+    3. 结束响应周期
+       1. `res.end()`
+       2. `res.json({ message: '登录成功，欢迎回来', code: 0})`
+    4. 执行下一个可以匹配的中间件（一个方法示例）
+
+       ```js
+       app.post('/login', (req, res, next) => {
+         next();
+       });
+
+       app.use((req, res, next) => {
+         console.log('second middleware exec...');
+       });
+       ```
+
+#### 2.2.2 应用中间件
+
+- 普通方法 `.use()`
+  1. 无论是什么请求方式，都可以匹配上
+  2. 第一个被匹配到的中间件一定会执行
+  3. 后续匹配上的中间件是否会执行，取决于前一个中间件是否执行 `next()` 函数
+- `path` 匹配中间件
+  ```js
+  app.use('/home', (req, res, next) => {});
+  ```
+- `path` 和 `method` 匹配中间件
+  ```js
+  app.get('/home', (req, res, next) => {});
+  app.post('/login', (req, res, next) => {});
+  ```
+- 注册多个中间件
+  ```js
+  app.get(
+    '/home',
+    (req, res, next) => {
+      console.log('中间件 1');
+      next();
+    },
+    (req, res, next) => {
+      console.log('中间件 2');
+      next();
+    },
+    (req, res, next) => {
+      console.log('中间件 3');
+    },
+    (req, res, next) => {
+      console.log('中间件 4');
+    }
+  );
+  ```
+  - 一般用于多个逻辑
+
+#### 2.2.3 案例练习
+
+```js
+const express = require('express');
+const app = express();
+
+app.post('/login', (req, res, next) => {
+  let isLogin = false;
+
+  req.on('data', (data) => {
+    const dataInfo = JSON.parse(data.toString());
+    isLogin = dataInfo.username === 'east' && dataInfo.password === '123456';
+  });
+
+  req.on('end', () => {
+    if (isLogin) res.end('登录成功，欢迎回来');
+    else res.end('登录失败，请检测账号与密码是否正确');
+  });
+});
+
+app.post('/register', (req, res, next) => {
+  res.end('注册成功，开始你的旅程');
+});
+
+app.listen(8000);
+```
+
+- 优化：重复的解析 req 携带参数问题
+
+  ```js
+  app.use((req, res, next) => {
+    if (req.headers['content-type'] === 'appplication/json') {
+      req.on('data', (data) => {
+        const dataInfo = JSON.parse(data.toString());
+        req.body = dataInfo;
+      });
+
+      req.on('end', () => {
+        next();
+      });
+    } else next();
+  });
+  ```
+
+  - express 提供了功能一样的中间件 `app.use(express.json())`
+
+#### 2.2.4 不同参数类型解析
+
+```js
+// 1. json
+app.use(express.json());
+
+// 2. x-www-form-urlencoded
+// app.use(express.urlencoded()) // 使用 node 内置 querystring 模块解析，该模块已经不推荐使用
+app.use(express.urlencoded({ extended: true })); // 使用默认安装的第三方库解析
+
+// 3. form-data
+const formdata = multer();
+app.post('/login', formdata.any(), (req, res, next) => {
+  console.log(req.body);
+});
+```
+
+#### 2.2.5 第三方中间件
+
+1. morgan: 记录请求日志
+
+   1. 安装`npm install morgan`
+   2. 使用
+
+      ```js
+      const morgan = require('morgan');
+      const fs = require('fs');
+
+      const writeStream = fs.createWriteStream('./logs/access.log');
+      app.use(morgan('combined', { stream: writeStream }));
+      ```
+
+2. multer: 文件上传
+
+   ```js
+   const multer = require('multer');
+
+   const upload = multer({
+     // dest: './uploads' // 文件夹下
+     storage: multer.diskStorage({
+       destination(req, file, cb) {
+         cb(null, './uploads');
+       },
+       filename(req, file, cb) {
+         cb(null, Date.not() + '_' + file.originalname);
+       }
+     })
+   });
+
+   // 1. 单文件上传
+   app.post('/avatar', upload.single('avatar'), (req, res, next) => {
+     console.log(req.file); // 文件信息对象
+     res.end('文件上传成功');
+   });
+
+   // 2. 多文件上传
+   app.post('/photos', upload.array('photos'), (req, res, next) => {
+     console.log(req.files); // 文件信息对象
+     res.end('文件上传成功');
+   });
+   ```
 
 ### 2.3 Express 请求和响应
 
@@ -666,5 +894,3 @@ server.listen(8000, () => {
 ### 2.5 Express 的错误处理
 
 ### 2.6 Express 的源码解析
-
-### 2.7
