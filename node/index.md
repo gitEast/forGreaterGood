@@ -825,24 +825,7 @@ app.listen(8000);
 
   - express 提供了功能一样的中间件 `app.use(express.json())`
 
-#### 2.2.4 不同参数类型解析
-
-```js
-// 1. json
-app.use(express.json());
-
-// 2. x-www-form-urlencoded
-// app.use(express.urlencoded()) // 使用 node 内置 querystring 模块解析，该模块已经不推荐使用
-app.use(express.urlencoded({ extended: true })); // 使用默认安装的第三方库解析
-
-// 3. form-data
-const formdata = multer();
-app.post('/login', formdata.any(), (req, res, next) => {
-  console.log(req.body);
-});
-```
-
-#### 2.2.5 第三方中间件
+#### 2.2.4 第三方中间件
 
 1. morgan: 记录请求日志
 
@@ -869,7 +852,7 @@ app.post('/login', formdata.any(), (req, res, next) => {
          cb(null, './uploads');
        },
        filename(req, file, cb) {
-         cb(null, Date.not() + '_' + file.originalname);
+         cb(null, Date.now() + '_' + file.originalname);
        }
      })
    });
@@ -889,8 +872,114 @@ app.post('/login', formdata.any(), (req, res, next) => {
 
 ### 2.3 Express 请求和响应
 
+#### 2.3.1 请求
+
+- 传递参数
+  1. post => json 数据
+  2. post => x-www-form-urlencoded
+  3. post => form-data 文件上传
+  4. get => querystring
+  5. get => params
+     - `/users/111`
+
+```js
+// 1. json
+app.use(express.json());
+
+// 2. x-www-form-urlencoded
+// app.use(express.urlencoded()) // 使用 node 内置 querystring 模块解析，该模块已经不推荐使用
+app.use(express.urlencoded({ extended: true })); // 使用默认安装的第三方库解析
+
+// 3. form-data
+const formdata = multer();
+app.post('/login', formdata.any(), (req, res, next) => {
+  console.log(req.body);
+});
+
+// 4. querystring -- express 默认解析
+app.get('/login', (req, res, next) => {
+  console.log(req.query); // { key: value }
+});
+
+// 5. params
+app.get('/users/:id', (req, res, next) => {
+  console.log(req.params); // { id: '111' } 字符串
+});
+```
+
+#### 2.3.2 响应
+
+```js
+// 1. end()
+
+// 2. json()
+app.post('/login', (req, res, next) => {
+  res.json({
+    code: 0,
+    message: '欢迎回来',
+    list: []
+  });
+});
+
+// 3. status()
+```
+
 ### 2.4 Express 路由的使用
 
+#### 2.4.1 基本使用
+
+- 原因：
+  1. 完整的 Web 服务器包含非常多的处理逻辑
+  2. 一些处理逻辑其实是一个整体，应该放在一起
+- express.Router
+  - 一个 Router 实例拥有完整的中间件和路由系统
+  - => 被称为迷你应用程序(mini-app)
+
+```js
+const express = require('express');
+
+const userRouter = express.Router();
+userRouter.get('/', (req, res, next) => {});
+userRouter.post('/:id', (req, res, next) => {});
+
+app.use('/users', userRouter);
+```
+
+#### 2.4.2 静态资源服务器
+
+```js
+const express = require('express');
+
+const app = express();
+
+app.use(express.static('./uploads'));
+```
+
+然后可以直接访问该文件夹下的文件
+
 ### 2.5 Express 的错误处理
+
+1. next 函数 `next(-1001)`
+2. 错误处理中间件
+
+   ```js
+   app.use((errCode, req, res, next) => {
+     const code = errCode;
+     let message = '未知的错误';
+
+     switch (code) {
+       case -1001:
+         message = '没有输入用户名或密码';
+         break;
+       default:
+         break;
+     }
+
+     res.json({
+       code,
+       message
+     });
+   });
+   ```
 
 ### 2.6 Express 的源码解析
