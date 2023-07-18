@@ -653,11 +653,11 @@ server.listen(8000, () => {
 
 实际开发中会使用插件
 
-## 二、Express 框架
+## 三、Express 框架
 
 > Web 框架
 
-### 2.1 Express 认识初体验
+### 3.1 Express 认识初体验
 
 - 基于原生的一些封装
   - 例如 http 模块
@@ -710,9 +710,9 @@ server.listen(8000, () => {
         });
         ```
 
-### 2.2 Express 中间件使用
+### 3.2 Express 中间件使用
 
-#### 2.2.1 介绍
+#### 3.2.1 介绍
 
 - Express 是一个路由和中间件的 Web 框架，本身功能非常少
   - Express 应用程序本质上是一系列中间件函数的调用
@@ -742,7 +742,7 @@ server.listen(8000, () => {
        });
        ```
 
-#### 2.2.2 应用中间件
+#### 3.2.2 应用中间件
 
 - 普通方法 `.use()`
   1. 无论是什么请求方式，都可以匹配上
@@ -779,7 +779,7 @@ server.listen(8000, () => {
   ```
   - 一般用于多个逻辑
 
-#### 2.2.3 案例练习
+#### 3.2.3 案例练习
 
 ```js
 const express = require('express');
@@ -825,7 +825,7 @@ app.listen(8000);
 
   - express 提供了功能一样的中间件 `app.use(express.json())`
 
-#### 2.2.4 第三方中间件
+#### 3.2.4 第三方中间件
 
 1. morgan: 记录请求日志
 
@@ -870,9 +870,9 @@ app.listen(8000);
    });
    ```
 
-### 2.3 Express 请求和响应
+### 3.3 Express 请求和响应
 
-#### 2.3.1 请求
+#### 3.3.1 请求
 
 - 传递参数
   1. post => json 数据
@@ -907,7 +907,7 @@ app.get('/users/:id', (req, res, next) => {
 });
 ```
 
-#### 2.3.2 响应
+#### 3.3.2 响应
 
 ```js
 // 1. end()
@@ -924,9 +924,9 @@ app.post('/login', (req, res, next) => {
 // 3. status()
 ```
 
-### 2.4 Express 路由的使用
+### 3.4 Express 路由的使用
 
-#### 2.4.1 基本使用
+#### 3.4.1 基本使用
 
 - 原因：
   1. 完整的 Web 服务器包含非常多的处理逻辑
@@ -945,7 +945,7 @@ userRouter.post('/:id', (req, res, next) => {});
 app.use('/users', userRouter);
 ```
 
-#### 2.4.2 静态资源服务器
+#### 3.4.2 静态资源服务器
 
 ```js
 const express = require('express');
@@ -957,7 +957,7 @@ app.use(express.static('./uploads'));
 
 然后可以直接访问该文件夹下的文件
 
-### 2.5 Express 的错误处理
+### 3.5 Express 的错误处理
 
 1. next 函数 `next(-1001)`
 2. 错误处理中间件
@@ -982,4 +982,204 @@ app.use(express.static('./uploads'));
    });
    ```
 
-### 2.6 Express 的源码解析
+### 3.6 Express 的源码解析
+
+## 四、koa 框架
+
+koa: next generation web framework for node.js.
+
+- 介绍
+  1. koa 旨在为 Web 应用程序和 API 提供更小、更丰富和更强大的能力
+  2. 相对于 express 具有更强的异步处理能力
+  3. koa 核心代码只有 1600+ 行，是一个更加轻量级的框架
+  4. 可以根据需要安装和使用中间件
+
+### 4.1 koa 的基本使用
+
+1. 创建项目 `npm init -y`
+2. 安装 koa `npm install koa`
+3. 使用
+
+   ```js
+   const Koa = require('koa');
+
+   const app = new Koa();
+
+   // 注册中间件: 两个参数 ctx, next
+   app.use((ctx, next) => {
+     console.log('匹配到 koa 的中间件');
+     ctx.res.end();
+   });
+
+   app.listen(6000, () => {
+     console.log('koa 服务器启动成功');
+   });
+   ```
+
+注意：传入的中间件必须是函数，且无法使用 `app.[method]()` 方法
+
+- 路由：区分路径和方法
+
+  - 使用中间件 `@koa/router`
+
+  ```js
+  const Koa = require('koa');
+  const KoaRouter = require('@koa/router');
+
+  const app = new Koa();
+
+  // 1. 创建路由对象
+  const userRouter = new KoaRouter({ prefix: '/users' });
+
+  // 2. 在路由中注册中间件：path, method
+  userRouter.get('/', (ctx, next) => {
+    ctx.body = 'users list data...';
+  });
+  userRouter.get('/:id', (ctx, next) => {
+    const id = ctx.params.id;
+    ctx.body = '获取某个用户' + id;
+  });
+  userRouter.post('/', (ctx, next) => {});
+  userRouter.delete('/:id', (ctx, next) => {});
+  userRouter.patch('/:id', (ctx, next) => {});
+
+  // 3. 让路由中的中间件生效
+  app.use(userRouter.routes());
+  app.use(userRouter.allowedMethods()); // 会返回结果 Methods not allowed
+
+  app.listen(6000, () => {
+    console.log('koa 服务器启动成功');
+  });
+  ```
+
+### 4.2 koa 的参数解析
+
+#### 4.2.1 ctx
+
+- ctx 代表一次请求的上下文对象
+  - 将 req 和 res 作为 ctx 的属性
+    - 请求对象
+      - ctx.request -- koa 封装的请求对象
+      - ctx.req -- Node 封装的对象
+    - 响应对象
+      - ctx.response -- koa 封装的响应对象
+      - ctx.res -- Node 封装的响应对象
+- 参数解析方式
+
+  ```js
+  // 1. get: params
+  userRouter.get('/:id', (ctx, next) => {
+    const id = ctx.params.id;
+    ctx.body = '获取某个用户' + id;
+  });
+
+  // 2. get: query
+  userRouter.get('/:id', (ctx, next) => {
+    const query = ctx.query;
+    ctx.body = '获取某个用户' + JSON.stringify(query);
+  });
+
+  // 3. post: json 使用第三方库
+  const bodyParser = require('koa-bodyparser');
+  app.use(bodyParser());
+  userRouter.post('/json', (ctx, next) => {
+    console.log(ctx.request.body);
+  });
+
+  // 4. post: urlencoded 与 json 一样
+
+  // 5. post: form-data
+  const multer = require('@koa/multer');
+  app.use(multer());
+  ```
+
+### 4.3 koa 响应和错误
+
+#### 4.3.1 响应
+
+```js
+// 1. String 类型
+ctx.body = 'user list data...';
+
+// 2. Buffer
+ctx.body = Buffer.from('你好啊，李银河');
+
+// 3. Stream
+const readStream = fs.createReadStream('./uploads/111.png');
+ctx.type = 'image/jpeg';
+ctx.body = readStream;
+
+// 4. 数据 array / object => 使用最多
+ctx.body = {
+  code: 0,
+  data: []
+};
+
+// 5. null => http status code: 204 no content
+ctx.body = null;
+
+// 主动设置状态码
+ctx.status = 201; // 一般为创建
+```
+
+#### 4.3.2 错误处理
+
+```js
+userRouter.get('/', (ctx, next) => {
+  // 1. 方法一
+  ctx.body = {
+    code: -1003,
+    message: '未授权的 token，请检测你的 token'
+  };
+
+  // 方法二：在其他地方统一处理, ctx.app 是一个 EventEmitter
+  ctx.app.emit('error'， -1003)
+});
+
+app.on('error', (code, ctx) => {
+  let message = ''
+  switch(code) {
+    case -1001:
+      message = '账号或密码错误'
+      break;
+    default:
+        break
+  }
+
+  ctx.body = {
+    code, message
+  }
+})
+```
+
+### 4.4 koa 静态服务器
+
+1. 安装 `npm install koa-static`
+2. 使用
+
+   ```js
+   const static = require('koa-static');
+
+   app.use(static('./build'));
+   ```
+
+### 4.5 koa 源码解析
+
+### 4.6 和 express 对比
+
+1. 架构设计
+   - express: 完整而强大，内置了非常多好用的功能
+   - koa: 简洁而自由，只包含最核心的功能 => 并不会对我们使用其他中间件进行任何的限制
+2. 中间件执行机制 especially 异步操作
+   - express
+     - 同步：先 `next()`，再往下
+     - 异步：`next()` 返回 void，`async await` 毫无意义
+       - 必须在最后一个中间件中响应数据
+   - koa
+     - 同步：先 `next()`，再往下
+     - 异步：if 下一个中间件是一个异步函数，则默认不会等到中间件的结果，就会执行下一步操作
+       - 解决办法：`async()` 与 `await next()`
+       - because: `next()` 返回值为 `Promise`
+3. koa 洋葱模型
+   1. 中间件处理代码的过程
+   2. Response 返回 body 执行
