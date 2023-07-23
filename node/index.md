@@ -1183,3 +1183,157 @@ app.on('error', (code, ctx) => {
 3. koa 洋葱模型
    1. 中间件处理代码的过程
    2. Response 返回 body 执行
+
+## 五、使用 MySQL
+
+> 查询到的结果，默认数组格式
+
+### 5.1 MySQL 查询对象
+
+- 将查询到的数据调整为对象格式
+  1. 单表查询不需要
+  2. 多表查询需要 (一对一)
+     - why?
+     - 示例
+       ```sql
+       SELECT products.id as id, products.title as title, products.price as price,
+         JSON_OBJECT('id', brands.id, 'name', brands.name, 'website', brands.website, 'rank', brands.worldRand) as brand
+       FROM products LEFT JOIN  brands on products.brand_id = brands.id WHERE price > 3000;
+       ```
+
+### 5.2 MySQL 查询数组
+
+- 多对多
+- 示例
+  ```sql
+  SELECT
+    stuid as id, stu.name as name, stu.age as age,
+    JSON_ARRAYAGG(JSON_OBJECT('id', cs.id, 'name', cs.name, 'price', cs.price)) as courses
+  FROM students stu
+  LEFT JOIN students_select_courses ssc ON stu.id = ssc.student_id
+  LEFT JOIN courses cs ON ssc.course_id = cs.id WHERE cs.id IS NOT NULL
+  GROUP BY stu.id;
+  ```
+
+### 5.3 mysql2 库介绍使用
+
+1. 安装 `npm install mysql2`
+2. 使用
+
+   ```js
+   const mysql = require('mysql2');
+
+   // 1. 和数据库建立连接
+   const connection = mysql.createConnection({
+     hose: 'localhost',
+     port: 3306,
+     database: 'music_db',
+     user: root,
+     password: 'xxxxxx'
+   });
+
+   // 2. 执行操作语句
+   const statement = 'SELECT * FROM `students`;';
+   connection.query(statement, (err, values, fields) => {
+     if (err) {
+       console.log('查询失败：', err);
+       return;
+     }
+   });
+   ```
+
+### 5.4 mysql2 预处理语句
+
+- Prepared Statement
+  - 优点
+    1. 提高性能
+       1. 将创建的语句模块发送给 MySQL，然后 MySQL 编译(解析、优化、转换) 语句模块，并且存储它但不执行
+       2. 在真正给 ? 提供实际的参数才会执行
+       3. 即使多次执行，也只会编译一次，所以性能更高
+    2. 防止 SQL 注入
+       - 之后传入的值不会像模块引擎那样编译，那么一些 SQL 注入的内容就不会被执行
+       - 示例
+         ```sql
+         SELECT * FROM users WHERE name = 'admin' and password = 'xxx' or 1 = 1;
+         ```
+
+```js
+const mysql = require('mysql2');
+
+// 1. 和数据库建立连接
+const connection = mysql.createConnection({
+  hose: 'localhost',
+  port: 3306,
+  database: 'music_db',
+  user: root,
+  password: 'xxxxxx'
+});
+
+// 2. 预处理语句
+const statement = 'SELECT * FROM `products` WHERE price > ? AND score > ?;';
+connection.execute(statement, [1000, 8], (err, values) => {
+  console.log(values);
+});
+
+// 3. 结束连接
+connection.destroy();
+```
+
+### 5.5 mysql2 连接池使用
+
+- Connection Pools
+  - 如果有多个请求，但该连接正在被占用
+
+```js
+const mysql = require('mysql2');
+
+// 1. 创建连接池
+const connectionPool = mysql.createPool({
+  hose: 'localhost',
+  port: 3306,
+  database: 'music_db',
+  user: root,
+  password: 'xxxxxx',
+  connectionLimit: 5
+});
+
+// 2. 预处理语句
+const statement = 'SELECT * FROM `products` WHERE price > ? AND score > ?;';
+connectionPool.execute(statement, [1000, 8], (err, values) => {
+  console.log(values);
+});
+
+// 3. 结束连接
+connectionPool.destroy();
+```
+
+### 5.6 mysql2 的 Promise
+
+```js
+const mysql = require('mysql2');
+
+// 1. 创建连接池
+const connectionPool = mysql.createPool({
+  hose: 'localhost',
+  port: 3306,
+  database: 'music_db',
+  user: root,
+  password: 'xxxxxx',
+  connectionLimit: 5
+});
+
+// 2. 预处理语句
+const statement = 'SELECT * FROM `products` WHERE price > ? AND score > ?;';
+connectionPool
+  .promise()
+  .execute(statement, [1000, 8])
+  .then((res) => {
+    console.log(res); // [values, fields]
+  })
+  .catch((err) => {
+    console.log(res);
+  });
+
+// 3. 结束连接
+connectionPool.destroy();
+```
