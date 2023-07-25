@@ -1337,3 +1337,376 @@ connectionPool
 // 3. 结束连接
 connectionPool.destroy();
 ```
+
+## 六、项目实战
+
+### 6.1 项目介绍和搭建
+
+#### 6.1.1 功能接口说明
+
+- 完整的项目接口包括
+  - 面向用户的业务接口
+  - 面向企业或者内部的后台管理接口
+- 完成的功能
+  1. 用户管理系统
+  2. 内容管理系统
+  3. 内容评论管理
+  4. 内容标签管理
+  5. 文件管理系统
+  6. 其他功能都是相似的...
+
+#### 6.1.2 项目搭建
+
+1. 创建 coderhub 文件夹
+2. 创建项目依赖 `npm init -y`
+3. 增加 start 脚本
+   - package.json: `"start": "node ./src/main.js"`
+   - bash: `npm run start`
+4. 选择 koa 作为开发框架 `npm install koa @koa/router koa-bodyparser`
+5. 配置端口
+
+   - `src/config/server.js`: 配置文件
+
+     ```js
+     const SERVER_PORT = 8000;
+     ```
+
+     - 或者放在 `root/.env` 文件中 `SERVER_PORT = 8000`
+
+       - 使用 dotenv 库管理 .env 文件
+
+         ```js
+         /* src/config/server.js */
+         const dotenv = require('dotenv');
+
+         dotenv.config();
+
+         module.exports = { SERVER_PORT } = process.env;
+
+         /* main.js */
+         const { SERVER_PORT } = require('.config/server');
+
+         app.listen(SERVER_PORT, () => {
+           console.log('服务器启动成功');
+         });
+         ```
+
+6. 目录结构划分
+   - 按照功能模块划分
+     - router 文件夹
+       - `user.router.js`
+   - `main.js`
+     1. 导入 app
+     2. 启动 app
+   - 按照业务模块
+
+### 6.2 注册接口的逻辑
+
+- 代码逻辑
+  1. 获取用户传递过来的信息 const user = ctx.request.body
+  2. 判断逻辑
+     1. 是否已存在该用户名
+     2. 数据格式校验
+  3. 将 user 信息存储到数据库中
+  4. 查看存储的结果，告知前端是否创建成功
+- 代码拆分(分层架构)
+
+  1. `router/user.router.js`: 路由与执行函数 `userController.cteate` 的映射
+  2. `controller/user.controller.js`
+     1. 接收参数
+     2. 验证
+        1. 验证用户名和密码是否为空
+        2. 判断 name 是否已存在 `userService.findUserByName(name)`
+        - 验证代码过多，可以抽取到中间件函数中 `verifyUser`
+          - `src/middleware/user.middleware.js`
+     3. 向数据库表创建用户 `userService.create(user)`
+     4. 返回响应
+  3. `service/user.service.js`
+
+     1. 获取用户 user
+     2. 拼接 statement
+     3. 执行 sql 语句
+
+     - 连接数据库的操作在 `src/app/database.js`
+
+       ```js
+       // 获取连接是否成功
+       connectionPool.getConnection((err, connection) => {
+         if (err) {
+           console.log('获取连接失败：', err);
+           return;
+         }
+
+         // 尝试和数据库建立一下连接
+         connection.connect((err) => {
+           if (err) {
+             console.log('和数据库交互失败：', err);
+           } else {
+             console.log('数据库连接成功，可以进行操作');
+           }
+         });
+       });
+       const connection = connectionPool.promise();
+       ```
+
+  - 错误信息封装
+
+    ```js
+    /* src/utils/handle-error.js */
+    app.on('error', (error, ctx) => {
+      let code = 0;
+      let message = '';
+
+      switch (error) {
+        case 'name_or_password_is_required':
+          code = -1001;
+          message = '用户名或密码不能为空';
+          break;
+      }
+
+      ctx.body = { code, message };
+    });
+    ```
+
+    - 错误字符串使用常量 `src/config/error_constants.js`
+
+  - 用户密码
+
+    - 使用明文 => 危险操作
+    - 加密(继续使用中间件)
+
+      ```js
+      /* src/utils/md5-password */
+      const crypto = require('crypto');
+
+      function md5password(password) {
+        const md5 = crypto.createHash('md5');
+
+        const md5pwd = md5.update(password).digest('hex');
+
+        return md5pwd;
+      }
+      ```
+
+### 6.3 登录用户的凭证
+
+#### 6.3.1 登录凭证的介绍
+
+- why need 登录凭证?
+  - http 是一个无状态协议(示例)
+    - 对于服务器而言，http 的每次请求都是单独的请求，和之前的请求没有关系
+- 方案
+
+  1. cookie
+
+     - 类型为 “小型文本文件”，某些网站为了辨别用户身份而存储在用户本地终端(Client Side)上的数据
+     - 浏览器会在特定的情况下，自动携带 cookie 来发送请求
+       - 客户端
+     - 按存储位置区分
+
+       - 内存 Cookie：浏览器关闭时，Cookie 就会消失
+       - 硬盘 Cookie：有一个过期时间，用户手动清理 or 时间到期，才会消失
+       - 默认为 内存 Cookie，设置了过期时间才是 硬盘 Cookie
+
+       ```js
+       // 内存 cookie
+       document.cookie = 'name=east;';
+       document.cookie = 'age=23;';
+
+       // 硬盘 cookie
+       document.cookie = 'name=east;max-age=30;'; // 秒数
+       ```
+
+     - 作用域
+       - Domin: 指定哪些主机可以接受 cookie
+         - if 不指定，默认 origin
+         - if 指定 Domain，则包含子域名
+           - 示例：设置 Domain=mozilla.org，则子域名 developer.mozilla.org 也有 cookie
+       - path: 指定主机下哪些路径可以接受 cookie
+
+     ```js
+     userRouter.get('/login', (ctx, next) => {
+       ctx.cookies.set('slogen', '12345', {
+         maxAge: 60 * 1000 // 毫秒
+       });
+       ctx.body = '登录成功';
+     });
+
+     userRouter.get('/list', (ctx, next) => {
+       const slogen = ctx.cookies.get('slogen');
+       if (slogen === '123456') {
+         ctx.body = '登录成功';
+       } else {
+         ctx.body = '请登录';
+       }
+     });
+     ```
+
+  2. session
+
+     - 基于 cookie，但比 cookie 更安全
+
+     ```js
+     const KoaSession = require('koa-session');
+
+     const session = KoaSession(
+       {
+         key: 'sessionid',
+         signed: true,
+         maxAge: 60 * 60 * 1000,
+         httpOnly: true // 只允许服务器，不允许其他 js 等
+       },
+       app
+     );
+     // 加盐
+     app.keys = ['aaa', 'bbb', 'ccc'];
+     app.use(session);
+
+     userRouter.get('/login', (ctx, next) => {
+       ctx.session.slogan = '123456';
+       ctx.body = '登录成功';
+     });
+
+     userRouter.get('/list', (ctx, next) => {
+       const slogen = ctx.session.slogan;
+       if (slogen === '123456') {
+         ctx.body = '登录成功';
+       } else {
+         ctx.body = '请登录';
+       }
+     });
+     ```
+
+  3. token 也叫令牌
+     1. 在验证了用户账号和密码正确的情况下，给用户颁发一个令牌
+     2. 这个令牌作为后续用户访问一些接口 or 资源的凭证
+     3. 服务器根据这个凭证来判断用户是否有权限访问
+     - 使用步骤
+       1. 生成 token：登录时，颁发 token
+       2. 验证 token：访问某些资源 or 接口时，验证 token
+
+- cookie 和 session 的缺点
+  1. cookie 会被附加到每个 http 请求中，无形中增加了流量(某些请求不需要)
+  2. cookie 明文传递，存在安全性问题
+  3. cookie 的大小限制是 4kb，对于复杂的需求来说是不够的
+  4. 对于浏览器外的其他客户端(比如 iOS、Android)，必须手动地设置 cookie 和 session
+  5. 对于分布式系统和服务器集群中，如何保证其它系统也可以正确地解析 session？
+
+#### 6.3.2 JWT 实现 token
+
+- JWT 生成的 token 由三部分组成
+  - header
+    - alg: 采用的加密算法，默认是 HMAX SHA256(HS256)，采用同一个密钥进行加密和解密
+      - 对称加密
+    - typ: JWT，固定值，通常都写成 JWT 即可
+    - 会通过 base64Url 算法进行编码
+  - payload
+    - 携带的数据，比如用户的 id 和 name
+    - 默认携带 iat(issued at)，令牌的签发时间
+    - 可以设置过期时间 exp(expiration time)
+    - 会通过 base64Url 算法进行编码
+  - signature
+    - 设置一个 secretKey，通过将前两个的结果合并后进行 HMACSHA256 的算法
+    - HMACSHA256(base64Url(header)+'.'+baseUrl(payload), secretKey);
+    - 但是如果 secretKey 暴露是一件非常危险的事情，因为之后就可以模拟颁发 token，也可以解密 token
+
+#### 6.3.3 代码实现
+
+```shell
+npm install jsonwebtoken
+```
+
+```js
+const jwt = require('jsonwebtoken');
+
+const secretKey = 'abcde';
+
+// 1. 颁发 token
+const payload = { id: 111, name: 'east' };
+const token = jwt.sign(payload, secretKey, {
+  expiresIn: 60 // 单位 s
+});
+
+// 2. 验证 token
+const authorization = ctx.headers.authorization;
+const token = authorization.replace('Bearer ', '');
+try {
+  const result = jwt.verify(token, secretKey);
+} catch (error) {
+  console.log(error);
+  ctx.body = {
+    code: -1010,
+    message: 'token 过期 or 无效的 token'
+  };
+}
+```
+
+#### 6.3.4 非对称加密
+
+```shell
+$ openssl
+genrsa -out private.key 1024 # 生成私钥 1024 字节长度
+rsa -in private.key -pubout -out public.key # 根据私钥生成公钥
+# 至少 2048 bytes
+```
+
+```js
+const fs = require('fs');
+
+const privateKey = fs.readFileSync('./keys/private.key');
+const publickey = fs.readFileSync('./key/public.key');
+
+// 1. 颁发 token
+const payload = { id: 111, name: 'east' };
+const token = jwt.sign(payload, privateKey, {
+  expiresIn: 60, // 单位 s
+  algorithm: 'RS256'
+});
+
+// 2. 验证 token
+const authorization = ctx.headers.authorization;
+const token = authorization.replace('Bearer ', '');
+try {
+  const result = jwt.verify(token, publickey, { algorithms: ['RS256'] });
+} catch (error) {
+  console.log(error);
+  ctx.body = {
+    code: -1010,
+    message: 'token 过期 or 无效的 token'
+  };
+}
+```
+
+#### 6.3.5 登录逻辑
+
+- 登录逻辑
+  1.  判断用户名和密码是否为空
+  2.  该用户是否在数据库中存在
+  3.  密码是否正确
+  4.  颁发 token
+- 代码划分
+
+  1. `src/router/login.router.js`: 登录相关逻辑
+  2. `src/middleware/login.middleware.js`: 验证信息
+     - `verifyLogin`
+       - `NAME_IS_NOT_EXISTS`
+       - `PASSWORD_IS_INCORRECT`
+  3. `src/controller/login.controller.js`: 颁发签名
+
+     - 将 密钥对 放进 `src/config/keys` 中
+     - 读取密钥：`config/secret.js`
+     - 注意路径问题
+
+       ```js
+       const path = require('path');
+
+       const PRIVATE_KEY = fs.readFileSync(
+         path.resolve(__dirname, './keys/private.key')
+       );
+       ```
+
+### 6.4 发表动态和评论
+
+### 6.5 动态的标签接口
+
+### 6.6 图片上传和存储
