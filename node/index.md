@@ -1400,6 +1400,20 @@ connectionPool.destroy();
      2. 启动 app
    - 按照业务模块
 
+#### 6.1.3 自动化引入路由
+
+```js
+/* router/index.js */
+const fs = require('fs');
+
+function registerRoutes(app) {
+  // 1. 读取当前文件夹下所有文件
+  // fs.fs.readdirSync
+  // 2. 遍历所有文件，使用 routes 和 allowedMethods 方法
+  // file.endsWidth('.router.js')
+}
+```
+
 ### 6.2 注册接口的逻辑
 
 - 代码逻辑
@@ -1707,6 +1721,208 @@ try {
 
 ### 6.4 发表动态和评论
 
+#### 6.4.1 动态
+
+1. 创建动态表
+   ```sql
+   CREATE TABLE IF NOT EXISTS `moment`(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    content VARCHAR(1000) NOT NULL,
+    user_id INT NOT NULL,
+    createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updateAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES `user`(id)
+   );
+   ```
+2. 创建动态接口
+   1. 认证身份 user_id
+   2. 存储动态至动态表
+3. 删改都需要权限
+   1. `permission.middleware.js` - `verifyMomentPermission` 验证 moment 权限
+   2. 数据表查询操作 `PermissionService.checkMoment(momentId, userId)`
+   3. `OPERATION_IS_NOT_ALLOWED`
+4. 调整 verifyPermission 函数以适配验证所有权限 -- 接口和表名严格对应
+   1. 获取登录用户的 id
+   2. 获取资源的 key: `Object.keys(ctx.params)`
+      - keyName
+      - resourceName
+      - resourceId
+
+#### 6.4.2 评论
+
+> 对动态进行评论
+
+1. 创建数据表
+   ```sql
+   CREATE TABLE IF NOT EXISTS `comment`(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    content VARCHAR(1000) NOT NULL,
+    moment_id INT NOT NULL,
+    user_id INT NOT NULL,
+    comment_id INT DEFAULT NULL,
+    createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    FOREIGN KEY(moment_id) REFERENCES moment(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY(user_id) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY(comment_id) REFERENCES comment(id) ON DELETE CASCADE ON UPDATE CASCADE
+   );
+   ```
+   - comment_id: 用于楼中楼
+2. 创建评论 create
+3. 回复评论 reply
+4. 查询动态
+
+   1. 查询多个动态时，显示评论的个数
+
+      ```sql
+      SELECT
+        m.id id, m.content content, m.createAt createTime, m.updateAt updateTime,
+        JSON_OBJECT('id', u.id, 'name', u.name, 'createTime', u.createAt, 'updateTime', u.updateAt) user,
+        (SELECT COUNT(*) FROM comment WHERE comment.moment_id = m.id) commentCount
+      FROM moment m
+      LEFT JOIN user u ON u.id = m.user_id
+      LIMIT 10 OFFSET 0;
+
+      SELECT COUNT(*) FROM comment WHERE moment_id = 2; -- 查询总数
+      ```
+
+   2. 查询单个动态时，显示评论的列表
+
+      ```sql
+      SELECT
+        m.id id, m.content content, m.createAt createTime, m.updateAt updateTime,
+        JSON_OBJECT('id', u.id, 'name', u.name, 'createTime', u.createAt, 'updateTime', u.updateAt) user,
+        (SELECT COUNT(*) FROM comment WHERE comment.moment_id = m.id) commentCount,
+        (JSON_ARRAYAGG(JSON_OBJECT(
+          'id', c.id, 'content', c.content, 'commentId', c.comment_id, 'createTime', c.createAt, 'updateTime', c.updateAt,
+          'user', JSON_OBJECT('id', cu.id, 'name', cu.name)
+        ))) comments
+      FROM moment m
+      LEFT JOIN user u ON u.id = m.user_id
+      LEFT JOIN comment c WHERE comment.moment_id = m.id
+      LEFT JOIN user cu ON cu.id = c.user_id
+      WHERE m.id = 2
+      GROUP BY m.id;
+      ```
+
 ### 6.5 动态的标签接口
 
+1. 创建标签表
+   ```sql
+   CREATE TABLE IF NOT EXISTS `label`(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(10) NOT NULL UNIQUE,
+    createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updateAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+   );
+   ```
+2. 多对多关系 => 建立关系表
+   ```sql
+   CREATE TABLE IF NOT EXISTS `moment_label`(
+    moment_id INT NOT NULL,
+    label_id INT NOT NULL,
+    createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updateAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(moment_id, label_id),
+    FOREIGN KEY (moment_id) REFERENCES moment(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (label_id) REFERENCES label(id) ON DELETE CASCADE ON UPDATE CASCADE
+   )
+   ```
+3. 添加关系 post `moment/:momentId/labels`
+   1. 是否登录
+   2. 是否有操作该动态的权限
+   3. 额外中间件 -- 验证选中的 label 是否已经存在于 label 表中
+      - if 存在 => 直接使用
+      - if not => 将该 label 添加到 label 表
+   4. 将动态和 labels 的关系添加到关系表中
+4. 查询动态列表时，拿到标签个数
+5. 查询动态详情时，拿到标签数组
+   - 错误查询
+     ```sql
+      SELECT
+        m.id id, m.content content, m.createAt createTime, m.updateAt updateTime,
+        JSON_OBJECT('id', u.id, 'name', u.name, 'createTime', u.createAt, 'updateTime', u.updateAt) user,
+        (SELECT COUNT(*) FROM comment WHERE comment.moment_id = m.id) commentCount,
+        (JSON_ARRAYAGG(JSON_OBJECT(
+          'id', c.id, 'content', c.content, 'commentId', c.comment_id, 'createTime', c.createAt, 'updateTime', c.updateAt,
+          'user', JSON_OBJECT('id', cu.id, 'name', cu.name)
+        ))) comments,
+        (JSON_ARRAYAGG(JSON_OBJECT(
+          'id', l.id, 'name'm l.name
+        ))) labels
+      FROM moment m
+      LEFT JOIN user u ON u.id = m.user_id
+      LEFT JOIN comment c WHERE comment.moment_id = m.id
+      LEFT JOIN user cu ON cu.id = c.user_id
+      LEFT JOIN moment_label ml ON ml.moment_id = m.id
+      LEFT JOIN label l ON ml.label_id = l.id
+      WHERE m.id = 2
+      GROUP BY m.id;
+     ```
+   - 正确查询：采用子查询
+     ```sql
+      SELECT
+        m.id id, m.content content, m.createAt createTime, m.updateAt updateTime,
+        JSON_OBJECT('id', u.id, 'name', u.name, 'createTime', u.createAt, 'updateTime', u.updateAt) user,
+        (SELECT COUNT(*) FROM comment WHERE comment.moment_id = m.id) commentCount,
+        (
+          SELECT
+            (JSON_ARRAYAGG(JSON_OBJECT(
+              'id', c.id, 'content', c.content, 'commentId', c.comment_id, 'createTime', c.createAt, 'updateTime', c.updateAt,
+              'user', JSON_OBJECT('id', cu.id, 'name', cu.name)
+            )))
+          FROM comment c
+          LEFT JOIN user cu ON c.user_id = cu.id
+          WHERE c.moment_id = m.id
+        ) comments
+        (JSON_ARRAYAGG(JSON_OBJECT(
+          'id', l.id, 'name'm l.name
+        ))) labels
+      FROM moment m
+      LEFT JOIN user cu ON cu.id = c.user_id
+      LEFT JOIN moment_label ml ON ml.moment_id = m.id
+      LEFT JOIN label l ON ml.label_id = l.id
+      WHERE m.id = 2
+      GROUP BY m.id;
+     ```
+
 ### 6.6 图片上传和存储
+
+#### 6.6.1 上传图像
+
+1. 所有上传接口都放在 `file.router.js` 中
+   ```js
+   fileRouter.post('/avatar', (ctx, next) => {});
+   ```
+2. 安装 `multer`, `@koa/multer` 库
+3. 头像信息表
+   ```sql
+   CREATE TABLE IF NOT EXISTS `avatar`(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    filename VARCHAR(255) NOT NULL UNIQUE,
+    mimetype VARCHAR(30),
+    size INT,
+    user_id INT,
+    createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updateAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE
+   );
+   ```
+
+#### 6.6.2 获取头像
+
+```js
+userRouter.get('/avatar/:userId', showAvatarImage);
+
+fileService.queryAvaterWithUserId(userId) {}
+```
+
+#### 6.6.3 获取图像地址
+
+1. 修改 user 表，添加头像地址字段 avatar_url
+2. `userService.updateUserAvatar(avatarUrl, userId)`
+3. 修改配置文件
+   ```
+   SERVER_HOST=http://localhost
+   SERVER_PORT=8000
+   ```
