@@ -1799,7 +1799,7 @@ try {
         ))) comments
       FROM moment m
       LEFT JOIN user u ON u.id = m.user_id
-      LEFT JOIN comment c WHERE comment.moment_id = m.id
+      LEFT JOIN comment c ON comment.moment_id = m.id
       LEFT JOIN user cu ON cu.id = c.user_id
       WHERE m.id = 2
       GROUP BY m.id;
@@ -1926,3 +1926,5 @@ fileService.queryAvaterWithUserId(userId) {}
    SERVER_HOST=http://localhost
    SERVER_PORT=8000
    ```
+
+-- 忘记这个是干嘛的了，没做。
