@@ -105,3 +105,93 @@ app.use(
 
 - 开发阶段配置 proxy (node 代理服务器)
 - 发布阶段配置 nginx
+
+## 二、模块化原理和 source-map
+
+Webpack is a static module bundler for modern JavaScript applications.
+
+- bundler: 打包工具
+- static: 最终可以将代码打包成静态资源，部署到静态服务器
+- module: webpack 默认支持各种模块化开发，ES Module、CommonJS、AMD 等
+- modern: 正是因为现代前端开发面临各种各样的问题，才催生了 webpack 的出现和发展
+
+### 2.1 webpack 配置回顾
+
+1. `npm install webpack webpack-cli -D`
+2. 注意使用的导入方式，node 相关使用 CommonJS，浏览器相关使用 ES Module
+3. 书写测试代码 `src/main.js`
+4. `webpack.config.js` 配置
+
+   ```js
+   const path = require('path');
+
+   module.exports = {
+     entry: './src/main.js',
+     output: {
+       path: path.resolve(__dirname, './build'),
+       filename: 'bundle.js'
+     }
+   };
+   ```
+
+5. `npx webpack`: 使用项目下载的 webpack 而非全局
+
+### 2.2 webpack 的 mode
+
+```js
+module.exports = {
+  mode: 'development',
+  ...
+}
+```
+
+- Mode 配置选项
+  - 作用：告知 webpack 使用相应模式的内置优化
+  - value
+    - `none` | `development` | `production`(default)
+    - 区别
+      - `none`: 不使用任何默认优化选项
+      - `development`
+        1. 将 `DefinePlugin` 中 `process.env.NODE_ENV` 的值设置为 `development`
+        2. 为 模块和 chunk 启用有效的名称
+      - `production`
+        1. 将 `DefinePlugin` 中 `process.env.NODE_ENV` 的值设置为 `production`
+        2. 为 模块和 chunk 启用确定性的混淆名称
+
+### 2.3 webpack 模块化原理
+
+### 2.4 认识 source-map
+
+```js
+module.exports = {
+  mode: 'production',
+  devtool: 'source-map'
+};
+```
+
+- source-map
+  - 目的：调试打包前后不一致的代码
+  - 原理：从已转换的代码，映射到原始的源文件，使浏览器可以重构原始源，并在调试器中显示重建的原始源
+- 使用
+  1. 根据源文件，生成 source-map 文件
+     - webpack 在打包时，可以通过配置自动生成 source-map
+  2. 在转换后的代码的最后，添加一个注释，它指向 source-map
+     ```js
+     //# sourceMappingURL=common.bundle.js.map
+     ```
+  3. 浏览器会根据注释，查找相应的 source-map，并根据 source-map 还原代码，方便进行调试
+     - Chrome 中需要打开 source-map
+
+### 2.5 source-map 解析
+
+### 2.6 source-map 常见值
+
+- devtool 的值
+  - false
+  - `none`: `production` 模式下的默认值
+  - `eval`: `development` 模式下的默认值
+    - 还原大致代码
+    - 构建速度快
+  - `source-map`: `production` 和 `development` 模式下都可以设置
+    - 一般在 `production` 模式下设置
+- 开发和测试阶段推荐选择：`source-map` or `cheap-module-source-map`
