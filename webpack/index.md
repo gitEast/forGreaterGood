@@ -195,3 +195,239 @@ module.exports = {
   - `source-map`: `production` 和 `development` 模式下都可以设置
     - 一般在 `production` 模式下设置
 - 开发和测试阶段推荐选择：`source-map` or `cheap-module-source-map`
+
+## 三、Babel
+
+- Babel 是一个工具链
+  - 作用：旧浏览器 or 环境中将 ES6 代码转换为向后兼容版本的 JavaScript
+  - 功能：语法转换、源代码转换、Polyfil 实现目标环境缺少的功能等
+
+### 3.1 Babel 命令行执行
+
+- Babel 本身可以作为一个独立工具使用
+- 使用
+  1. 下载 `npm install @babel/core @babel/cli -D`
+  2. `npx babel ./src --out-dir ./build`
+     - 需要配合插件使用
+- 预设 preset
+  1. `npm install @babel/preset-env -D`
+  2. 命令行使用预设 `npx babel ./src --out-dir ./build --presets=@babel/present-env`
+
+```shell
+npm install babel-loader -D
+```
+
+```js
+/** webpack.config.js */
+const path = require('path');
+
+module.exports = {
+  mode: 'development',
+  entry: './src/index.js',
+  output: {
+    path: path.resolve(__dirname, './build'),
+    filename: 'bundle.js',
+    clean: true // 重新打包时，将之前打包的文件夹删除(新版本 webpack 新增功能)
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        // loader: 'babel-loader'
+        use: {
+          loader: 'babel-loader',
+          options: {
+            // plugins: ['@babel/plugin-transform-arrow-functions']
+            presets: ['@babel/preset-env']
+          }
+        }
+      }
+    ]
+  }
+};
+```
+
+### 3.2 Babel 的底层原理
+
+- 编译器
+  - 将源代码转换成目标代码 —— 编译器的工作
+  - 工作流程
+    - 解析阶段 Parsing
+      1. 词法分析 Lexical Analysis => 生成 tokens
+      2. 语法分析 Syntactic Analysis (分析是否关键字)
+    - 转换阶段 Transformation
+      1. 根据 tokens 转换成 AST(抽象语法树)
+      2. 通过 plugins 生成新的 抽象语法树
+    - 生成阶段 Code Generation
+  - [一个小型编译器源码](https://github.com/jamiebuilds/the-super-tiny-compiler)
+
+### 3.3 浏览器兼容性配置
+
+- 代码要不要进行转换取决于要适配的浏览器
+- browserslist
+  - 在不同的前端工具之间，共享目标浏览器和 Node.js 版本的配置
+    - 使用 caniuse-lite 的工具查询 caniuse 网站的数据 (**市场占有率**)
+  - 编写规则
+    - `defaults`: 默认 `> 0.5%, last 2 versions, Firefox ESR, not dead`
+    - `current node`: 指定 Node 版本
+    - `iOS 7`: 直接使用 iOS 浏览器版本 7
+    - 语法规则
+      - `or` or 换行：`||`
+      - `and`: `&&`
+      - `not`: `!`
+  - 命令行
+    ```shell
+    npx browserslist // 查询所有
+    npx browserslist "> 0.5%, last 2 versions, Firefox ESR, not dead" # 带查询条件
+    ```
+  - 配置方案
+    1. 在 package.json 中配置
+    2. `.browserslistrc` 文件中配置
+       - if 在 `webpack.config.js` 的 presets 中做配置，会覆盖 `.browserslistrc`
+         ```js
+         module.exports = {
+           module: {
+             rules: [
+               {
+                 test: '',
+                 use: {
+                   loader: 'babel-loader',
+                   options: {
+                     presets: [
+                       [
+                         '@babel/preset-env',
+                         {
+                           targets: '>5%'
+                         }
+                       ]
+                     ]
+                   }
+                 }
+               }
+             ]
+           }
+         };
+         ```
+
+### 3.4 Babel 的配置文件
+
+- `babel.config.js`
+  ```js
+  module.exports = {
+    presets: [['@babel/preset-env']]
+  };
+  ```
+  - babel7 后更推荐这种做法
+  - 可以直接作用于 Monorepos 项目的子包
+- `.babelrc.json`
+
+### 3.5 Babel 和 Polyfill
+
+1. `npm install core-js regenerator-runtime`
+2. `babel.config.js`
+   ```js
+   module.exports = {
+     presets: [
+       [
+         '@babel/preset-env',
+         {
+           corejs: 3,
+           /**
+            * useBuiltIns 的值
+            *  1. false => 不配置 polyfill，不需要设置 corejs;
+            *  2. 'usage' => 根据代码 polyfill
+            *  3. 'entry' => 根据入口引入，处理第三方包，并且需要在自己的代码中引入 `import 'core-js/stable' 和 `import 'regenerator-runtime/runtime'
+            */
+           useBuiltIns: 'usage'
+         }
+       ]
+     ]
+   };
+   ```
+
+### 3.6 React 和 TS 解析
+
+#### 3.6.1 jsx 解析
+
+1. 案例代码
+
+   ```js
+   /** src/index.js */
+   import React from 'react'
+   import ReactDom from 'react-dom/client'
+
+   import App from './react/App.js'
+
+   const root ReactDom.createRoot()
+   ```
+
+2. `ReactDom.createRoot()` 需要容器 `root/index.html`
+   - `html-webpack-plugin` 插件
+     ```js
+     module.exports = {
+       plugins: [
+         new HtmlWebpackPlugin({
+           template: './index.html'
+         })
+       ]
+     };
+     ```
+3. babel 需要处理 .jsx 文件 `test: /\.jsx?$/`
+   - 具体如何处理
+     1. 逐一安装、配置对应的插件
+     2. 使用预设 `@babel/preset-react`
+4. resolve 配置文件后缀
+   ```js
+   module.exports = {
+     resolve: {
+       extensions: ['.jsx']
+     }
+   };
+   ```
+
+#### 3.6.2 TS 解析
+
+- `ts-loader`
+  1. 使用 `ts-loader` 进行解析
+  2. `ts-loader` 要求有一个 `tsconfig.json` 文件: `tsc --init`
+- 开发中一般不使用 `ts-loader`，而是使用 Babel
+  - 原因：ts 代码也可能需要进行 polyfill
+- 使用 `babel-loader`
+  - 预设 `@babel/preset-typescript`
+  - 缺点：不会进行类型检测
+- 实际开发
+  - tsc 用于类型校验
+    ```json
+    {
+      "scripts": {
+        "ts-check": "tsc --noEmit",
+        "ts-check-watch": "tsc --noEmit -watch"
+      }
+    }
+    ```
+  - babel 用于转换
+
+## 四、Webpack 开发服务器配置
+
+- Why 需要搭建本地服务器？
+  - 为了运行开发的代码，需要两个操作
+    1. `npm run build`，编译相关代码
+    2. 通过 live server or 直接通过浏览器代码，打开 index.html，查看效果
+  - => 影响开发效率
+  - 希望：当文件发生变化时，可以自动地完成编译和展示
+- webpack 提供的方式
+  - webpack watch mode
+  - webpack-dev-server (常用)
+  - webpack-dev-middleware
+
+### 4.1 本地服务器 server
+
+### 4.2 server 的静态资源
+
+### 4.3 server 的其他配置
+
+### 4.4 server 的 proxy 代理
+
+### 4.5 changeOrigin 作用
+
+### 4.6 historyApiFallback
