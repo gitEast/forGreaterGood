@@ -418,16 +418,89 @@ module.exports = {
 - webpack 提供的方式
   - webpack watch mode
   - webpack-dev-server (常用)
+    1. `npm install webapck-dev-server -D`
+    2. 增加脚本 `"serve": "webpack serve"`
+    - 高效的原因：在编译之后不会写入到任何输出文件，而是将 bundle 文件保留在内存中 by memfs 库
   - webpack-dev-middleware
 
 ### 4.1 本地服务器 server
 
 ### 4.2 server 的静态资源
 
+```js
+module.exports = {
+  devServer: {
+    static: ['public'] // 默认 public
+  }
+};
+```
+
+```html
+<body>
+  <script src="./abc.js"></script>
+</body>
+```
+
 ### 4.3 server 的其他配置
+
+- host: 主机地址
+- port
+- open: boolean, 是否自动打开浏览器
+- compress: boolean, 是否压缩 js 代码
 
 ### 4.4 server 的 proxy 代理
 
+```js
+module.exports = {
+  devServer: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:9000',
+        pathRewrite: {
+          '^/api': ''
+        },
+        changeOrigin: true
+      }
+    }
+  }
+};
+```
+
 ### 4.5 changeOrigin 作用
 
+用于修改请求中的 header.host 属性
+
 ### 4.6 historyApiFallback
+
+- 作用：解决 SPA 页面在路由跳转之后，进行页面刷新时，返回 404 的错误
+- 值：
+  - boolean
+    - false: default
+    - true: 在刷新后返回 404 错误时，会自动返回 index.html 的内容
+  - object: 可以配置 rewrites 属性
+    - 可以配置 from 来匹配路径，决定跳转到哪一个页面
+- 基于 connect-history-api-fallback 库实现的
+
+## 五、webpack 性能优化方案
+
+- 常见面试题
+  - 可以配置哪些属性来进行 webpack 性能优化？
+  - 前端有哪些常见的性能优化？
+    - 其中一个方面 webpack
+- 性能优化方案的分类：
+
+  - 打包后的结果：上线时的性能优化 -- 一般侧重这个，对线上的产品影响更大
+    - 分包处理
+    - 减小包体积
+    - CDN 服务器
+    - ...
+  - 优化打包速度：开发 or 构建时优化打包速度
+    - exclude
+    - cache-loader
+    - ...
+
+- 大多数情况下，webpack 都做好了该有的性能优化
+  - 例：配置 mode 为 production or development 时，默认 webpack 的配置信息
+  - => 也可以针对性地进行自己的项目优化
+
+### 5.1 代码分离
