@@ -1459,3 +1459,128 @@ function getCommonConfig(isProduction) {
     module.exports = AutoUploadWebpackPlugin;
     module.exports.AutoUploadWebpackPlugin = AutoUploadWebpackPlugin;
     ```
+
+## 八、自动化工具 gulp
+
+A toolkit to automate & enhance your workflow.
+
+### 8.1 gulp 和 webpack
+
+- gulp
+  - 核心理念：task runner
+    - 可以定义自己的一系列任务，等待任务被执行
+    - 基于文件 Stream 的构建流
+    - 可以使用 gulp 的插件体系来完成某些任务
+  - 相对于 webpack 的优缺点
+    - 优点：相对于 webpack 思想更加的简单、易用，更适合编写一些自动化任务
+    - 缺点：不支持模块化(大型项目不会使用 gulp 来构建)
+- webpack
+  - 核心理念：module bundler
+    - 一个模块化的打包工具
+    - 可以使用各种各样的 loader 来加载不同的模块
+    - 可以使用插件在 webpack 打包的生命周期完成其他任务
+
+### 8.2 编写 gulp 的任务
+
+1. `npm install gulp -D`
+2. 创建 `gulpfile.js`
+3. 执行命令
+   - 单个任务执行 `npx gulp [任务名]`
+
+```js
+/** gulpfile.js */
+const gulp = require('gulp');
+
+const foo = (cb) => {
+  console.log('第一个任务');
+  cb();
+};
+
+// 早期编写任务的方式(gulp4.x 之前)
+gulp.task('foo2', (cb) => {
+  console.log('第二个任务');
+  cb();
+});
+
+module.exports = {
+  foo
+};
+```
+
+- gulp 任务
+  - 每个 gulp 任务都是一个 异步的 JavaScript 函数
+    - 此函数可以接收一个 callback 作为参数，调用 callback 函数，任务结束
+    - or 返回一个 stream、promise、event emitter、child process 或 observable 类型的函数
+  - 任务可以是 public or private 类型的
+    - 公开任务 public tasks: 从 gulpfile 中被导出，可以通过 gulp 命令直接调用
+    - 私有任务 private tasks: 被设计为在内部使用，通常作为 `series()` or `parallel()` 组合的组成部分
+  - 默认任务
+    ```js
+    module.exports.default = function (cb) {
+      console.log('默认任务执行');
+      cb();
+    };
+    ```
+    - shell 命令：`npx gulp`
+
+### 8.3 gulp 的任务组合
+
+```js
+const { series, parallel } = require('gulp');
+
+const foo1 = function () {};
+const foo2 = function () {};
+const foo3 = function () {};
+
+const seriesFoo = series(foo1, foo2, foo3);
+const parallelFoo = parallel(foo1, foo2, foo3);
+
+module.exports = {
+  seriesFoo,
+  parallelFoo
+};
+```
+
+### 8.4 gulp 的文件操作
+
+```js
+const { src, dest } = require('gulp');
+
+const copyFile = () => {
+  // 1.读取文件 2.写入文件
+  // return src('./src/main.js').pipe(desc('./dist'));
+  // src 下所有文件
+  return src('./src/**/*.js').pipe(desc('./dist'));
+};
+
+module.exports = {
+  copyFile
+};
+```
+
+```js
+/** 压缩代码 */
+const { src, dest, watch } = require('gulp');
+const babel = require('gulp-babel');
+
+const jsTask = () => {
+  return src('./src/**/*,js')
+    .pipe(babel({ presets: ['@babel/preset-env'] }))
+    .pipe(desc('./dist'));
+};
+
+watch('./src/**/.js', jsTask);
+```
+
+### 8.5 gulp 的案例演练
+
+- 功能包括
+  - 打包 html <- `gulp-htmlmin`
+  - 打包 js <- `gulp-babel` + `gulp-terser`
+  - 打包 less <- `gulp-less`
+  - html 资源注入 <- `gulp-inject`
+  - 开启本地服务 <- `brwoser-sync`
+  - 创建打包任务
+  - 创建开发任务
+
+### 8.6 gulp 开发和构建
