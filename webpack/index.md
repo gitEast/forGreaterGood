@@ -1308,3 +1308,154 @@ function getCommonConfig(isProduction) {
     ```
 
 ### 7.2 自定义 plugin
+
+- tapable 的使用介绍
+  - 与 webpack 的使用
+    - webpack 中有两个非常重要的类：Compiler 和 Compilation
+    - 通过注入插件的方式，来监听 webpack 的所有生命周期
+      - 插件的注入需要 hook
+      - 创建 Tapable 库中的各种 hook 实例
+  - 提供的 Hook
+    - 同步 sync
+      - SyncHook
+      - SyncBailHook
+      - SyncWaterfallHook
+      - SyncLoopHook
+    - 异步 async
+      - Parallel 并行: 不会等到上一个事件回调结束才执行下一次事件处理回调
+        - AsyncParallelHook
+        - AsyncParallelBailHook
+      - Series 串行: 等待上一个异步事件完成
+        - AsyncSeriesHook
+        - AsyncSeriesBailHook
+        - AsyncSeriesWaterfallHook
+    - 其他分类
+      - bail: 当有返回值时，会阻断后续事件继续执行
+      - loop: 当返回值 = `true` 时，反复执行该事件；当返回值 = `undefined` or 不返回时，退出事件
+      - waterfall: 当返回值 != `undefined` 时，将本次返回的结果作为下一次事件的第一个参数
+        - 原本第一个会被修改
+- tapable 的同步操作
+
+  ```js
+  /** 基本使用 */
+  const { SyncHook } = require('tapable');
+
+  class CustomCompiler {
+    constructor() {
+      this.hooks = {
+        // 1. 创建 hook
+        syncHook: new SyncHook(['name', age])
+      };
+
+      // 2. 用 hooks 监听事件(自定义 plugin)
+      this.hooks.syncHook.tap('event1', (name, age) => {
+        console.log('event1事件监听执行', name, age);
+      });
+      this.hooks.syncHook.tap('event2', (name, age) => {
+        console.log('event2事件监听执行', name, age);
+      });
+    }
+  }
+
+  const compiler = new CustomCompiler();
+  compiler.hooks.syncHook.call('east', 23);
+  ```
+
+- tapable 的异步操作
+
+  ```js
+  /** 串行 */
+  const { AsyncSeriesHook } = require('tapable');
+
+  class CustomCompiler {
+    constructor() {
+      this.hooks = {
+        // 1. 创建 hook
+        seriesHook: new AsyncSeriesHook(['name', age])
+      };
+
+      // 2. 用 hooks 监听事件(自定义 plugin)
+      this.hooks.seriesHook.tapAsync('event1', (name, age, callback) => {
+        console.log('event1事件监听执行', name, age);
+        callback();
+      });
+      this.hooks.seriesHook.tapAsync('event2', (name, age, callback) => {
+        console.log('event2事件监听执行', name, age);
+        callback();
+      });
+    }
+  }
+
+  const compiler = new CustomCompiler();
+  compiler.hooks.seriesHook.callAsync('east', 23, () => {
+    console.log('所有事件执行完毕');
+  });
+  ```
+
+- 自定义 Plugin 的流程
+  1. 在 webpack 函数的 createCompiler 方法中，注册了所有的插件
+  2. 在注册插件时，会调用插件函数 or 插件对象的 apply 方法
+  3. 插件方法接收 compiler 对象，可以通过 compiler 对象来注册 hook 事件
+  4. 某些插件也会传入一个 compilation 对象，用于监听 compilation 的 hook 事件
+- 自定义 Plugin 的练习
+
+  - 将静态文件自动上传服务器
+
+    ```js
+    const { NodeSSH } = require('node-ssh');
+
+    class AutoUploadWebpackPlugin {
+      constructor() {
+        this.ssh = new NodeSSH();
+      }
+
+      apply(compiler) {
+        compiler.hooks.afterEmit.tapAsync(
+          'AutoUpload',
+          async (compilation, callback) => {
+            // 1. 获取输出文件夹路径
+            const outputPath = compilation.outputOptions.path;
+
+            // 2. 连接远程服务器 SSH by node-ssh 库
+            await this.connectServer();
+
+            // 3. 删除文件夹中原有内容
+            const remotePath = '/root/test/';
+            this.ssh.execCommand(`rm -rf ${remotePath}*`);
+
+            // 4.将文件夹中资源上传至服务器中
+            await this.uploadFiles(outputPath, remotePath);
+
+            // 5. 关闭 ssh 连接
+            this.ssh.dispose();
+
+            // 完成所有操作后，调用 callback
+            callback();
+          }
+        );
+      }
+
+      async connectServer() {
+        await ssh.connect({
+          host: 'host',
+          username: 'root',
+          password: 'xxxx'
+        });
+        console.log('服务器连接成功');
+      }
+
+      async uploadFiles(localPath, remotePath) {
+        // params: localPath, remotePath
+        const status = await this.ssh.putDirectory(localPath, remotePath, {
+          recursive: true, // 递归上传
+          concurrency: 10 // 并发上传
+        });
+        if (status) {
+          console.log('文件上传成功');
+        }
+      }
+    }
+
+    module.exports = AutoUploadWebpackPlugin;
+    module.exports.AutoUploadWebpackPlugin = AutoUploadWebpackPlugin;
+    ```
