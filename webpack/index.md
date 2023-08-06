@@ -488,7 +488,6 @@ module.exports = {
   - 前端有哪些常见的性能优化？
     - 其中一个方面 webpack
 - 性能优化方案的分类：
-
   - 打包后的结果：上线时的性能优化 -- 一般侧重这个，对线上的产品影响更大
     - 分包处理
     - 减小包体积
@@ -498,9 +497,583 @@ module.exports = {
     - exclude
     - cache-loader
     - ...
-
 - 大多数情况下，webpack 都做好了该有的性能优化
+
   - 例：配置 mode 为 production or development 时，默认 webpack 的配置信息
   - => 也可以针对性地进行自己的项目优化
 
-### 5.1 代码分离
+- webpack 打包的 bundle.js 文件包含
+  1. 自己编写的代码
+  2. 项目用到的第三方库
+  3. webpack 为了支持运行时的模块化
+     - 运行时代码
+  - 缺点
+    1. 不方便管理
+    2. bundle.js 包非常大，影响首屏渲染速度
+
+### 5.1 webpack 代码分离
+
+> 以前学习的是从一个入口出发，生成依赖图，从而生成打包文件。
+
+- 代码分离 Code Splitting
+  - 目的：将代码分离到不同的 bundle 中，之后可以按需加载 or 并行加载这些文件
+  - 优点：默认情况下，所有的 js 代码都在首页加载，会影响首页的加载速度 => 代码分离可以分出更小的 bundle，以及控制资源加载优先级，提供代码的加载性能
+- webpack 常用的代码分离方法
+  1. 入口起点：使用 entry 配置手动分离代码
+  2. 防止重复：使用 Entry Dependencies or SplitChunksPlugin 去重和分离代码
+  3. 动态导入：通过模块的内联函数调用来分离代码
+
+#### 5.1.1 多入口依赖
+
+- 即配置多个入口
+
+  ```js
+  module.exports = {
+    entry: {
+      index: './src/index.js',
+      main: './src/main.js'
+    },
+    output: {
+      path: path.resolve(__dirname, './build'),
+      // placeholder
+      filename: '[name]-bundle.js',
+      clean: true
+    }
+  };
+  ```
+
+- 问题：不同的入口文件中有相同的依赖
+  ```js
+  module.exports = {
+    entry: {
+      index: {
+        import: './src/index.js',
+        dependOn: 'shared'
+      },
+      main: {
+        import: './src/main.js',
+        dependOn: 'shared'
+      },
+      shared: ['axios']
+    },
+    output: {
+      path: path.resolve(__dirname, './build'),
+      // placeholder
+      filename: '[name]-bundle.js',
+      clean: true
+    }
+  };
+  ```
+
+实际使用较少。
+
+#### 5.1.2 防止重复
+
+```js
+module.exports = {
+  optimization: {
+    splitChunks: {
+      chunks: 'all', // async 默认情况; all 第三方包和动态导入都分包
+      /**
+      maxSize: 20000, // 当包大于指定的大小时，继续进行拆包(也有可能因为有整体不可拆分，所以大于该 size)
+      */
+      minSize: 100, // 将包拆分成不小于 minSize 的包。 默认值 20000
+      // 自己对需要进行拆分的内容进行分包
+      cacheGroups: {
+        vendor: {
+          test: /[/\\]node_modules[/\\]/,
+          filename: '[name]_vendors.js'
+        },
+        utils: {
+          test: /utils/,
+          filename: '[name]_utils.js'
+        }
+      }
+    }
+  }
+};
+```
+
+- production mode 情况下，有对包的注释进行单独提取
+  ```js
+  const TerserPlugin = require('terser-webpack-plugin');
+  module.exports = {
+    optimization: {
+      // TerserPlugin: 让代码更加简洁
+      minimizer: [
+        // js 代码简化
+        new TerserPlugin({
+          extractComments: false // 默认为 true，提取注释
+        })
+        // css 简化
+      ]
+    }
+  };
+  ```
+- chunkId 算法
+  ```js
+  module.exports = {
+    optimization: {
+      // development: named 默认
+      // production: deterministic 默认 确定性
+      chunkIds: 'named'
+    }
+  };
+  ```
+  - `natural`: 按照数字的顺序使用 id
+  - `named`: development 下的默认值，一个可读的名称的 id
+  - `deterministic`: 确定性的，在不同的编译中不变的短数字 id
+    - webpack4 中没有这个值
+      - 如果使用 `natural`，那么在一些编译发生变化时，就会有问题
+    - 不变的话，可以不重新进行下载
+  - 建议
+    - 开发环境 `named`
+    - 打包过程 `deterministic`
+
+#### 5.1.3 动态导入
+
+> Vue/React 的懒加载
+
+- dynamic import 动态导入
+  - webpack 提供两种方式
+    1. ECMAScript 的 `import()` 函数
+    2. webpack 遗留的 `require.ensure`，目前不推荐使用
+- 打包文件命名规则(分包)
+
+  ```js
+  // 使用魔法注释 webpackChunkName 在 [name] 生效
+  btn.onclick = function () {
+    import(/* webpackChunkName: "math" */ './utils/math.js');
+  };
+
+  module.exports = {
+    output: {
+      chunkFhilename: '[name]_chunk.js'
+    }
+  };
+  ```
+
+#### 5.1.4 optimization.runtimeChunk 配置
+
+- runtimeChunk
+  - 配置 runtime 相关的代码是否抽取到一个单独的 chunk 中
+    - runtime 相关的代码：指在运行环境中，对模块进行解析、加载模块信息相关的代码
+      - 例如：component、bar 两个通过 import 函数相关的代码加载，就是通过 runtime 代码完成的
+  - 抽离的优点
+    - 有利于浏览器缓存的策略
+      - if 修改了业务代码，那么 runtime 和 component、bar 的 chunk 是不需要重新加载的
+  - value
+    - `true/multiple`: 针对每个入口打包一个 runtime 文件
+    - `single`: 一个
+    - 对象：name 属性决定 runtimeChunk 的名称
+  - 现在不常用
+
+```js
+module.exports = {
+  runtimeChunk: {
+    name: 'runtime'
+  }
+};
+```
+
+### 5.2 prefetch 和 preload
+
+> webpack v4.6.0+ 增加了对预获取和预加载的支持。
+
+- 声明 import 时，可以使用预获取和预加载两种内置指令
+  - prefetch(预获取): 将来某些导航下可能需要的资源
+  - preload(预加载): 当前导航下可能需要的资源
+- preload 与 prefetch 的区别
+  1. preload chunk 会在 parent chunk 加载时，以并行方式开始加载；prefetch chunk 会在 parent chunk 加载结束后开始加载。
+  2. preload chunk 具有中等优先级，并立即开始下载；prefetch chunk 在浏览器闲置时下载。
+  3. preload chunk 会在 parent chunk 中立即请求，用于当下时刻；prefetch chunk 会用于未来的某个时刻。
+
+```js
+btn.onclick = function () {
+  import(
+    /* webpackChunkName: "category" */
+    /* webpackPrefetch: true */
+    './router/category'
+  ).then((res) => {});
+};
+```
+
+### 5.3 CDN 加速服务器配置
+
+- 自己的 CDN 配置
+  ```js
+  module.exports = {
+    output: {
+      publicPath: '[CDN 地址]/'
+    }
+  };
+  ```
+- 引入第三方库的 CDN 配置
+  1. 打包时不再需要对第三方库进行打包
+     ```js
+     module.exports = {
+       // 排除某些包不需要打包
+       externals: {
+         // value: 实际使用时框架名 import key from 'value'
+         React: 'react',
+         axios: 'axios'
+       }
+     };
+     ```
+  2. 在 html 模块中，需要自己加入对应的 CDN 服务器地址
+     ```html
+     <body>
+       <script src="[CDN 地址第三方库]"></script>
+     </body>
+     ```
+
+### 5.4 CSS 样式的单独提取
+
+1. 处理 CSS 文件：`style-loader`, `css-loader`
+   ```js
+   module.exports = {
+     module: {
+       rules: [
+         {
+           test: /\.css/,
+           use: ['style-loader', 'css-loader']
+         }
+       ]
+     }
+   };
+   ```
+2. 提取 CSS 文件: `mini-css-extract-plugin`
+
+   ```js
+   const MiniCssExtractPlugin = require('');
+
+   module.exports = {
+     rules: [
+       {
+         test: /\.css/,
+         use: [
+           // 'style-loader',  // 开发环境
+           MiniCssExtractPlugin.loader, // 生产环境
+           'css-loader'
+         ]
+       }
+     ],
+     plugins: [
+       new MiniCssExtractPlugin({
+         filename: 'css/[name]_[hash:6].css',
+         chunkFilename: 'css/[name]_[hash:6]_chunk.css' // 动态导入的分包
+       })
+     ]
+   };
+   ```
+
+   - 建议使用 `contenthash` or `chunkhash`
+
+### 5.5 JS 和 CSS 代码压缩
+
+- Terser
+  - 一个 JavaScript 的解释 Parser、绞肉机 Mangler/压缩机 Compressor 的工具集
+  - 作用：压缩、丑化代码，使 bundle 变得更小
+  - 由 uglify-es fork 而来，并保留原来大部分 API 以及适配 uglify-es 和 uglify-js
+  - webpack 中的配置(TerserPlugin)
+    - extractComments: default true, 将注释抽取到一个单独的文件中
+    - parallel: default true，使用多进程并发运行提升构建的速度
+      - 并发运行默认的数量：`os.cups().length - 1`
+      - 也可以自己设置个数
+    - terserOptions: 设置 terser 相关配置
+      - Compress options
+        - arrows: class or object 中的函数，转换成箭头函数
+        - arguments: 将函数中使用 arguments[index] 转成对应的形参名称
+        - dead_code: 移除不可达的代码 tree shaking
+        - ...
+      - Mangle options
+        - toplevel: default false，顶层作用域中的变量名称，进行丑化
+        - keep_classnames： default false，是否保持依赖的类名称
+        - keep_fnames：default false，是否保持原来的函数名称
+        - ...
+- CSS 压缩
+  - `css-minimizer-webpack-plugin` 插件
+    - 使用 cssnano 工具来优化、压缩 CSS
+
+```js
+module.exports = {
+  mode: 'production',
+  minimize: true, // production 模式下默认为 true；development 模式下 false
+  minimizer: [
+    // js 压缩插件
+    new TerserPlugin({
+      extractComments: false, // 第三方的注释不抽取到单独的文件
+      terserOptions: {
+        // 压缩相关配置项
+        compress: {
+          arguments: true,
+          unused: true // 删除 dead_code
+        },
+        mangle: true, // 是否丑化
+        toplevel: true // 顶层变量是否进行转换
+      }
+    }),
+    new CSSMinimizerPlugin({})
+  ]
+};
+```
+
+### 5.6 Tree Shaking 的实现
+
+#### 5.6.1 webpack 抽取
+
+> 代码太多了，分不同情况抽取
+
+- 不同的情况
+  - 所有情况通用：`comm.config.js`
+  - 生产环境：`prod.config.js`
+  - 开发环境：`dev.config.js`
+- package.json 脚本命令修改
+  - 生产环境：`"build": "webpack --config ./config/comm.config.js --env production"`
+  - 开发环境：`"build": "webpack --config ./config/comm.config.js --env development"`
+- 合并插件 `webpack-merge`
+
+```js
+/** comm.config.js */
+const { merge } = require('webpack-merge');
+
+const devConfig = require('./dev.config');
+const prodConfig = require('./prod.config');
+
+const getCommonConfig = function (isProduction) {
+  return {
+    rules: [
+      {
+        test: /\.css$/,
+        use: [
+          isProduction: MiniCssExtractPlugin.loader: 'style-loader',
+          'css-loader'
+        ]
+      }
+    ]
+  };
+};
+
+module.exports = function (env) {
+  console.log(env); // 根据命令不同，传入的值也不同 { production: true } / { development: true }
+  const isProduction = env.production;
+  const customConfig = isProduction ? prodConfig : devConfig;
+  return merge(getCommonConfig(isProduction), customConfig);
+
+  if (isProduction) {
+    console.log('生产环境');
+  } else {
+    console.log('开发环境');
+  }
+};
+```
+
+```js
+/** dev.config.js */
+module.exports = {
+  mode: 'development'
+};
+```
+
+#### 5.6.2 Tree Shaking
+
+- Tree Shaking
+  - 术语，在计算机中表示消除 dead_code
+  - 最早起源于 LISP，用于消除未调用的代码
+    - 纯函数：无副作用，可以放心地消除 —— why 要求在进行函数式编程时，尽量使用纯函数的原因之一
+  - 后来也被应用于其他语言: JavaScript, Dart
+- JavaScript 中的 Tree Shaking
+  - 打包工具 rollup 所做
+  - 依赖于 ES Module 的静态语法分析
+    - 不执行任何代码，即可明确知道模块的依赖关系
+  - webpack
+    - webpack2 正式内置了 ES6 模块，和检测未使用模块的能力
+    - webpack4 正式扩展了这个能力，并且通过 package.json 的 sideEffects 属性作为标记 => 告知 webpack 在编译时，哪里的文件可以安全地删除掉
+    - webpack5 中提供了对部分 CommonJS tree shaking 的支持
+      - 相对 ES Module 而言没有那么好用
+- webpack 实现 Tree Shaking
+  - 方案一：useExports
+    - 通过标记某些函数是否被使用，之后通过 Terser 来进行优化
+    ```js
+    module.exports = {
+      mode: 'development',
+      optimization: {
+        usedExports: true // 导入模块时，分析模块中哪些函数有被使用、哪些没有被使用，并添加注释
+      },
+      minimize: true,
+      minimizer: [
+        new TerserPlugin({...})
+      ]
+    };
+    ```
+  - 方案二：sideEffects
+    - 跳过整个模块/文件，直接查看该文件是否有副作用
+      ```json
+      {
+        "sideEffects": false
+      }
+      ```
+      - 告知 webpack 可以安全地删除未用到的 exports
+      ```json
+      {
+        "sideEffects": ["./src/utils/math.js", "*.css"]
+      }
+      ```
+      - 一些希望保留的 exports
+  - 建议：平时编写模块时，尽量编写纯模块
+  - 最佳方案
+    - optimization 中配置 usedExports 为 true
+    - package.json 中配置 sideEffects，直接对模块进行优化
+- webpack 对 CSS 的压缩
+
+  - 插件：`purgecss-webpack-plugin`
+    - 安装 glob 模块：`npm install glob -D`
+
+  ```js
+  const { PurgeCSSPlugin } = require('puegecss-webpack-plugin');
+  const glob = require('glob');
+
+  module.exports = {
+    plugins: [
+      new PurgeCSSPlugin({
+        paths: glob.sync(`${path.resolve(__dirname, '../src')}/**/*`, {
+          nodir: true
+        })
+      })
+    ]
+  };
+  ```
+
+### 5.7 Scope Hoisting 作用
+
+> 作用域提升
+
+- Scope Hoisting
+  - 功能：对作用域及逆行提升，并且使 webpack 打包后的代码更小、运行更快
+  - 从 webpack3 开始新增的功能
+- 不同模式下
+  - production 模式下默认开启
+  - development 模式下默认关闭
+
+```js
+module.exports = {
+  plugins: [new webpack.optimize.ModuleConcatenationPlugin()]
+};
+```
+
+### 5.8 HTTP 文件压缩传输
+
+- HTTP 压缩
+  - 一种内置在服务器和客户端之间的、以改进传输速度和带宽利用率的方式
+  - 流程
+    1. HTTP 数据在服务器发送前就已经被压缩(可在 webpack 中完成)
+    2. 兼容的浏览器在向服务器发送请求时，会告知服务器自己支持哪些压缩格式
+       ```
+       GET /encrypted-area HTTP/1.1
+       Host: www.example.com
+       Accept-Encoding: gzip, deflate
+       ```
+    3. 服务器在浏览器支持的压缩格式下，直接返回对应的压缩后的文件，并在响应头中告知浏览器
+       ```
+       HTTP/1.1 200 OK
+       Date: Tue, 27 Feb 2018 06:03:16 GMT
+       Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT
+       Accept-Rnages: bytes
+       Connect-Length: 438
+       Connection: close
+       Content-Type: text/html; charset=UTF-8
+       Content-Encoding: gzip
+       ```
+  - 压缩格式
+    - compress
+      - UNIX 的 “compress” 程序的方法
+      - 历史性原因，不推荐大多数应用使用
+    - deflate：基于 `deflate` 算法(定义于 RFC 1951) 的压缩，使用 zlib 数据格式封装
+    - gzip
+      - GNU zip 格式(定义于 RFC 1952)
+      - 目前使用比较广泛的压缩算法
+    - br
+      - 一种新的开源压缩算法
+      - 专为 HTTP 内容的编码而设计
+- webpack 使用 gzip 压缩
+  1. 安装插件 `compression-webpack-plugin`
+  2. webpack 配置
+     ```js
+     const CompressionPlugin = require('compression-webpack-plugin');
+     module.exports = {
+       plugins: [
+         // 对打包后的文件进行压缩
+         new CompressionPlugin({
+           test: /\.(js|css)$/,
+           algorithm: 'gzip'
+         })
+       ]
+     };
+     ```
+
+### 5.9 HTML 文件的压缩
+
+```js
+function getCommonConfig(isProduction) {
+  return {
+    plugins: [
+      new HtmlWebpackPlugin({
+        template: './index.html',
+        cache: true, // 改变时才生成新的文件
+        minify: isProduction
+          ? {
+              removeComments: true, // 移除注释
+              removeEmptyAttributes: true, // 移除空属性
+              removeRedundantAttributes: true, // 移除默认属性
+              collapseWhitespace: true, // 折叠空白字符
+              minifyCSS: true, // 压缩内联的 CSS
+              // 压缩 JS
+              minifyJS: true: {
+                mangle: {
+                  toplevel: true
+                }
+              }
+            }
+          : false
+      })
+    ]
+  };
+}
+```
+
+### 5.10 webpack 打包分析
+
+- 打包时间分析
+
+  - speed-measure
+
+    ```js
+    const SpeedMeasurePlugin = require('speed-measure-webpack-plugin');
+
+    const smp = new SpeedMeasurePlugin();
+
+    module.exports = function (env) {
+      // ...
+      return smp.wrap(finalConfig);
+    };
+    ```
+
+- 打包后的文件分析
+  1. 官方工具
+     ```json
+     {
+       "scripts": {
+         "build": "webpack --config ./config/comm.config.js --env production --profile --json=stats.json"
+       }
+     }
+     ```
+     - 查看分析文件 stats.json
+       1. https://github.com/webpack/analyse，下载代码并安装依赖
+       2. 安装 grunt 工具，并执行命令 `grunt dev`
+  2. 安装插件 `bundle-analyzer-webpack-plugin`
+  3. plugins 中使用
+     ```js
+     module.exports = {
+       plugins: [new BundleAnalyzerPlugin()]
+     };
+     ```
