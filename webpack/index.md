@@ -1077,3 +1077,234 @@ function getCommonConfig(isProduction) {
        plugins: [new BundleAnalyzerPlugin()]
      };
      ```
+
+## 六、webpack 源码解析
+
+1. 源码一般在 lib/packages 文件夹下
+2. 手动引入 webpack 使用
+
+   ```js
+   /** build.js */
+   const webpack = require('../lib/webpack');
+   const config = require('./webpack.config');
+
+   const compiler = webpack(config);
+
+   compiler.run((err, stats) => {
+     if (err) {
+       console.log(err);
+     } else {
+       console.log(stats);
+     }
+   });
+   ```
+
+## 七、webpack 自定义 loader 和 plugin
+
+### 7.1 自定义 loader
+
+- 认识自定义 Loader
+  - Loader
+    - 本质：一个导出为函数的 JavaScript 模块
+      - loader runner 库会调用这个函数，然后将上一个 loader 产生的结果 or 资源文件传入
+    - 作用：对模块的源代码进行转换(处理)
+    - 接收三个参数
+      - content: 资源文件内容
+      - map: sourcemap 相关的数据
+      - meta: 一些元数据
+      ```js
+      module.exports = function (content, map, meta) {
+        return content;
+      };
+      ```
+  - 自定义 Loader
+    - module 中 use 模块的格式与一般 loaders 相同，需要在 resolveLoader 中做配置
+      ```js
+      module.exports = {
+        resolveLoader: {
+          modules: ['node_modules', './custom-loaders']
+        },
+        module: {
+          rules: [
+            {
+              test: /\.js$/,
+              use: ['custom_loader01', 'custom_loader02', 'custom_loader03']
+            }
+          ]
+        }
+      };
+      ```
+- Loader 的加载顺序
+  - 顺序：从后往前，自下而上
+  - pitch 函数
+    ```js
+    module.exports.pitch = function () {};
+    ```
+  - 真正的顺序
+    1. 顺序执行 pitchLoader <- loaderIndex++
+    2. 逆序执行 NormalLoader <- loaderIndex--
+  - 修改对应的顺序 by enforce
+    - 默认所有的 loader 都是 normal
+    - 在行内设置 inline `import 'loader1!loader2!./test.js'`
+    - 设置 pre 和 post by enforce
+      ```js
+      module.exports = {
+        module: {
+          rules: [
+            {
+              test: /\.js$/,
+              use: 'custom_loader01',
+              enforce: 'post' // 最后执行
+            },
+            {
+              test: /\.js$/,
+              use: 'custom_loader02',
+              enforce: 'pre' // 最先执行
+            },
+            {
+              test: /\.js$/,
+              use: 'custom_loader03'
+            }
+          ]
+        }
+      };
+      ```
+    - 执行顺序
+      - pitch: post -> inline -> normal -> pre
+      - normal: pre -> normal -> inline -> post
+- 同步和异步 Loader
+  - 同步返回：`const callback = this.callback`
+  - 异步：`const callback = this.async()`
+- 获取以及校验参数
+
+  - 传入参数格式
+    ```js
+    module.exports = {
+      module: {
+        rules: [
+          {
+            test: /\.js$/,
+            use: [
+              {
+                loader: 'xxx',
+                options: {
+                  plugins: [],
+                  presets: [],
+                  name: 'east'
+                }
+              }
+            ]
+          }
+        ]
+      }
+    };
+    ```
+  - 获取参数
+    ```js
+    module.exports = function (content) {
+      const options = this.getOptions();
+      console.log(options); // { plugins: [], presets: [], name: 'east' }
+      return content;
+    };
+    ```
+  - 校验参数 by schema-utils 官方库
+
+    ```js
+    const { validate } = require('schema-utils');
+
+    const loaderSchema = require('./schema/loader_schema.json');
+
+    module.exports = function (content) {
+      const options = this.getOptions();
+      console.log(options); // { plugins: [], presets: [], name: 'east' }
+
+      // params: 校验规则, options
+      validate(loaderSchema, options);
+
+      return content;
+    };
+    ```
+
+    ```json
+    // 校验规则
+    {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "请输入名称，并且是 string 类型"
+        },
+        "age": {
+          "type": "number",
+          "description": "请输入年龄，并且是 number 类型"
+        }
+      }
+    }
+    ```
+
+- babel-loader 案例练习
+
+  1. 安装 `@babel/core`
+  2. 使用 `babel.transform(content, options, successCb)`
+
+     - options
+
+       ```js
+       const moduleOptions = {
+         // plugins: ['@babel/plugin-transform-arrow-functions'],
+         presets: ['@babel/preset-env']
+       };
+
+       let options = this.getOptions();
+
+       if (!Object.keys(options).length) {
+         options = require('../babel.config');
+       }
+       ```
+
+     - successCb: `(err, result) => {}`
+       ```js
+       const successCb = (err, result) => {
+         if (err) callback(err);
+         else callback(null, result.code); // babel 转换后的代码在 code 里
+       };
+       ```
+
+- markdown-loader 案例练习
+
+  ```js
+  /** custom-md-loader */
+  const { marked } = require('marked');
+
+  module.exports = function (content) {
+    const htmlContent = marked(content);
+    const innerContent = '`' + htlmContent = '`'
+    const moduleContent = `var code = ${innerContent}; export default code;`
+
+    return moduleContent;
+  };
+  ```
+
+  ```js
+  /** main.js */
+  import code from './learn.md';
+
+  console.log(code);
+
+  document.body.innerHTML = code;
+  ```
+
+  - 要求返回的结果必须是模块化的内容
+  - 代码高亮 `highlight.js`
+
+    ```js
+    const hljs = require('highlight.js');
+
+    marked.setOptions({
+      highlight: function (code, lang) {
+        return hljs.highlight(lang, code).value;
+      }
+    });
+    ```
+
+### 7.2 自定义 plugin
