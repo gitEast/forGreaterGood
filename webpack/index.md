@@ -1734,3 +1734,64 @@ npx rollup -c -w # 持续监听代码修改
   ```js
   const isProduction = process.env.ENV_NODE === 'production';
   ```
+
+## 十、快速开发工具 vite
+
+### 10.1 认识 Vite 核心理念
+
+- 官方定位：下一代前端开发与构建工具
+- 如何定义下一代：
+  1. 在实际开发中，编写的代码往往不能被浏览器直接识别(如 ES6, TS, Vue, ...)
+  2. => 需要通过构建工具来对代码进行转换、编译 —— 类似的工具：webpack, rollup, parcel
+  3. 而随着项目越来越大，需要处理的 JavaScript 呈指数级增长，模块越来越多
+  4. => 构建工具需要很长时间才能开启服务器，HMR(hot module replacement)也需要时间
+  - => 天下苦 webpack 久矣：主要是配置太复杂了
+- vite 的构造
+  - 一个开发服务器：基于原生 ES 模块提供了丰富的内建功能，HMR 速度很快
+  - 一套构造指令：使用 rollup 打开代码，并且是可预配置的，可以输出生成环境的优化过的静态资源
+
+### 10.2 浏览器模块化支持
+
+### 10.3 Vite 基础打包能力
+
+- connect
+  - 早期的 vite 使用 Koa 搭建服务器
+  - vite2 开始使用 connect 搭建服务器
+- ts
+  - vite 原生就支持 ts
+
+### 10.4 Vite 打包 Vue、React
+
+```js
+/** vite.config.js */
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+
+export default defineConfig({
+  plugins: [vue()]
+});
+```
+
+- 对于框架的使用需要对应的插件
+- 打包命令: `npx vite build`
+- preview 预览打包后的效果: `npx vite preview`
+
+### 10.5 Vue 脚手架工具使用
+
+1. `npm create vite`
+
+### 10.6 ESBuild 工具的解析
+
+- ESBuild 特点
+  1. 超快的构建速度，并且不需要缓存
+  2. 支持 ES6 和 CommonJS 的模块化
+  3. 支持 ES6 的 tree shaking
+  4. 支持 Go, JavaScript 的 API
+  5. 支持 TS、JSX 等语法编译
+  6. 支持 Source Map
+  7. 支持代码压缩
+  8. 支持扩展其他插件
+- 优点
+  1. 使用 Go 语言编写，可以直接转换成机器码，无需经过字节码
+  2. ESBuild 充分利用 CPU 的内核，尽可能让它们饱和运行
+  3. ESBuild 的所有内容都是从零开始编写的，而不是使用第三方，所以从一开始就可以考虑各种性能问题
