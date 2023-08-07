@@ -1584,3 +1584,153 @@ watch('./src/**/.js', jsTask);
   - 创建开发任务
 
 ### 8.6 gulp 开发和构建
+
+## 九、库打包工具 rollup
+
+- 官方定义：Rollup is a module bundler for JavaScript which compiles small pieces of code into something larger and more complex, such as a library or application.
+- Rollup 定义与定位都与 webpack 相似
+  - Rollup 也是一个模块化的打包工具，但主要针对于 ES Module 进行打包
+    - **默认情况下只处理 ES Module**
+  - Rollup 更专注于处理 JavaScript 代码
+    - webpack 通过各种 loader 处理各种各样的文件，以及处理它们的依赖关系
+  - Rollup 的配置和理念相对于 webpack 而言，更加简洁、容易理解
+  - 早期 webpack 不支持 tree shaking 时，rollup 具备更强的优势
+
+### 9.1 rollup 的基本使用
+
+1. `pnpm add rollup -D`
+2. 确定库用于什么环境
+   - node: 支持 commonjs -> `-f cjs`
+   - browser: 有全局对象 -> `-f iife`
+   - AMD/CMD -> `-f amd`
+   - UMD: 通用 -> `-f umd --name=eastUtils`, 需要名字
+
+```js
+/** rollup.config.js */
+module.exports = {
+  input: './lib/index.js',
+  output: [
+    {
+      format: 'umd',
+      name: 'eastUtils',
+      file: './build/bundle.umd.js'
+    },
+    {
+      format: 'cjs',
+      file: './build/bundle.cjs.js'
+    },
+    {
+      format: 'amd',
+      file: './build/bundle.amd.js'
+    },
+    {
+      format: 'iife',
+      name: 'eastUtils',
+      file: './build/bundle.browser.js'
+    }
+  ]
+};
+```
+
+```shell
+npx rollup -c
+```
+
+### 9.2 rollup 的常见插件
+
+- lodash 使用
+  - 需要使用 `@rollup/plugin-commonjs` 以支持 CommonJS 导出语法(lodash 使用该语法)
+  - 需要 `@rollup/plugin-node-resolve` 以支持 node_modules 文件夹下的第三方包
+
+```js
+/** rollup.config.js */
+const commonjs = require('@rollup/plugin-commonjs');
+const nodeResolve = require('@rollup/plugin-node-resolve');
+const { babel } = require('@rollup/plugin-babel');
+const terser = require('@rollup/plugin-terser');
+
+module.exports = {
+  input: './lib/index.js',
+  output: {
+    format: 'umd',
+    name: 'eastUtils',
+    file: './build/bundle.umd.js',
+    globals: {
+      lodash: '_'
+    }
+  },
+  external: ['lodash'], // 不打包，让库的使用者自己下载
+  plugins: [
+    commonjs(),
+    nodeResolve(),
+    babel({
+      babelHelpers: 'bundled',
+      exclude: /node_modules/
+    }),
+    terser()
+  ]
+};
+```
+
+### 9.3 rollup 的 css 打包
+
+```js
+const postcss = require('rollup-plugin-postcss');
+
+module.exports = {
+  plugins: [postcss({ plugins: [require('postcss-preset-env')] })]
+};
+```
+
+### 9.4 rollup 的 vue 打包
+
+```js
+const vue = require('rollup-plugin-vue');
+const replace = require('@rollup/plugin-replace');
+
+module.exports = {
+  plugins: [
+    vue(),
+    replace({
+      'process.env.NODE_ENV': `"production"`
+    })
+  ]
+};
+```
+
+### 9.5 rollup 本地服务器
+
+```js
+const serve = require('rollup-plugin-serve');
+const liveReload = require('rollup-plugin-livereload');
+
+module.exports = {
+  plugins: [
+    serve({
+      port: 8000,
+      open: true,
+      contentBase: '.'
+    }),
+    liveReload()
+  ]
+};
+```
+
+```shell
+npx rollup -c -w # 持续监听代码修改
+```
+
+### 9.6 rollup 环境的区分
+
+- 不同环境
+  ```json
+  {
+    "scripts": {
+      "build": "rollup -c --environment NODE_ENV:production",
+      "serve": "rollup -c --environment NODE_ENV:development -w"
+    }
+  }
+  ```
+  ```js
+  const isProduction = process.env.ENV_NODE === 'production';
+  ```
