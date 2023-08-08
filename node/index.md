@@ -1929,3 +1929,63 @@ fileService.queryAvaterWithUserId(userId) {}
 
 -- 忘记这个是干嘛的了，没做。
 
+#### 6.7 后台管理系统部分接口
+
+```sql
+-- 创建角色表
+CREATE TABLE IF NOT EXISTS role(
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name Varchar(20) NOT NULL UNIQUE,
+  intro VARCHAR(200),
+  createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updateAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 创建菜单表
+CREATE TABLE IF NOT EXISTS menu(
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(20) NOT NULL,
+  type TINYINT(1),
+  icon VARCHAR(20),
+  parentId INT DEFAULT NULL,
+  url VARCHAR(50) UNIQUE,
+  permission VARCHAR(100) UNIQUE,
+  sort INT DEFAULT 100,
+  createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updateAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY(parentId) REFERENCES menu(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- 创建关系表
+CREATE TABLE IF NOT EXISTS role_menu(
+  roleId INT NOT NULL,
+  menuId INT NOT NULL,
+  createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updateAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (roleId, menuId),
+  FOREIGN KEY (roleId) REFERENCES role(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (menuId) REFERENCES menu(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- 获取菜单树
+SELECT 
+  rm.roleId, JSON_ARRAYAGG(rm.menuId) menuIds 
+FROM role_menu rm WHERE rm.roleId = 1 GROUP BY rm.roleId;
+```
+
+```js
+/** 角色 */
+class RoleService {
+  async create(role) {
+    const statement = `INSERT INTO role SET ?`;
+    const [result] = await connection.query(statement, [role]);
+  }
+
+  async assignMenu(roleId, menuIds) {
+    // 1. 为了操作方便，先删除之前的关系(更好的操作是，先查询排除，再新增新的)
+    // 2. 插入新的值
+  }
+
+  async getRoleMenu(roleId) {}
+}
+```

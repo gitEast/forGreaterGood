@@ -1795,3 +1795,18 @@ export default defineConfig({
   1. 使用 Go 语言编写，可以直接转换成机器码，无需经过字节码
   2. ESBuild 充分利用 CPU 的内核，尽可能让它们饱和运行
   3. ESBuild 的所有内容都是从零开始编写的，而不是使用第三方，所以从一开始就可以考虑各种性能问题
+
+## 十一、脚手架的开发
+
+`#!/usr/bin/env node`: 去环境变量里找 node 运行文件
+
+- `npm link`: 建立软链接
+- 常见命令
+  - `--version`
+- 通过工具来解析命令 commander.js
+  - `pnpm add commander`
+- `{ cwd: '' }`
+  - 进入路径
+- ejs: 模板引擎
+  - `pnpm add ejs`
+  
