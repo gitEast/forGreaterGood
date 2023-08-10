@@ -1968,8 +1968,8 @@ CREATE TABLE IF NOT EXISTS role_menu(
 );
 
 -- 获取菜单树
-SELECT 
-  rm.roleId, JSON_ARRAYAGG(rm.menuId) menuIds 
+SELECT
+  rm.roleId, JSON_ARRAYAGG(rm.menuId) menuIds
 FROM role_menu rm WHERE rm.roleId = 1 GROUP BY rm.roleId;
 ```
 
@@ -1989,3 +1989,295 @@ class RoleService {
   async getRoleMenu(roleId) {}
 }
 ```
+
+## 七、Node 服务器端渲染 SSR
+
+### 7.1 邂逅 SPA 和 SSR
+
+- SPA
+  - Single-Page Application，单页面应用
+  - SPA 应用在客户端呈现(CSR: client-side render)
+  - 默认只返回一个 空 HTML 页面
+    ```html
+    <body>
+      <div id="app"></div>
+    </body>
+    ```
+    - 内容通过 JavaScript 动态加载
+  - 常见使用的库
+    - React
+    - AngularJS
+    - Vue.js
+  - 优缺点
+    - 优点
+      1. 只需加载一次，后续页面切换不需要重新加载 => 页面加载速度比传统 Web 应用程序更快
+      2. 可以轻松地构建功能丰富的 Web 应用程序(by 框架)
+    - 缺点
+      1. SPA 应用默认只返回一个空 HTML 页面，不利于 SEO(search engine optimization)
+      2. 首屏加载的资源过大时，一样会影响首屏的渲染
+      3. 不利于构建复杂的项目，复杂的 Web 应用程序的大文件可能变得难以维护(?没碰到过这么大的)
+- 爬虫工作流程
+  1. 抓取
+     - 从互联网上发现各类网页，并抓取内容
+  2. 索引编制
+     - 分析网页上的文本、图片和视频文件，并将信息存储在大型数据库(索引区)中
+     - 会对内容类似的网页分类归组
+     - 不符合规则的内容和网站会被清理
+       - 禁止访问 or 需要权限等
+  3. 呈现搜索结果
+- 搜索引擎的优化 SEO
+  - 语义性 HTML 标记
+    - 标题用 `<h1>`，一个页面只有一个；副标题用 `<h2>` 至 `<h6>`
+    - 不能过度使用 h 标签，多次使用不会增加 SEO
+    - 段落用 `<p>`，列表用 `<ul>`，且 `<li>` 只放在 `<ul>` 中
+    - ...
+  - 每个页面需包含：标题 + 内部链接
+    - 每个页面对应的 title，同一网站所有页面都有内链可以指向首页
+  - 确保链接可供抓取(路径正确且使用 a 标签)
+  - meta 标签优化：设置 description keywords 等
+  - 文本标记和 img
+    - 文本：加粗、斜体等
+    - img 标签：alt 属性，图片加载失败，会爬取 alt 内容
+  - robots.txt 文件：规定爬虫可访问网站上的哪些网址
+    - 可在线生成
+  - sitemap.xml 站点地图：在站点地图列出所有网页，确保爬虫不会漏掉某些网页
+    - 可在线生成
+- 静态站点生成 SSG
+  - static site generate，是预先生成好的静态网站
+    - 一般在构建阶段就确定了网站的内容
+    - if 网站的内容需要更新，需要重新构建和部署
+  - 常见的库和框架：Vue -> Nuxt; React -> Next.js
+  - 优点
+    1. 访问速度非常快，因为每个页面都是在构建阶段就已经提前生成好的
+    2. 直接给浏览器返回静态的 HTML，也有利于 SEO
+    3. 依然保留了 SPA 应用的特性：前端路由、响应式数据、虚拟 DOM 等
+  - 缺点
+    1. 页面都是静态的，不利于展示实时性的内容，实时性更适合 SSR
+    2. if 内容更新，必须重新构建和部署
+- 服务器端渲染 SSR
+  - Server Side Render，在服务器端渲染页面，并将渲染好的 HTML 返回给浏览器呈现
+    - 又称同构应用
+  - 常见的库和框架：Vue -> Nuxt; React -> Next.js
+  - 优缺点
+    - 优点
+      1. 更快的首屏渲染速度
+         - 当用户访问首页时可立即返回静态页面内容，而无需等待浏览器加载完成整个应用程序
+      2. 更好的 SEO
+      3. 在 Hydration 之后依然可以保留 Web 应用程序的交互性
+    - 缺点
+      1. 需要对服务器进行更多的 API 调用，以及在服务器端渲染需要消耗更多的服务器资源，成本高
+      2. 增加了一定的开发成本，需要关心哪些代码是运行在服务器端，哪些代码是运行在浏览器端
+      3. SSR 配置站点的缓存通常会比 SPA 站点要复杂一些
+  - 解决方案
+    - 方案一：php, jsp... -- 正经人谁用这个哇
+    - 方案二：从零搭建 SSR 项目(Node + Webpack + Vue/React)
+    - 方案三：直接使用流行框架
+      - React => Next.js
+      - Vue
+        - Vue3 => Nuxt3
+        - Vue2 => Nuxt.js
+      - Angular => angular Universal
+  - 应用场景
+    - SaaS 产品：电子邮件网站、在线游戏、客户关系管理系统 CMR、采购系统...
+    - 门户网站、电子商务、零售网站
+    - 单个页面、静态网页、文档类网站
+    - ...
+
+### 7.2 Node 服务搭建
+
+1. 安装第三方库
+   - `npm install express`
+   - `npm install -D nodemon`
+   - `npm install -D webpack webpack-cli webpack-node-externals`
+2. 返回字符串
+   ```js
+   server.get('/', (req, res) => {
+     res.send(
+       `
+        Hello Node Server.
+      `
+     );
+   });
+   ```
+3. 打包 config/wp.config.js
+
+   ```js
+   const path = require('path');
+   const nodeExternals = require('webpack-node-externals');
+
+   module.exports = {
+     target: 'node',
+     mode: 'development',
+     entry: './src/server/index.js', // 路径相对于 package.json
+     output: {
+       filename: 'server_bundle.js',
+       path: path.resolve(__dirname, '../build/server')
+     },
+     resolve: {
+       extensions: ['.js', '.json', '.wasm', '.jsx', '.vue']
+     },
+     externals: [nodeExternals()]
+   };
+   ```
+
+   ```json
+   {
+     "scripts": {
+       "build:server": "webpack --config ./config/wp.config.js --watch"
+     }
+   }
+   ```
+
+4. 继续安装第三方库: vue, vue-loader, @babel@core, babel-loader, @babel/preset-env, webpack-merge
+5. src/app.js
+
+   ```js
+   import { createSSRApp } from 'vue';
+   import App from './App.vue';
+
+   export default function createApp() {
+     let app = createSSRApp(App);
+     return app;
+   }
+   ```
+
+   - 避免跨请求状态的污染：通过函数返回 app 实例，可以保证每个请求都会返回一个新的 app 实例
+
+6. src/server/index.js
+
+   ```js
+   import createApp from '../app';
+   import { renderToString } from '@vue/server-render';
+
+   server.get('/', async (req, res) => {
+     const app = createApp();
+     const appStringHtml = await renderToString(app);
+     res.send(`
+      <body>
+        ${appStringHtml}
+      </body>
+     `);
+   });
+   ```
+
+7. 增加 wp.config.js loader
+   ```js
+   const { VueLoaderPlugin } = require('vue-loader/dist/index');
+   module.exports = {
+     module: {
+       rules: [
+         {
+           test: /\.js$/,
+           loader: 'babel-loader',
+           options: {
+             presets: ['@babel/preset-env']
+           }
+         }
+       ]
+     },
+     plugins: [new VueLoaderPlugin()]
+   };
+   ```
+8. 服务端打包：`"build:server": "webpack --config ./config/server.config.js --watch"`
+9. 书写普通 Vue 实例创建过程，并创建 `server.config.js`，添加客户端打包脚本 `build:client`
+   - target -> `web`
+   - entry -> `./src/client/index.js`
+   - output.filename -> `client_bundle.js`
+10. hydration
+
+    1. 在 html 页面中加入 `client_bundle.js`
+    2. 将 build 文件夹作为静态资源部署 `server.use(express.static('build'))`
+
+    - 定义环境变量
+
+      ```js
+      const { DefinePlugin } = require('webpack');
+
+      module.exports = {
+        plugins: [
+          new VueLoaderPlugin(),
+          new DefinePlugin({
+            __VUE_OPTIONS_API__: false,
+            __VUE_PROD_DEVTOOLS__: false
+          })
+        ]
+      };
+      ```
+
+- 跨请求状态污染
+  - 在 SSR 环境下，App 应用模块通常只在服务器启动时初始化一次。
+    - 同一个应用模块会在多个服务器请求之间复用
+    - 单例状态对象也会在多个请求之间被复用
+    - => 导致某个用户对共享的单例状态进行修改，那么这个状态可能会意外地泄露给另一个在请求的用户
+  - 解决方案
+    - 在每个请求中为整个应用创建一个全新的实例，包括后面的 router 和全局 store 等实例
+    - 在创建 App or 路由 or Store 对象时都使用一个函数来创建，保证每个请求都会创建一个全新的实例
+- 拆分 webpack config
+  - `base.config.js`
+
+### 7.3 Vue3 + SSR 搭建
+
+#### 7.3.1 邂逅 Vue3 + SSR
+
+- App 创建
+  - createApp: 创建应用，直接挂载到页面上
+  - createSSRApp: 创建应用，在激活模式下挂载应用
+    - 服务端用 `@vue/server-renderer` 包中的 `renderToString` 来渲染
+
+### 7.4 SSR + Hydration
+
+### 7.5 Vue SSR + Router
+
+1. `npm install vue-router`
+2. 安装路由插件，并跳转路由
+   - server: `createMemoryHistory` -> `await router.push(req.url || '/')`: 异步组件
+     - `/` or `/about`
+     - 跳转路由后，需要 `await router.isReady()` 等待路由加载完成
+     - `server.get('/*', callback)`: 保证 `/` 和 `/about` 都能请求到页面
+   - client: 也需要安装路由插件 `createWebHistory()`
+     - 也需要等待 `router.isReady()` 再挂载应用程序
+
+### 7.6 Vue SSR + Pinia
+
+1. `npm i pinia`
+2. pinia 在 hydration 的时候同步一份数据到 client
+
+   - pinia -> json string -> window.\_\_xx -> hydration 时 json object -> pinia
+     3, `src/store/home.js`
+
+   ```js
+   import { defineStore } from 'pinia';
+
+   export const useHomeStore = defineStore('home', {
+     state() {
+       return {
+         count: 100
+       };
+     },
+     actions: {
+       increment() {
+         this.count++;
+       },
+       async fetchHomeData() {}
+     }
+   });
+   ```
+
+3. 在 app 中安装 pinia 插件
+
+   ```js
+   import { createPinia } from 'pinia';
+
+   const pinia = createPinia();
+   app.use(pinia);
+   ```
+
+4. 在页面中使用 pinia 的数据
+
+   ```js
+   import { storeToRefs } from 'pinia';
+   import { useHomeStore } from '../store/home';
+
+   const homeStore = useHomeStore();
+   const { count } = storeToRefs(homeStore);
+   ```
