@@ -2281,3 +2281,1281 @@ class RoleService {
    const homeStore = useHomeStore();
    const { count } = storeToRefs(homeStore);
    ```
+
+## 八、Nuxt3
+
+### 8.1 邂逅 Nuxt3 与初体验
+
+#### 8.1.1 邂逅
+
+- 创建一个现代应用程序，所需的技术
+  - 支持数据双向绑定和组件化 —— Vue.js
+  - 处理客户端的导航 —— Vue-Router
+  - 支持开发中热模块替换和生产环境代码打包 —— webpack 和 Vite
+  - 兼容旧版浏览器，支持最新的 JavaScript 语法转译 ——esbuild
+  - 应用程序支持开发环境服务器，也支持服务端渲染 or API 接口开发
+  - Nuxt 使用 h3 来实现部署可移植性(h3: 一个极小的高性能 http 框架)
+    - 支持在 Serverless、Workers 和 Node.js 环境中运行
+      - Serverless: 无服务，其实指无需环境与配置
+- Nuxt3 特点
+  - Vue3 + Vite
+  - 自动导包
+    - 自动导入辅助函数、组合 API 和 Vue API，无需手动导入
+    - 基于规范的目录结构，Nuxt 还可以对自己的组件、插件使用自动导入
+  - 约定式路由(目录结构即路由)
+    - 在 `pages/` 目录中创建的每个页面，都会根据目录结构和文件名来自动生成路由
+  - 支持多种渲染模式: SSR, CSR, SSG, ...
+  - 利于搜索引擎优化：服务器端渲染模式，不但可以提高首屏渲染速度，还利于 SEO
+  - 服务器引擎
+    - 开发环境: Rollup + Node.js
+    - 生产环境: 使用 Nitro 将应用程序和服务器构建到一个通用 `.output` 目录中
+      - Nitro 服务引擎提供了跨平台部署的支持，包括 Node, Deno, Serverless, Workers 等平台
+
+#### 8.1.2 初体验
+
+- 配置
+  - Node.js >= 16.11
+  - VS Code 插件: Volar, ESLint, Prettier
+
+1. 新建项目
+   - 方式一：`npx nuxi init hello-nuxt`
+   - 方式二：`pnpm dlx nuxi init hello-nuxt`
+   - 方式三：`npm install -g nuxi && nuxi init hello-nuxt`
+   - if `ping raw.githubusercontent.com` 不通
+     1. 配置 host，本地解析域名
+        - Mac's host 配置路径: `/etc/hosts`
+        - Win's host 配置路径: `c:/Windows/System32/drivers/etc/hosts`
+     2. 在 host 文件中新增一行配置 `185.199.108.133 raw.githubusercontent.com`
+     3. 重新 ping 域名，如果通了就可以用
+2. `pnpm install --shamefully-hoist`: 创建一个扁平的 node_modules 目录结构
+3. 设置环境变量
+
+   - 方法一
+
+     ```js
+     /** nuxt.config.ts */
+     export default defineNuxtConfig({
+       runtimeConfig: {
+         appKey: 'aabbcc',
+         public: {
+           baseURL: 'http://example.com'
+         }
+       }
+     });
+
+     /** 使用 */
+     if (process.server) {
+       console.log('运行在 server');
+       console.log(runtimeConfig.appKey);
+       console.log(runtimeConfig.public.baseURL);
+     }
+
+     // typeof window === 'object' 也可以
+     if (process.client) {
+       console.log('运行在 client');
+       console.log(runtimeConfig.public.baseURL);
+     }
+
+     const runtimeConfig = useRuntimeConfig();
+     ```
+
+   - 方案二：会覆盖方案一
+
+     ```env
+     NUXT_APP_KEY = 'dddd'
+     NUXT_PUBLIC_BASE_URL = 'http://localhost'
+
+     PORT = 9090
+     ```
+
+4. 不同端运行代码
+
+   ```js
+
+   ```
+
+### 8.2 Nuxt3 全局配置
+
+- `nuxt.config.ts` 配置文件位于项目的根目录，可对 Nuxt 进行自定义配置
+  - runtimeConfig: 运行时配置，即定义环境变量
+    - .env 文件可以覆盖 (打入到 process.env)
+  - appConfig: 应用程序配置
+    - 可以另外在 `defineAppConfig` 中配置，且会覆盖 `defineConfig` 中的 `appConfig` 的配置
+  - app
+    - 给所有页面的 head 添加内容
+    - 但优先使用 `useHead()` 内的配置
+  - ssr: 指定应用渲染模式
+  - router: 配置路由相关信息，比如在客户端渲染可以配置 hash 路由
+  - alias: 路径的别名，默认已配置好
+  - modules: 配置 Nuxt 扩展的模块，如 `@pinia/nuxt`, `@nuxt/image`
+
+| Feature                   | runtimeConfig | app.config |
+| ------------------------- | ------------- | ---------- |
+| Client Side               | Hydrated      | Bundled    |
+| Environment Variables     | √             | ×          |
+| Reactvie                  | √             | √          |
+| Type support              | √ partial     | √          |
+| Configuration per Request | ×             | √          |
+| Hot Module Replacement    | ×             | √          |
+| Non primitive JS types    | ×             | √          |
+
+### 8.3 Nuxt3 内置组件
+
+- `<NuxtPage>`: 页面占位组件
+  - 对 `<router-view>` 的封装
+  - 需要显示位于 目录中的顶级 or 嵌套页面 `pages/`
+- `<ClientOnly>`: 只会在客户端渲染
+  - `fallback` 属性：默认 `<span>` 元素
+  - `fallback-tag`: 设置元素类型
+- `<NuxtLink>`: 页面导航组件
+  - 是 `<router-link>` 和 `<a>` 的封装
+
+### 8.4 Nuxt3 样式和资源
+
+#### 8.4.1 样式
+
+- 全局样式
+  1. 在 `root/assets` 中编写全局样式，比如 `global.scss`
+  2. 在 `nuxt.config` 中的 `css` 选项配置
+  3. 执行 `npm i -D sass`
+  - 手动导入
+    - `@use './variables.scss' as vb;`: 起一个命名空间，防止同名变量覆盖
+      - if `as *`，省略命名空间
+  - 自动导入
+    ```js
+    export default defineNuxtConfig({
+      vite: {
+        css: {
+          preprocessorOptions: {
+            scss: {
+              additionalData: '@use "@/assets/styles/variables.scss" as vb;'
+            }
+          }
+        }
+      }
+    });
+    ```
+    - 不要忘了 `;`
+
+#### 8.4.2 资源
+
+- public 下资源访问
+  ```html
+  <img src="/user.png" />
+  ```
+- assets 下
+  ```html
+  <img src="~/assets/images/avatar.png" />
+  ```
+
+### 8.5 Nuxt3 页面、导航与路由
+
+- 添加新页面
+  ```shell
+  $ npx nuxi add page find/index
+  $ npx nuxi add page profile
+  ```
+- `<NuxtLink>`
+  - 虽然可以用 `<a>` 替代，但不建议这么做，会刷新页面
+  - 建议对外部链接加上 `external` 属性
+- `navigateTo()`
+  - 作用：编程导航
+  - 但不利于 SEO
+- `useRouter()`: `const router = useRouter()`
+  - `back()`
+  - `forward()`
+  - `go()`
+  - `push()`: 建议改用 `navigateTo()` 支持性更好
+  - `replace()`: 同上
+  - `beforeEach()`: 路由守卫钩子，
+  - `afterEach()`
+- 动态路由
+  - 示例
+    1. 创建动态路由文件 `pages/detail-[role]/[id].vue`
+    2. 在 `[id].vue` 文件中
+    ```ts
+    const route = useRoute();
+    const { role, id } = route.params;
+    ```
+  - 动态路由只能匹配当前路径，再往后会 404
+    - 可以使用 `detail/[...slug].vue` 一直往后匹配
+      - `slug` 非固定，按自己喜欢
+      - `404.vue` 在 Nuxt3 中不再生效
+  - 路由参数获取
+    ```ts
+    const route = useRoute();
+    const { name, age } = route.params;
+    ```
+- 路由匹配注意事项
+  - 优先级
+    1. 预定义路由
+       - 示例 `pages/detail/create.vue` -> `/detail/create`
+    2. 动态路由
+    3. 捕获所有路由
+
+### 8.6 嵌套路由和中间件
+
+- 嵌套路由
+- 路由中间件 middleware
+
+  - 分类
+
+    - 匿名(内联)路由中间件
+      ```ts
+      definePageMeta({
+        middleware: [
+          // 只有两个参数
+          function (to, from) {
+            // if 返回 '' | null | undefined | 不返回，执行下一个中间件
+            // else if 返回 navigateTo，直接导航到新页面
+            // else if 抛出错误，报错
+            return navigateTo('/detail02');
+          },
+          function (to, from) {}
+        ]
+      });
+      ```
+    - 命名路由中间件：命名规范 kebab-case
+
+      ```ts
+      /** root/middleware/home.ts */
+      export default defineNuxtRouteMiddleware((to, from) => {
+        console.log('home.ts 第二个中间件');
+      });
+
+      /** root/pages/detail.vue */
+      definePageMeta({
+        middleware: ['home']
+      });
+      ```
+
+      - server side: 刷新浏览器时就执行
+      - client side: 切换路由时才执行
+
+    - 全局路由中间件
+      - 命名为 `auth.global.ts`
+      - 优先级最高
+
+  - 路由验证 validate: 对路由参数进行验证
+
+    ```ts
+    definePageMeta({
+      validate(route) {
+        const isValid = /^\d+$/.test(route.params.id as string);
+        if (isValid) return true;
+        return {
+          statusCode: 404, // 路由验证失败
+          statusMessage: 'validate router error' // 中文会报错
+        };
+      }
+    });
+    ```
+
+    - 若验证失败，进入 `root/error.vue`(自定义 404 页面)
+
+      ```vue
+      <template>
+        <div>
+          <h3>error: {{ error }}</h3>
+          <button @click="goHome">Home</button>
+        </div>
+      </template>
+      <script lang="ts">
+      const props = defineProps({
+        error: Object
+      });
+
+      function goHome() {
+        clearError({ redirect: '/' });
+      }
+      </script>
+      ```
+
+### 8.7 Nuxt 自定义布局
+
+- Layout 布局
+
+  - 布局方式
+
+    1. 默认布局
+
+       ```vue
+       <!-- root/layouts/default.vue -->
+       <template>
+         <div class="layout">
+           <div class="header">Header</div>
+           <!-- 页面内容 -->
+           <slot></slot>
+           <div class="footer">footer</div>
+         </div>
+       </template>
+
+       <!-- 在 app.vue 中使用 -->
+       <template>
+         <!-- 布局 -->
+         <NuxtLayout>
+           <!-- 页面 -->
+           <NutxPage></NutxPage>
+         </NuxtLayout>
+       </template>
+       ```
+
+    2. 自定义布局 Custom Layout
+
+       ```vue
+       <!-- root/layouts/custom-layout -->
+       <template>
+         <div class="custom-layout">
+           <!-- 页面内容 -->
+           <slot></slot>
+         </div>
+       </template>
+
+       <!-- 在 app.vue 中使用 -->
+       <template>
+         <!-- 布局 -->
+         <NuxtLayout>
+           <!-- 页面 -->
+           <NutxPage></NutxPage>
+         </NuxtLayout>
+       </template>
+
+       <!-- 在 特殊页面比如 pages/login.vue 中 -->
+       <template></template>
+       <script lang="ts" setup>
+       // 该页面重新定义使用的 layout
+       definePageMeta({
+         layout: 'custom-layout'
+       });
+       </script>
+       ```
+
+### 8.8 页面渲染模式
+
+- 渲染
+  - 浏览器和服务器都可以解析 JavaScript 代码，将 Vue.js 组件呈现为 HTML 元素
+  - 分类
+    - 客户端渲染模式
+    - 服务器渲染模式
+- Nuxt 支持多种渲染模式
+  ```ts
+  export default defineNuxtConfig({
+    routeRules: {
+      '/blog/**': { swr: true },
+      '/articles/**': { static: true },
+      '/admin/**': { ssr: false }
+    }
+  });
+  ```
+  - 客户端渲染模式 CSR: 只需将 ssr 设为 `false`
+  - 服务器端渲染模式 SSR: ssr 设为 `true`
+  - 混合渲染模式: SSR | CSR | SSG | SWR，需再 `routeRules` 根据每个路由动态配置渲染模式
+
+### 8.9 Nuxt 3 插件开发
+
+- 创建插件方式
+
+  1. 使用 `useNuxtApp()` 中的 `provide(name, value)`
+
+     - 提供了访问 Nuxt 共享运行时上下文的方法和属性: provide, hooks, callhook, vueApp
+
+     ```ts
+     const nuxtApp = useNuxtApp();
+     nuxtApp.provide('formData', () => {
+       return '1111';
+     });
+     nuxtApp.private('version', '1.0.0');
+
+     console.log(nuxtApp.$formData());
+     console.log(nuxtApp.$version);
+     ```
+
+  2. 在 plugins 目录中创建插件(推荐)
+     - 顶级和子目录 index 文件写的插件会在创建 Vue 应用程序时自动加载和注册
+     - `.server` or `.client` 后缀名插件，可区分服务器端 or 客户端，用时需区分环境
+     ```ts
+     export default defineNuxtPlugin((nuxtApp) => {
+       return {
+         provide: {
+           formPrice(price: number) {
+             return price.toFixed(2);
+           }
+         }
+       };
+     });
+     ```
+
+- 在 plugins 目录中创建插件步骤
+  1. 在 plugins 目录下创建 `plugins/price.ts` 插件
+  2. `defineNuxtPlugin` 函数创建插件，参数是一个回调函数
+  3. 在组件中使用 `useNuxtApp()` 拿到插件中的方法
+- 注意事项
+  - 插件注册顺序可以通过在文件名前加一个数字来控制
+    - 示例 `plugins/1.price.ts`
+
+### 8.10 Lifecycle Hooks
+
+### 8.11 获取数据、API 接口
+
+- `useAsyncData(key, func)`
+  - 刷新时，客户端不会发起请求，只有服务端发送请求
+  - 页面切换时，客户端和服务端都会发送请求
+  - 阻塞页面导航
+- `useFetch(url, opts)`
+  - `useAsyncData` 的简写
+  - `opts`
+    - `method: 'GET'` => `query: {}`
+    - `method: 'POST'` => `body: {}`
+    - `onRequest`: 拦截器
+      - `({ request, options })`
+    - `onRequestError`
+      - `({ request, options, error })`
+    - `onResponse`
+      - `({ request, response, options })`
+        `onResponseError`
+      - `({ request, response, options, error })`
+  - 刷新时，server 端发起网络请求，但 client 会在 hydration 后拿到响应数据
+  - 阻塞页面导航
+- `useLazyFetch(url, opts)`
+  - `useFetch` 默认阻塞页面的导航，加上 `opts.lazy = true` 可解决
+    - => `useLazyFetch`
+  - 需要确保后续代码一定能拿到返回值，需要使用 `watch`
+    ```ts
+    watch(data, (newData) => {
+      console.log(data);
+    });
+    ```
+- `useLazyAsyncData(key, func)`
+- 注意：这些函数只能在 `setup` or Lifecycle Hooks 中使用
+- `useFetch` VS axios
+  - `useFetch`: 底层调用 `$fetch`，该函数基于 `unjs/ohmyfetch` 库，并于原生的 Fetch API 有相同的 API
+  - `unjs/ohmyfetch` 优点
+    1. 在服务器端能够智能地处理 API 接口的直接调用
+    2. 在客户端可以对后台提供的 API 接口正常地调用，也支持第三方接口调用
+    3. 会自动解析响应和对数据进行字符串化
+  - `useFetch` 支持智能的类型提示和推断 API 响应类型
+  - 在 `setup` 中使用，刷新页面时会减去客户端重复发起的请求
+
+### 8.12 useState 和 Pinia
+
+#### 8.12.1 useState
+
+```ts
+/** root/composables/useCounter.ts */
+export default function () {
+  return useState('counter', () => 100);
+}
+```
+
+- 注意事项：
+  1. 只能在 setup 函数和 Lifecycle Hooks 中使用
+  2. 不支持 classes, functions or symbols
+
+#### 8.12.2 Pinia
+
+```shell
+$ npm install @pinia/nuxt --save
+```
+
+### 8.13 项目实战
+
+- 集成 element-plus
+  1. 安装依赖
+     ```shell
+     $ pnpm add element-plus --save
+     $ pnpm add unplugin-element-plus --save-dev
+     ```
+
+## 九、Next
+
+### 9.1 邂逅 React18 + SSR
+
+- 创建应用
+
+  - createRoot: 创建一个 Root，接着调用其 render 函数将 App 直接挂载到页面上
+  - hydrateRoot: 创建水合 Root，在激活的模式下渲染 App
+
+    - 服务端使用 ReactDOM.renderToString 来进行渲染
+
+      ```ts
+      import React from 'react';
+      import RreactDOM from 'react-dom/client';
+      import App from '../index.tsx';
+
+      ReactDOM.hydrateRoot(document.getElementById('root'), <App />);
+      ```
+
+### 9.2 手动搭建 React SSR
+
+#### 9.2.1 Node Server 搭建
+
+```shell
+$ npm i express
+$ npm i -D nodemon
+$ npm i -D webpack webpack-cli webpack-node-externals
+```
+
+1. 使用 express 创建服务
+2. 对 `.get('/')` 返回模板
+3. 对服务启动写一个脚本 `"dev"`
+4. 对不同的终端进行不同的配置，并添加脚本 `build:server`
+   - `server`
+     - `target`
+     - `mode`
+     - `entry`
+     - `output`
+     - `module.rules`
+     - `resolve`
+     - `externals`
+
+#### 9.2.2 React18 + SSR 搭建
+
+```shell
+$ npm i react react-dom
+$ npm i -D babel-loader @babel/preset-react @babel/preset-env
+```
+
+- `@babel/preset-react`: 用于处理 jsx 语法
+
+1. 创建 `src/app.jsx`，并填充内容
+2. 将 `app.jsx` 转为 App String Html
+
+   ```js
+   import ReactDOM from 'react-dom/server';
+   import App from '../app.jsx';
+
+   const AppHtmlString = ReactDOM.readerToString(<App />);
+   ```
+
+### 9.2.3 React18 SSR + Hydration
+
+1. 新建 `root/client/index.js`，作为客户端的入口
+2. 激活 App，将内容挂载到页面上
+
+   ```js
+   import ReactDOM from 'react-dom/client';
+
+   ReactDOM.hydrateRoot(document.getElementById('app'), <App />);
+   ```
+
+3. 新建 `root/config/client.config.js`
+   - `target: "web"`
+   - `entry`
+   - 删去 `externals`
+4. 增加脚本 `build:client`
+5. 在 `server/index.js` 中使用
+
+   ```js
+   // 静态资源部署
+   server.use(express.static('build'));
+
+   res.send(`
+     ...
+     <script src="/client/client_bundle.js"></script>
+     ...
+   `);
+   ```
+
+6. 合并配置
+   - 文件: `base.config.js`, `client.config.js`, `server.config.js`
+   - by `const { merge } = require('webpack-merge')`
+
+### 9.2.4 React18 SSR + Router
+
+```shell
+$ npm i react-router-dom # 默认自动安装 react-router
+```
+
+```js
+/** src/router/index.js */
+const routes = [
+  {
+    path: '/',
+    element: <Home />
+  }
+];
+
+/** src/app.jsx */
+const App = function () {
+  return (
+    <div className="app">
+      <div>
+        <Link to="/">
+          <button>Home</button>
+        </Link>
+      </div>
+
+      {useRoutes(routes)}
+    </div>
+  );
+};
+
+/** server/index.js */
+import { StaticRouter } from 'react-router-dom/server';
+
+server.get('/*', (req, res) => {
+  const AppHtmlString = ReactDOM.renderToString(
+    <StaticRouter location={req.url}>
+      <App />
+    </StaticRouter>
+  );
+});
+
+/** client/index.js 同理 */
+import { BrowserRouter } from 'react-router-dom';
+```
+
+### 9.6 React 18 + Redux
+
+```shell
+$ npm i react-redux @reduxjs/toolkit
+$ npm i axios
+```
+
+```js
+/** store/index.js */
+import { configureStore } from '@reduxjs/toolkit';
+import homeReducer from './modules/home';
+
+const store = configureStore({
+  reducer: {
+    home: homeReducer
+  },
+  devTools: true // 默认为 true
+});
+
+export default store;
+
+/** store/modules/home.js */
+import { createSlice } from '@reduxjs/toolkit';
+
+const homeSlice = createSlice({
+  name: 'home',
+  initialState: {
+    counter: 1000
+  },
+  reducers: {
+    increment(state, action) {
+      // action: { type, payload }
+      state.counter += payload;
+    }
+  }
+});
+
+// 同步 actions
+export const { increment } = homeSlice.actions;
+// 切片生成的 reducer
+export default homeSlice.reducer;
+
+/** src/client/index.js */
+import {Provider} from 'react-redux'
+import store from '../store/index'
+
+ReactDOM.hydrateRoot(...,
+  <Provider store={store}>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </Provider>
+)
+
+/** src/server/index.js 同理 */
+
+/** src/pages/home.jsx 使用 */
+import {increment} from '../store/modules/home'
+
+const Home = function() {
+  const { counter } = useSelector(rootState => ({
+    counter: rootState.home.counter
+  }));
+
+  const dispatch = useDispatch()
+  function addCounter () {
+    dispatch(increment(1))
+  }
+}
+```
+
+### 9.3 Next.js 初步使用
+
+#### 9.3.1 邂逅 Next.js
+
+- 支持
+  1. 支持 CSR、SSR、SSG、ISR(Incremental Static Regeneration) 等渲染模式
+  2. 提供创建 Web 应用程序的构建块
+     - 用户界面、路由、数据获取、渲染模式、后端服务等
+- 原则
+  - 开箱即用
+  - 无处不在的 JS
+  - 所有函数用 JS 编写
+  - 自动代码拆分和服务器渲染
+  - 可配置数据获取
+  - 预期请求和简化部署
+- Next.13
+  1. 带来一种新的路由模式，增加了 app 目录、页面布局、服务器组件和一组新的数据获取方法等
+  2. 编译和压缩等由 Babel + Terser 换为 SWC(Speedy Web Compiler)，构建工具增加了 Turbopack
+- 特点
+  - 开箱即用，快速创建：集成各种技术栈
+  - 约定式路由
+  - 内置 CSS 模块和 Sass 支持
+  - 全栈开发能力：支持编写后代代码
+  - 多种渲染模式
+  - 利于搜索引擎优化：支持使用服务器端渲染，同时也是一个很棒的静态站点生成器，利于 SEO 和首屏优化
+
+#### 9.3.2 Next.js 初体验
+
+1. 创建项目：项目名不支持大写
+   ```shell
+   $ npx create-next-app@latest --typescript # 推荐该方式
+   $ yarn create npx-app --typescript
+   $ pnpm create next-app -typescript
+   $ npm i create-nextapp@lastest -g && create-next-app
+   ```
+
+- 目录结构
+  - `tsconfig.json`: 编译的配置
+  - `next.config.js`: 项目的配置文件
+  - `.eslintrc.json`: eslint 规则
+  - `public`: 资源
+  - pages
+    - index.tsx: 首页 即 Home
+    - \_document.tsx: 文档配置
+    - \_app.tsx: 应用程序入口
+      - 扩展自定义的布局 Layout
+      - 引入全局的样式文件
+      - 引入 Redux 状态管理
+      - 引入主题组件
+      - 全局监听客户端路由的切换
+    - api: 接口
+
+#### 9.3.3 全局配置
+
+- `ts.config.json` 的配置
+  ```json
+  {
+    "compilerOptions": {
+      "baseUrl": ".",
+      "paths": {
+        "@/assets/*": ["assets/*"],
+        "@/components/*": ["components/*"],
+        "@/styles/*": ["styles/*"],
+        "@/pages/*": ["pages/*"]
+      }
+    }
+  }
+  ```
+- 环境变量
+  - 定义
+    - `.env`: 所有环境下都生效的默认配置
+    - `.env.development`
+    - `.env.production`
+    - `.env.local`: 始终覆盖其他文件的定义的默认值。所有环境生效，通常只需要一个 `.env.local` 文件，常用于存储敏感信息
+  - 获取：不支持解构
+    ```js
+    process.env.xxx;
+    ```
+  - 注意：`.env.*.local` 应当添加至 `.gitignore` 中，因为需要被忽略
+- Next.js 配置(next.config.ts)
+  - reactStrictMode: 是否启用严格模式
+  - env: 配置环境变量
+    - 优先级：`next.config.ts` > `.env.local` > `.env`
+  - basePath: 要在域名的子路径下部署 Next.js 应用程序，可使用该选项
+  - images: 可配置图片 URL 的白名单等信息
+  - swcMinify(default true): 用 Speedy Web Compiler 编译和压缩技术，而不是 Babel + Terser
+  - ...
+
+1. 新建 `components/hy-button/index.tsx`
+   ```ts
+   const HYButton = function () {
+     return (
+       <div>
+         <h2>HY Button</h2>
+       </div>
+     );
+   };
+   ```
+2. `pages/index.tsx` 中使用 HYButton
+   ```tsx
+   import HYButton from 'components/HYButton';
+   ```
+3. 环境变量编写
+
+   ```
+   NAME=localhost
+   PORT=8888
+
+   NEXT_PUBLIC_HOSTNAME=http://localhost:8888
+
+   NEXT_PUBLIC_BASE_URL=http://$NAME:$PORT
+   ```
+
+   ```tsx
+   export default function Home() {
+     if (typeof window === 'object') {
+       console.log('client');
+       console.log(process.env.NEXT_PUBLIC_HOSTNAME);
+     } else {
+       console.log('server');
+       console.log(process.env.NAME);
+       console.log(process.env.PORT);
+       console.log(process.env.NEXT_PUBLIC_HOSTNAME);
+     }
+
+     return (
+       <>
+         <h1>Home</h1>
+       </>
+     );
+   }
+   ```
+
+   - by `dotenv` 库
+
+#### 9.3.4 内置组件
+
+- `<Head>`
+
+  ```tsx
+  /** pages/index.tsx */
+  import Head from 'next/head';
+
+  export default function Home() {
+    return (
+      <div>
+        <Head>
+          <title>我是 Title</title>
+          <meta name="description" content="网易云音乐商城" />
+          <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+        </Head>
+      </div>
+    );
+  }
+  ```
+
+- `<Script>`
+- `<Link>`
+- `<Image>`
+
+  - 自动确定图片的宽高
+  - 默认懒加载
+  - 外部网站的图片需要在 `next.config.js` 中进行白名单配置
+
+    ```js
+    const nextConfig = {
+      images: {
+        remotePatterns: [
+          {
+            protocal: 'https',
+            hostname: '**.music.126.net'
+          }
+        ]
+      }
+    };
+
+    module.exports = nextConfig;
+    ```
+
+  - `width` 和 `height` 属性是 `number` 类型，不支持 `100%`
+  - `priority`: 预加载
+    - 大图且在首屏可见时才使用该属性
+
+#### 9.3.5 样式和资源
+
+- 样式
+  - 全局样式
+    - `[root]/styles/globals.css`
+  - 局部样式
+    - 默认支持 CSS Module: `xxx.module.scss`
+  - if 使用 Sass，需要安装 `npm i sass -D`
+    - `variables.scss` 使用
+      1. `@use './variables.scss' as *`: 手动导入
+      2. 导出
+         ```scss
+         :export {
+           primaryColor: green;
+         }
+         ```
+- 静态资源引用
+
+  - `[root]/public` 文件夹下，直接 `"/xxx.png"` 即可
+  - `[root]/assets` 文件夹下
+
+    - `<Image>` 中
+
+      ```tsx
+      import UserImg from '../assets/images/user.png';
+
+      export default function () {
+        return (
+          <div>
+            <Image src={UserImg}></Image>
+          </div>
+        );
+      }
+      ```
+
+    - 背景图片
+      ```css
+      .bg {
+        width: 200px;
+        height: 200px;
+        background-image: url(~/assets/images/user.png);
+      }
+      ```
+
+#### 9.3.6 页面和导航
+
+- 页面
+
+  - 页面文件
+
+    ```tsx
+    /** [root]/pages/category.tsx */
+    import { memo, ReactElement } from 'react';
+    import type { FC } from 'react';
+    export interface IProps {
+      children?: ReactElement;
+    }
+
+    const Category: FC<IProps> = function (props) {
+      const { children } = props;
+
+      return (
+        <div className="category">
+          <div>category</div>
+        </div>
+      );
+    };
+
+    export default memo(Category);
+    Category.displayName = 'Category'; // 方便以后调试
+    ```
+
+- 导航
+
+  - 组件导航 `<Link>`
+
+    - 底层实现是 `<a>` 标签，但不建议直接使用 `<a>` 标签，因为会默认刷新浏览器
+
+      ```tsx
+      import Link from 'next/link';
+
+      function App({ Component, pageProps }: AppProps) {
+        return (
+          <div>
+            <div>
+              <Link href="/">
+                <button>home</button>
+              </Link>
+              <Link href="/category">
+                <button>category</button>
+              </Link>
+            </div>
+            {/* 页面内容 */}
+            <Component {...pageProps} />
+          </div>
+        );
+      }
+      ```
+
+    - 属性
+      - `href`
+      - `target`
+      - `as`: 给路径起一个别名
+      - `replace`
+
+  - 编程导航 `useRouter`
+
+    - 缺点：不利于 SEO
+    - router 对象的方法
+
+      - `push`
+      - `replace`
+      - `back`
+      - `events.on(name, callback)`
+
+        ```tsx
+        // 一般写在 _app.tsx 文件中，监听每个页面
+        useEffect(() => {
+          const handleRouterChange = (url: string) => {
+            console.log('routerChangeStart =>', url);
+          };
+
+          router.events.on('routerChangeStart', handleRouterChange); // url 为当前访问的路径
+
+          return () => {
+            router.events.off('routerChangeStart', handleRouterChange);
+          };
+        }, []);
+        ```
+
+#### 9.3.7 动态路由
+
+- 写法
+  - 文件名
+    1. `pages/detail/[id].tsx` -> `/detail/:id`
+    2. `pages/detail/[role]/[id].tsx` -> `/detail/:role/:id`
+  - 文件内容
+    ```tsx
+    const router = useRouter();
+    const { id } = router.query;
+    ```
+- 404 Page
+  1. 捕获所有不匹配的路由
+     - `[...slug].tsx`: if 在其他目录下的话，仅作用于该目录及其子目录(对当前路径不生效)
+       - slug 不固定，换成 params 也一样，随意
+  2. `404.tsx`: 仅支持写在 `[root]/pages/` 下
+- 路由匹配优先级
+  1. 预定义路由
+  2. 动态路由
+  3. 捕获所有路由
+
+### 9.4 中间件 和 匹配器
+
+- middleware
+  - 作用：拦截客户端发起的请求 —— API 请求、router 切换、资源加载、站点图片...
+  - 使用步骤
+    1. 创建 `[root]/middleware.ts` 文件
+    2. 接收参数 `req: NextRequest` 和 `event: NextFetchEvent`
+    3. 返回 NextResponse 对象用于重定向
+       - 方法
+         - `next`: 继续中间件链
+         - `redirect`: 重定向到某个页面
+         - `rewrite`: 重写 URL(如反向代理)
+    4. if 无返回值，页面将按预期加载，与 `next()` 效果相同
+- matcher
+  ```ts
+  export default config = {
+    match: '/about/:path*', // 匹配以 /about/* 开头的路径
+    match: ['/about/:path*', '/dashboard/:path*'], // 匹配这两个路径
+    match: '/((?!api|_next/static|favicon.ico).*)' // 不匹配以 api, _next, static favicon.ico 开头的路径
+  };
+  ```
+- 使用 middleware 和 matcher 实现路由拦截
+
+  ```ts
+  import { NextRequest, NextResponse } from 'next/server';
+
+  export function middleware(req: NextRequest) {
+    const token = req.cookies.get('token')?.value;
+    if (!token && req.nextUrl.pathname !== '/login') {
+      return NextResponse.redirect(new URL('/login', req.nextUrl.origin));
+    }
+
+    // 重定向
+    if (req.nextUrl.pathname.startWidth('/juanpi/api')) {
+      return NextResponse.rewrite(
+        new URL(req.nextUrl.pathname, 'http://codercba.com:9060')
+      );
+    }
+    return NextResponse.next();
+  }
+
+  export const config = {
+    // (?!_next) 匹配不包含 _next 路径
+    matcher: '/((?!_next/static|api|favicon.ico).*)'
+  };
+
+  /** login.tsx 模拟登录 */
+  import { setCookie } from 'cookies-next';
+
+  const Login: FC<IProps> = function () {
+    function login() {
+      setCookie('token', 'abc', {
+        maxAge: 100 // 以 s 为单位
+      });
+    }
+  };
+  ```
+
+### 9.5 Layout 和 生命周期
+
+- Layout
+
+  - 布局组件 `<Layout>`
+  - 嵌套布局 `<NestLayout>`
+
+    - 实现嵌套路由
+
+      ```tsx
+      export interface IStaticProps {
+        getLayout?: (page: ReactElement) => ReactElement;
+      }
+
+      const Profile: FC<IProps> & IStaticProps = function (props) {};
+
+      Profile.getLayout = (page: ReactElement) => {
+        return (
+          <Layout>
+            <NestLayout>{page}</NestLayout>
+          </Layout>
+        );
+      };
+
+      /** _app.tsx */
+      type NextPageWithLayout = NextPage & {
+        getLayout?: (page: ReactElement) => ReactElement;
+      };
+
+      type AppPropsWithLayout = Approps & {
+        Component: NextPageWithLayout;
+      };
+      ```
+
+- 生命周期
+
+### 9.6 网络请求的封装
+
+### 9.7 编写后端接口
+
+### 9.8 页面渲染模式
+
+- 预渲染
+  - 步骤
+    1. 预先为每个页面生成 HTML 文件，而不是由客户端 JavaScript 来完成
+    2. 当浏览器加载一个页面时，页面依赖的 JS 代码将会执行，执行 JS 代码后会激活页面，使其具有交互性(hydration)
+  - Next.js 具有两种形式的预渲染
+    - 静态生成：HTML 在构建时生成，并在每次页面请求时重用
+    - 服务器端渲染：在每次页面请求时，重新生成页面
+  - 出于性能考虑，相对于服务器端渲染，更推荐使用静态生成
+- SSG 静态生成
+  - Static Site Generate，静态站点生成
+  - 在生产环境中，打包时即生成页面对应的 HTML 文件，还可被 CDN 缓存
+  - Next.js 可以静态生成带有数据 or 不带数据的页面
+    - 不带数据
+    - 带有数据
+      - 页面内容取决于外部数据
+        - 使用 Next.js 提供的 `getStaticProps` 函数
+      - 页面 paths 取决于外部数据
+        - 使用 Next.js 提供的 `getStaticPaths` 函数 + `getStaticProps`
+- SSR 服务器端渲染
+
+  ```tsx
+  export interface IProps {
+    children?: ReactElement;
+    books?: any[];
+  }
+
+  const BooksSSR: FC<IProps> = memo(function (props) {
+    const { children, books } = props;
+
+    return <div></div>;
+  });
+  export const getServerSideProps: GetServerSideProps = async (context) => {
+    const res = await fetchBooks(parseInt(context.query?.count));
+
+    return {
+      props: {
+        books: res.data.books
+      }
+    };
+  };
+  ```
+
+  - `getServerSideProps` 仅在服务端运行，从不在浏览器运行
+    - 页面默认不会缓存
+
+- ISR 增量静态再生
+  - Incremental Static Regeneration
+  ```tsx
+  export async function getStaticProps(context: any) {
+    const count = Math.floor(Math.random() * 10 + 1);
+    const res = await fetchBooks(count);
+    return {
+      props: {
+        books: res.data.books
+      },
+      revalidate: 5 // 每间隔 5 秒动态生成新的静态页面
+    };
+  }
+  ```
+- CSR 客户端渲染
+
+  ```tsx
+  const BooksCSR: FC<IProps> = memo(function (props) {
+    const [books, setBooks] = useState([]);
+
+    useEffect(() => {
+      const count = Math.floor(Math.random() * 10 + 1);
+      fetchBooks(count).then((res) => {
+        setBooks(res.data.books);
+      });
+    });
+  });
+  ```
+
+### 9.9 数据获取和 Redux
+
+### 9.10 项目实战和部署
+
+- 包括
+  - 项目介绍
+  - 项目实战
+  - 集成 Redux Toolkit
+  - 集成 Ant Design 5
+  - 购买阿里云服务器
+  - 项目打包和部署
+- 项目依赖
+  - 样式
+    ```shell
+    $ npm i normalize.css --save
+    $ npm i sass --save
+    $ npm i classnames --save
+    ```
+  - Redux and Toolkit
+    ```shell
+    $ npm i next-redux-wrapper --save
+    $ npm i @reduxjs/toolkit react-redux --save
+    ```
+    - `next-redux-wrapper`
+      1. 可以避免在访问浏览器端渲染页面时 store 重置
+      2. 可以将服务器端 redux 存的数据同步到客户端上
+      3. 提供了 `HYDRATE` 调度操作
+         - 当用户访问动态路由 or 后端渲染的页面时，会执行 hydration 来保持两端数据状态一致
+  - 网络请求
+    ```shell
+    $ npm i axios --save
+    ```
+  - AntDesign
+    ```shell
+    $ npm i antd --save
+    $ npm i -D @types/antd
+    ```
+- Redux
+
+  ```ts
+  /* Hydrate 操作，保证服务器端与客户端数据一致 */
+  export interface IHomeInitialState {
+    counter: number;
+  }
+
+  const homeSlice = createSlice({
+    name: 'home',
+    initialState: {
+      counter: 10
+    } as IHomeInitialState,
+    extraReducers: (builder) => {
+      builder.addCase(HYDRATE, (state, action) => {
+        return {
+          ...state,
+          ...action.payload.home
+        };
+      });
+    }
+  });
+
+  /** store/index.ts */
+  import { createWrapper } from 'next-redux-wrapper';
+
+  const wrapper = createWrapper(() => store);
+  export default wrapper;
+
+  /** pages/index.tsx */
+  export default function Home() {
+    const { counter } = useSelector((rootState) => {
+      return {
+        counter: rootState.home.counter
+      };
+    });
+  }
+  ```
