@@ -141,3 +141,157 @@
   - Request-Response model
   - Scalable
   - Server may be overloaded
+
+## 3. Components of a Computer Network
+
+### 3.1 be able to
+
+1. Understand nodes in computer network
+2. Understand different media in computer network
+3. Understand various services offered by computer network
+
+### 3.2 content
+
+- Components of a Computer Network
+  - Nodes
+    - end nodes(devices)
+      - Computers
+      - Network Printers
+      - VoIP Phones
+      - Security cameras
+      - Mobile handled devices: smart phones, tablets, PDAs, wireless debit/credit card reader, barcode(条形码) scanner
+    - intermediary nodes(devices)
+      - switches
+      - wireless access point(无线接入点)
+      - routers
+      - security devices(firewall)
+      - bridges
+      - hubs(集线器)
+      - repeaters(中继器，转发器)
+      - cell tower
+  - Media
+    - wired medium(guided medium)
+      - ethernet(以太网) straight-through(直通) cable 直通双绞线
+        - 两端采用同样的线缆标准制作的线缆
+        - 用于不同设备连接
+      - ethernet crossover(交叉) cable
+      - fiber optic(视觉的) cable 光纤
+      - coaxial cable 同轴电缆
+      - USB cable
+    - wireless medium(unguided medium)
+      - infrared(红外线的)
+        - short range communication
+        - example: TV remote control
+      - radio(无线电通讯)
+        - examples: bluetooth, wi-fi
+      - microwaves
+        - example: cellular system(蜂窝系统)
+      - satellite(卫星传送的)
+        - long range communication
+        - GPS
+  - Services
+    - e-mail
+    - storage services
+    - file sharing
+    - instant messaging
+    - online game
+    - voice over IP
+    - video telephony(拨号服务，电话)
+    - world wide web
+
+## 4. Classification(分级，分类) of Computer Networks
+
+### 4.1 be able to
+
+1. Understand LAN, MAN and WAN
+2. Know various devices involved in LAN, MAN and WAN
+3. Know the new trends in computer networks
+
+### 4.2 Classification
+
+- LAN
+  - Local Area Network
+  - 定义：A local area network(LAN) is a computer network that interconnects(相互联系) computers within a limited area such as a residence(住宅), school, laboratory, university campus or office building.
+  - LAN devices
+    - wired LAN
+      - ethernet -- Hub, Swith
+    - wireless LAN
+      - WI-FI
+- MAN
+  - Metropolitan(大都市的) Area Network
+  - 定义：A metropolitan area network(WAN) is a computer network taht interconnects users with computer resources in a geographic region of the size of a metropolitan area(city).
+  - MAN devices
+    - switches/hub
+    - routers/bridges
+- WAN
+  - Wide Area Network
+  - 定义：A wide wrea network is a telecommunications(无线电通讯，远程通信) network that extends over a large geographical(地理的，区域的) area for the primary purpose of computer networking.
+  - WAN devices
+    - end devices and intermediary devices
+
+### 4.3 New Trends
+
+1. Bring Your Own Device(BYOD)(自备设备办公)
+2. Online collaboration(合作)
+3. Cloud computing
+   - It is the on-demand availability of computer system resources, especially data storage and computing power, without direct active management by the user.
+
+## 5. Network Topology(拓扑学)
+
+### 5.1 be able to
+
+1. Understand various network topologies such as bus, ring, star, mesh adn hybrid.
+2. Understand the advantages and disadvantages of each topology.
+
+### Topologies
+
+- Network Topology
+  - 定义：Arrangement of nodes of a computer network.
+  - 分类
+    - physical topology
+      - placement of various nodes
+    - logical topology
+      - deals with the data flow in the network
+- logical topology
+  - Bus Topology
+    1. All data transmitted between nodes in the network is transmitted over this common transmission medium and is able to be received by all nodes in the network simultaneously(同时地).
+    2. A signal containing the address of the intended receiving machine travels from a source machine in both directions to all mathines connected to the bus until it finds the intended recipient(接收者).
+    - advantages and disadvantages
+      | Advantages | Disadvantages |
+      | --- | --- |
+      | Only one wire - less expensive | Not fault tolerant(No redundancy 冗余) |
+      | Suited for temporary network | Limited cable length |
+      | Node failures does not affect others | No security |
+  - Ring
+    1. A ring topology is a bus topology in a closed loop.
+    2. Peer-to-peer LAN topology
+    3. Two connections: one to each of its nearest neighbors.
+    4. Unidirectional
+    5. Sending and receiving data takes place with the help of a TOKEN.
+    - advantages and disadvantages
+      | Advantages | Disadvantages |
+      | --- | --- |
+      | Performance better than Bus Topology | Unidirectional. Single point of failure will affect the whole network |
+      | Can cause bottleneck(瓶颈) due to weak links | ↑ in load => ↓ in performance |
+      | All nodes with equal access | No security |
+  - Star
+    1. Every node is connected to a central node called a hub or switch.
+    2. Centralized Management.
+    3. All traffic must pass through the hub or switch.
+    - advantages and disadvantages
+      | Advantages | Disadvantages |
+      | --- | --- |
+      | Easy to design and implement | Single point of failure affects the whole network |
+      | Centralized administration | Bottlenecks due to overloaded switch/hub. |
+      | Scalable | Increased cost due to switch/hub |
+    - Extended Star Topology
+      - Star topologies connected by a repeater.
+  - Mesh
+    1. Each node is directly connected to every other nodes in the network.
+    2. Fault tolerant and reliable.
+    - advantages and disadvantages
+      | Advantages | Disadvantages |
+      | --- | --- |
+      | Fault tolerant | Issues with broadcasting messages |
+      | reliable | Expensive and impractical(不明智的，不切实际的) for large networks |
+  - Hybrid
