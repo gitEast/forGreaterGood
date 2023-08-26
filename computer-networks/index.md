@@ -295,3 +295,75 @@
       | Fault tolerant | Issues with broadcasting messages |
       | reliable | Expensive and impractical(不明智的，不切实际的) for large networks |
   - Hybrid
+
+## 6. Basics of Addressing
+
+### 6.1 be able to
+
+- IP address
+  1. Understand the basics of IP addressing.
+  2. Know how to see the IP address in real device.
+  3. Indentify valid and invalid IP addresses.
+- MAC address
+  1. Understand the basics of MAC addressing.
+  2. Understand the difference between IP address and MAC address.
+  3. See the MAC address in real devices.
+- Port address
+  1. Understand the basics of Prot addressing(port number).
+  2. Know three key points to ponder.
+  3. See port number in real devices.
+
+### 6.2 IP Address
+
+- IP
+  - Internet Protocol
+  - Every node in the computer network is identified with the help of IP address.
+- IP Address(IPv4)
+  1. Every node in the computer network is identified with the help of IP address.
+  2. Logical address.
+  3. Can change based on the location of the device.
+  4. Assigned manually or dynamically
+  5. Represented in decimal(十进制) and it has 4 octets(八位字节)(x.x.x.x)
+  6. 0.0.0.0 to 255.255.255.255(32 bits)
+
+### 6.3 MAC Address
+
+- MAC
+  - Media Access Control
+  - Every node in the LAN is identified with the help of MAC address.
+- MAC Address
+  1. Every node in the LAN is identified with the help of MAC address.
+  2. Physical address or Hardware Address.
+  3. Unique.
+  4. Cannot be changed.
+  5. Assigned by the manufacturer.
+  6. Represented in hexadecimal.
+  7. Separator: hyphen(-), period(.), and colon(:)
+- IP Address VS MAC Address
+  - IP Address = Location of a person
+  - MAC Address = Name of the person
+    | IP Address | MAC Address |
+    | --- | --- |
+    | Needed for communication | Needed for communication |
+    | 32 bits | 48 bits |
+    | Represented in Decimal | Represented in hexadecimal |
+    | Router needs IP Address to forward data | Swith ... |
+    | example: 10.10.23.56 | example: 80-40-5A-CC-AA-E4 |
+
+### 6.4 Port Address
+
+- anology
+  - Reaching our city = reaching our network(IP Address)
+  - Reaching our Apartment = Reaching the host(MAC Address)
+  - Reaching the right person = Reaching the right process(Port Address)
+- Port Address(Port Number)
+  1. in a node, many processes will be running.
+  2. Data which are sent/received must reach the right process.
+  3. Every process in a node is uniquely identified using port numbers.
+  4. Port = Communication endpoint.
+  5. Fixed port numbers and dynamic port numbers(0 - 65535)
+- 3 keys points to ponder
+  - before sending the data, any node must
+  1. Attch source IP address den destination IP address.
+  2. Attach source MAC address and destination MAC address.
+  3. Attach source port number and destination port number.
