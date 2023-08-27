@@ -367,3 +367,86 @@
   1. Attch source IP address den destination IP address.
   2. Attach source MAC address and destination MAC address.
   3. Attach source port number and destination port number.
+
+## 7. Switching Techniques
+
+### 7.1 be able to
+
+1. Understand switching.
+2. Understand various switching techniques such as circuit switching(电路交换), message switching and packet switching(分组交换).
+
+### 7.2 Content
+
+- Switching
+  1. Switching in computer network helps in deciding the best route for data transmission if there are multiple paths in a large network.
+  2. One-to-One connection.
+  - circuit switching
+  - message switching
+  - packet switching
+    - datagram(数据电报) approach
+    - virtual circuit approach
+- Circuit Switching
+  1. A dedicated path is established between the sender and receiver.
+  2. Before data transfer, connection will be established first.
+  3. Example: Telephone network.
+  - 3 phases
+    1. Connection established.
+    2. Data transfer.
+    3. Connection disconnected.
+- Message Switching
+  - Store and forward mechanism(机制).
+  - Message is transferred as a complete unit and forwarded using store and forward mechanism at the intermediay node.
+  - Not suited for streaming media and real-time applications.
+- Packet Switching
+  - The internet is a packet switched network.
+  - Message is broken into individual chunks called as packets.
+  - Each packet is sent individually.
+  - Each packet will have source and destination IP address with sequence number.
+  - Sequence numbers will help the receiver to
+    - Record the packets
+    - Detect missing packets
+    - Send acknowlegements
+  1. Datagram Approach
+     - Datagram Packet Switching is also known as connectionless(无连接的) switching.
+     - Each independent entity(实体) is called as datagram.
+     - Datagrams contain destination information and the intermediary devices uses this information to forward datagrams to right destination.
+     - In Data Packet Switching approach, the path is not fixed.
+     - Intermediate nodes take the routing decisions to forward the packets.
+  2. Virtual Circuit Approach
+     - Virtual Circuit Switching is also known as connection-oriented(面向连接的) switching.
+     - In the case of Virtual circuit switching, a preplanned route is established before the messages are sent.
+     - Call request and call accept packets are used to establish the connection between sender and receiver.
+     - In this approach, the path is fixed for the duration of a logical connection.
+
+## 8. Layering in Computer Networks
+
+### 8.1 be able to
+
+1. Understand layering in computer network.
+2. Understand the benefits of layering.
+3. Know the introduction of OSI reference model and TCP/IP model.
+
+### 8.2 Content
+
+- Layering
+  - Layering means decomposing(分解) the problem into more manageable components(layers).
+  - advantages
+    1.  It provides more modular(模块化的) design.
+    2.  Easy to troubleshoot(解决问题).
+- Protocols
+  - It is a set of rules that governs data communication.
+  - The protocols in each layer governs the activities of the data communication.
+- Layered Architectures
+  - The OSI Reference Model
+    - OSI: Open System Interconnection(互联)
+    - It is a model for understanding and designing a network architecture that is flexible, robust and interoperable(可共同操作的).
+    - Developed by the International Standards for Organizations(ISO)
+    - The OSI model is not a protocol.
+    - It is only a guideline and hence(因此) it is referred as OSI reference model.
+    - Purpose: show how to facilitate(推动) communication between different systems without requiring changes to the logic of the underlying hardware and software.
+    - The OSI model was never full implemented.
+  - The TCP/IP Model
+    - TCP/IP: Transmission Control Protocol/Internet Protocol
+    - The TCP/IP protocol suite(套，系列) was developed prior to the OSI model.
+    - Therefore, the layers in the TCP/IP protocol suite do not exactly match those in the OSI model.
+    - TCP/IP is a hierarchical(分等级的，等级制度的) protocol made up of interactive(交互式的) modules, each of which provides a specific funcionality(功能).
