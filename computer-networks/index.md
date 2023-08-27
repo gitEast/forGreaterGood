@@ -4,7 +4,7 @@
 
 ## 0. Introduction to Computer Networks
 
-### 0.1. 章节介绍
+### 0.0 章节介绍
 
 - Chapter 1 Fundamentals: 基本原理
 - Chapter 2 Data Link Layer
@@ -13,7 +13,7 @@
 - Chapter 5 Application Layer
 - Chapter 6 Network Security
 
-### 0.2 Computer Network 解析
+#### 0.0.1 Computer Network 解析
 
 - A computer network is a set of **nodes** connected by **communication links**.
   - nodes:
@@ -32,21 +32,21 @@
   | Web Server | Wireless Router |
   | Smart Phone | Modem |
 
-### 0.3 Summary
+#### 0.0.2 Summary
 
 - Understand "What is computer network?"
 - Identify end devices and intermediary devices
 
-## 1. Computer Networks - Basic Characteristics(基本特性)
+### 0.1 Computer Networks - Basic Characteristics(基本特性)
 
-### 1.1 be able to
+#### 0.1.1 be able to
 
 1. understand the need for fault tolerant networks
 2. understand the need for scalable networks
 3. understand Quality of Service(QoS)(服务质量)
 4. know the importance of security in computer networks
 
-### 1.2 four basic characteristics
+#### 0.1.2 four basic characteristics
 
 - Fault Tolerance
   1. Continue working despite(尽管) failures
@@ -69,16 +69,16 @@
     2. integrity(完整性)
     3. availability
 
-## 2. Network Protocols & Communications
+### 0.2 Network Protocols & Communications
 
-### 2.1 be able to
+#### 0.2.1 be able to
 
 1. Know "What is Data Communication"?
 2. Understand data flow
 3. Understand the importance of protocaols in computer network
 4. Know the elements of protocol
 
-### 2.2 Data Communication and Data Flow
+#### 0.2.2 Data Communication and Data Flow
 
 - Data Communication
   - Data communications are the exchange of data between two nodes via(通过) some form of link(transmission medium)(传输介质) such as a cable(电缆).
@@ -96,7 +96,7 @@
     - 通俗来讲：Device can send and receive at the same time.
     - example: telephone line
 
-### 2.3 Protocols
+#### 0.2.3 Protocols
 
 - All communication schemes(方案，计划) will have the following things in common:
   1. source or sender
@@ -129,7 +129,7 @@
      - multicast
      - broadcast
 
-### 2.4 Peer-to-Peer network and Client Server Network
+#### 0.2.4 Peer-to-Peer network and Client Server Network
 
 - Peer-to-Peer Network
   - No centralized(集中的，中央集权的) administration.
@@ -142,15 +142,15 @@
   - Scalable
   - Server may be overloaded
 
-## 3. Components of a Computer Network
+### 0.3 Components of a Computer Network
 
-### 3.1 be able to
+#### 0.3.1 be able to
 
 1. Understand nodes in computer network
 2. Understand different media in computer network
 3. Understand various services offered by computer network
 
-### 3.2 content
+#### 0.3.2 content
 
 - Components of a Computer Network
   - Nodes
@@ -199,15 +199,15 @@
     - video telephony(拨号服务，电话)
     - world wide web
 
-## 4. Classification(分级，分类) of Computer Networks
+### 0.4 Classification(分级，分类) of Computer Networks
 
-### 4.1 be able to
+#### 0.4.1 be able to
 
 1. Understand LAN, MAN and WAN
 2. Know various devices involved in LAN, MAN and WAN
 3. Know the new trends in computer networks
 
-### 4.2 Classification
+#### 0.4.2 Classification
 
 - LAN
   - Local Area Network
@@ -229,21 +229,21 @@
   - WAN devices
     - end devices and intermediary devices
 
-### 4.3 New Trends
+#### 0.4.3 New Trends
 
 1. Bring Your Own Device(BYOD)(自备设备办公)
 2. Online collaboration(合作)
 3. Cloud computing
    - It is the on-demand availability of computer system resources, especially data storage and computing power, without direct active management by the user.
 
-## 5. Network Topology(拓扑学)
+### 0.5 Network Topology(拓扑学)
 
-### 5.1 be able to
+#### 0.5.1 be able to
 
 1. Understand various network topologies such as bus, ring, star, mesh adn hybrid.
 2. Understand the advantages and disadvantages of each topology.
 
-### Topologies
+#### 0.5.2 Topologies
 
 - Network Topology
   - 定义：Arrangement of nodes of a computer network.
@@ -296,9 +296,9 @@
       | reliable | Expensive and impractical(不明智的，不切实际的) for large networks |
   - Hybrid
 
-## 6. Basics of Addressing
+### 0.6 Basics of Addressing
 
-### 6.1 be able to
+#### 0.6.1 be able to
 
 - IP address
   1. Understand the basics of IP addressing.
@@ -313,7 +313,7 @@
   2. Know three key points to ponder.
   3. See port number in real devices.
 
-### 6.2 IP Address
+#### 0.6.2 IP Address
 
 - IP
   - Internet Protocol
@@ -326,7 +326,7 @@
   5. Represented in decimal(十进制) and it has 4 octets(八位字节)(x.x.x.x)
   6. 0.0.0.0 to 255.255.255.255(32 bits)
 
-### 6.3 MAC Address
+#### 0.6.3 MAC Address
 
 - MAC
   - Media Access Control
@@ -350,7 +350,7 @@
     | Router needs IP Address to forward data | Swith ... |
     | example: 10.10.23.56 | example: 80-40-5A-CC-AA-E4 |
 
-### 6.4 Port Address
+#### 0.6.4 Port Address
 
 - anology
   - Reaching our city = reaching our network(IP Address)
@@ -368,14 +368,14 @@
   2. Attach source MAC address and destination MAC address.
   3. Attach source port number and destination port number.
 
-## 7. Switching Techniques
+### 0.7 Switching Techniques
 
-### 7.1 be able to
+#### 0.7.1 be able to
 
 1. Understand switching.
 2. Understand various switching techniques such as circuit switching(电路交换), message switching and packet switching(分组交换).
 
-### 7.2 Content
+#### 0.7.2 Content
 
 - Switching
   1. Switching in computer network helps in deciding the best route for data transmission if there are multiple paths in a large network.
@@ -418,15 +418,15 @@
      - Call request and call accept packets are used to establish the connection between sender and receiver.
      - In this approach, the path is fixed for the duration of a logical connection.
 
-## 8. Layering in Computer Networks
+### 0.8 Layering in Computer Networks
 
-### 8.1 be able to
+#### 0.8.1 be able to
 
 1. Understand layering in computer network.
 2. Understand the benefits of layering.
 3. Know the introduction of OSI reference model and TCP/IP model.
 
-### 8.2 Content
+#### 0.8.2 Content
 
 - Layering
   - Layering means decomposing(分解) the problem into more manageable components(layers).
@@ -450,3 +450,35 @@
     - The TCP/IP protocol suite(套，系列) was developed prior to the OSI model.
     - Therefore, the layers in the TCP/IP protocol suite do not exactly match those in the OSI model.
     - TCP/IP is a hierarchical(分等级的，等级制度的) protocol made up of interactive(交互式的) modules, each of which provides a specific funcionality(功能).
+
+### 0.9 The OSI Reference Model
+
+#### 0.9.1 be able to
+
+1. Understand the OSI reference model.
+2. List various layers in the OSI reference model.
+3. Understand how each layers interact with other layers.
+
+#### 0.9.2 Content
+
+- Layers in the OSI reference model
+  - Application Layer
+  - Presentation Layer
+  - Session Layer
+  - Transport Layer
+  - Network Layer
+  - Data Link Layer
+  - Physical Layer
+    ![图解](./imgs/OSI-Communication.png)
+
+## 1. Fundamentals
+
+## 2. Data Link Layer
+
+## 3. Network Layer
+
+## 4. Transport Layer
+
+## 5. Application Layer
+
+## 6. Network Security
