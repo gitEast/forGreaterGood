@@ -380,13 +380,13 @@
 - Switching
   1. Switching in computer network helps in deciding the best route for data transmission if there are multiple paths in a large network.
   2. One-to-One connection.
-  - circuit switching
-  - message switching
-  - packet switching
+  - circuit switching 电路交换
+  - message switching 报文交换
+  - packet switching 分组交换
     - datagram(数据电报) approach
     - virtual circuit approach
 - Circuit Switching
-  1. A dedicated path is established between the sender and receiver.
+  1. A dedicated(专用的) path is established between the sender and receiver.
   2. Before data transfer, connection will be established first.
   3. Example: Telephone network.
   - 3 phases
@@ -402,7 +402,7 @@
   - Message is broken into individual chunks called as packets.
   - Each packet is sent individually.
   - Each packet will have source and destination IP address with sequence number.
-  - Sequence numbers will help the receiver to
+  - Sequence(顺序) numbers will help the receiver to
     - Record the packets
     - Detect missing packets
     - Send acknowlegements
@@ -458,6 +458,7 @@
 1. Understand the OSI reference model.
 2. List various layers in the OSI reference model.
 3. Understand how each layers interact with other layers.
+4. Understand the services offered by the 7 Layers.
 
 #### 0.9.2 Content
 
@@ -470,6 +471,48 @@
   - Data Link Layer
   - Physical Layer
     ![图解](./imgs/OSI-Communication.png)
+- Services offered
+  - Application Layer
+    - enables the user to access the network resources.
+    1. File Transfer and Access Management.(FTAM)
+    2. Mail Service.
+    3. Diretory Service.(目录服务)
+  - Presentation Layer
+    - It is concerned with the syntax and semantics(语义学) of the information exchanged between two systems.
+    1. Translation
+    2. Encryption 加密
+    3. Compression
+  - Session Layer
+    - establishes, mantains, and synchronizes(同步，对准) the interaction among communicating devices.
+    1. Dialog control
+    2. Synchronization 同步，同时性
+  - Transport Layer
+    - is responsible for process to process delivery of the entire message.
+    1. Prot addressing
+    2. Segmentation and Reassembly 切割与重组
+    3. Connneciton control
+    4. End-to-End Flow Control
+    5. Error Contol
+  - Network Layer
+    - is responsible for delivery of data from the original source to the destination network.
+    1. Logical addressing
+    2. Routing.
+  - Data Link Layer
+    - is responsible for moving data(frames)(帧) from one node to another node.
+    1. Framing 组帧
+    2. Physical Addressing
+    3. Flow Control
+    4. Error Control
+    5. Access Control
+  - Physical Layer
+    - is responsible for transmitting bits over a medium. It also provides electrical and mechanical(机械) specification(规范).
+    1. Physical characteristics of the media.
+    2. Representation of bits
+    3. Data rate
+    4. Synchronization of bits
+    5. Line configuration
+    6. Physical topology
+    7. Transmission Mode: simplex, half duplex, full duplex
 
 ## 1. Fundamentals
 
