@@ -106,3 +106,73 @@ React + ts
         </HashRouter>
       );
       ```
+
+   5. 分包处理
+
+      ```tsx
+      /** router/index.tsx */
+      import { lazy } from 'react';
+
+      const Discover = lazy(() => import('@/views/discover'));
+
+      /** App.tsx */
+      import { Suspense } from 'react';
+
+      function App() {
+        return (
+          <Suspense fallback="loading">
+            <div className="main">{useRoutes(routes)}</div>
+          </Suspense>
+        );
+      }
+      ```
+
+      - 懒加载导致不能立刻出现新页面，需要有应急方案
+
+   6. 子页面 c-views
+
+   - 各个页面: discover, focus, mine, download
+
+     ```tsx
+     import React, { memo } from 'react';
+     import type { FC, ReactNode } from 'react';
+
+     interface IProps {
+       children?: ReactNode;
+     }
+
+     const ${1: Home}: FC<IProps> = () => {
+       return <div>${1: Home}</div>;
+     };
+
+     export default memo(${1: Home});
+     ```
+
+8. redux 状态管理
+
+   1. `npm install @reduxjs/toolkit react-redux`
+   2. `store/index.ts`
+
+      ```ts
+      import { configureStore } from '@reduxjs/toolkit';
+
+      const store = configureStore({});
+
+      export default store;
+      ```
+
+   3. 使用
+
+      ```tsx
+      import { useSelector, TypedUseSelectorHook } from 'react-redux';
+
+      type GetStateFnType = typeof store.getState;
+      type IRootState = ReturnType<GetStateFnType>;
+
+      type DispatchType = typeof store.dispatch;
+
+      export const useAppSelector: TypedUseSelectorHook<IRootState> =
+        useSelector;
+
+      export const useAppDispatch: () => DispatchType = useDispatch;
+      ```
