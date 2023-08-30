@@ -516,6 +516,94 @@
 
 ## 1. Fundamentals
 
+### 1.1 Addressing in Networking
+
+#### 1.1.1 be able to
+
+1. Understand the role of Port Addressing, IP Addressing and MAC Addressing in Computer Networks with examples.
+
+#### 1.1.2 content
+
+1. the sender generate `Data` in Application Layer
+   - => add Port Address in the Transport Layer (the sender's and the receiver's)
+   - => add IP Address in the Network Layer (the sender's and the receiver's)
+   - => add MAC Address in the Data Link Layer (the sender's and the next router's)
+2. the next router receives the whole data
+   - => check MAC Address in the Data Link Layer √
+   - => check IP Address in the Network Layer ×
+   - => add new MAC Address in the Data Link Layer (the router's and the next router's)
+   - => forward the whole data
+3. the next router...
+4. the receiver receives the whole data
+   - => check MAC Address √
+   - => check IP Address √
+   - => check Port Address and find the end point(the right process)
+
+### 1.2 the TCP/IP Protocol Suite(套，组)
+
+#### 1.2.1 be able to
+
+1. Understand the TCP/IP Protocol Suite.
+2. Compare OSI and TCP/IP models.
+3. Understand the list of protocols in the TCP/IP Protocol Suite.
+4. Know about Protocol Data Unit(PDU).
+
+#### 1.2.2 content
+
+| OSI Reference Model | TCP/IP Model   |
+| ------------------- | -------------- |
+| Application         | Application    |
+| Presentation        | Application    |
+| Session             | Application    |
+| Transport           | Transport      |
+| Network             | Internet       |
+| Data Link           | Network Access |
+| Physical            | Network Access |
+
+- the TCP/IP Model
+  - Application
+    - Represents data to the user, plus encoding and dialog control.
+    - Services:
+      - name system: DNS
+      - host config: BOOTP, DHCP
+      - email: SMTP, POP, IMAP
+      - file transfer: FTP, TFTP
+      - web: HTTP
+  - Transport
+    - Supports communication between diverse(不同的) devices across diverse networks.
+    - Services:
+      - UDP
+      - TCP
+  - Internet
+    - Determines the best path throught the network.
+    - Services:
+      - IP: NAT, ARP
+      - IP support: ICMP
+      - routing protocols: RIP, OSPF, EIGRP, BGP
+  - Network Access
+    - Controls the hardware(硬件) devices and media that make up the network.
+    - Services:
+      - IP: ARP
+      - PPP
+      - Ethernet
+      - Interface Drivers
+- PDU
+  - Protocol Data Unit => PDU
+  - are named according to the protocols of the TCP/IP suite: data, segment, packet, frame and bits.
+  - Layers map
+    - Application Layer -- Data
+    - Transport Layer -- Segment
+      1. break the whole data into data pieces
+      2. add Transport Header to every data piece
+    - Network Layer -- Packet
+      1. add Network Header
+    - Data Link Layer -- Frame
+      1. add Frame Header on the head
+      2. add Frame Header on the tail
+      - Frame are depended by medium(媒介).
+    - Physical Layer -- Bits
+      1. transform into binary
+
 ## 2. Data Link Layer
 
 ## 3. Network Layer
