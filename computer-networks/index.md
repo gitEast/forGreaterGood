@@ -604,6 +604,133 @@
     - Physical Layer -- Bits
       1. transform into binary
 
+### 1.3 Basic Networking Commands
+
+#### 1.3.1 be able to
+
+1. Know the basic networking commands such as
+   - `ipconfig`
+   - `ipconfig/all`
+   - `nslookup [域名]`
+   - `ping [ip]`
+   - `tracert [ip]`
+
+### 1.4 Basics of Cisco Packet Tracer
+
+#### 1.4.1 be able to
+
+- Cisco Packet Tracer
+  1. Download and work with Cisco Packet Tracer(CPT)
+  2. Know the basics of Cisco Packet Tracer.
+  3. Establish an example peer-to-peer networking using CPT.
+  4. Know the bascis of Cisco Packet Tracer.
+- Hub
+  1. Know about hub.
+  2. Simulate LAN using hub.
+  3. Understand the pros and cons of hub.
+- Switch
+  1. Learn the Cisco Packet Tracer using switch.
+  2. Simulate LAN using switch.
+  3. Understand the difference between hub and switch.
+- Router
+  1. Know the basics of routers.
+  2. Understand how to connect two different LAN using router theoretically.
+  3. Understand the difference between switch and router.
+- Repeater
+  1. Understand the basics of repeater.
+  2. Know the working of repeater using CPT.
+- Bridge
+  1. Understand the basics of bridge.
+  2. Know the types of bridge.
+  3. Understand the working of bridge.
+  4. Understand the difference between router and bridge.
+
+#### 1.4.2 Cisco Packet Tracer
+
+- Cisco Packet Tracer
+  - an innovative(革新的，新颖的) and powerful networking sumulation tool used for practice, discovery and troubleshooting.
+
+#### 1.4.3 hub
+
+- hub
+  1. works at the physical layer of the OSI model.
+  2. used to set up LAN.
+  3. has multiple ports.
+  4. Star topology.
+  5. Broadcast: When a packet arrives at one port, it is copied to the other ports so that all segments(部分) of the LAN can see all packets.
+  - PROS and CONS
+    - pros
+      1. cheaper than switches.
+      2. works good for smaller network.
+    - cons
+      1. issues with broadcast.
+      2. no memory.
+      3. normally runs in half deplex mode.
+
+#### 1.4.4 switch
+
+- switch
+  - a networking hardware that connects devices on a computer network to establish a local area network.
+  - unlike hub, switch has memory.
+    - => to store MAC Address Table
+  - Layer 2 Device for setting up LAN
+- Cisco Packet Tracer 中 switchi 设备的 CLI
+  1. `Switch>`, input `EN`
+  2. `Switch#`, input `show mac-address-table`
+
+| Hub                                    | Switch                                           |
+| -------------------------------------- | ------------------------------------------------ |
+| Layer 1 device                         | Layer 2 device                                   |
+| works at Physical Layer                | works at Data Link Layer                         |
+| has no memory                          | has memory and store MAC Address Table           |
+| not an intelligent device              | intelligent device                               |
+| floods the network due to broadcasting | can do unicasting, multicasting and broadcasting |
+| security risks are high                | security risks low                               |
+| less efficient                         | more efficient                                   |
+| half duplex                            | full duplex                                      |
+
+#### 1.4.5 router
+
+- router
+  - a networking device that forwards data packets between computer networks.
+  - connected to at least two networks, commonly two LANs or WANs or a LAN and its ISP's network.
+  - Layer 3 device
+  - stores routing table
+- Cisco Packet Tracer
+  1. need to fill Default Gateway
+
+| Switch                                              | Router                                          |
+| --------------------------------------------------- | ----------------------------------------------- |
+| connect many devices together on a computer network | connect a local network to other local networks |
+| Operates at Data Link Layer                         | at Network Layer                                |
+| has memory and stores MAC Address Table             | has memoryand stores Routing Table              |
+| decisions are taken based on MAC address            | decisions are taken based on IP address         |
+| half/duplex                                         | full duplex                                     |
+| LAN                                                 | LAN, MAN, and WAN                               |
+
+#### 1.4.6 repeater
+
+- Repeater
+  - 原因：The data signals generally become too weak or corrupted(毁坏的) if they tend(倾向于，往往会) travel a long distance.
+  - 作用：regenerates the signal over the same network.
+  - operates at the Physical Layer
+  - do not amplify(加强，扩增) the signal.
+  - 2 port device.
+
+#### 1.4.7 bridge
+
+- Bridge
+  - = Repeater + Functionality(功能) of reading MAC address
+  - Layer 2 device
+  - be used for interconnecting(相互连接) two LANs on the same protocol.
+  - a two port device.
+- Types of Bridges
+  - Transparent Bridges
+    1. ths stations are completely unaware of the bridge's existence.
+    2. Reconfiguration of the stations is unneccessary even if bridges is added or removed from network.
+  - Source Routing Bridges
+    1. in these bridges, routing operation is performed by source station and the frame specifies which route to follow.
+
 ## 2. Data Link Layer
 
 ## 3. Network Layer

@@ -161,6 +161,19 @@ React + ts
       export default store;
       ```
 
+      ```ts
+      /** counter.ts */
+      const counterSlice = createSlice({
+        name: 'counter',
+        initialState,
+        reducers: {
+          changeMessageAction(state, { payload }: PayloadAction<string>) {
+            state.message = payload;
+          }
+        }
+      });
+      ```
+
    3. 使用
 
       ```tsx
@@ -176,3 +189,91 @@ React + ts
 
       export const useAppDispatch: () => DispatchType = useDispatch;
       ```
+
+9. 继承 axios
+   1. `npm install axios`
+   2. 区分开发环境和生产环境
+      ```ts
+      if (process.env.NODE_ENV === 'development') {
+        console.log('开发环境');
+      } else {
+        console.log('打包环境: production');
+      }
+      ```
+      ```
+      .env
+      REACT_APP_BASEURL=http://codercab.com:9002
+      ```
+      - 类型声明文件
+
+## 二、Header 和 Footer 部分
+
+1. 导航栏 `components/app-header/index.tsx`, `app-footer/index.tsx`
+   - `AppHeader`
+   - `AppFooter`
+2. 使用 styled-components
+   1. `npm install styled-components -D`
+   2. 对 `styled-components` 进行类型声明
+      - 类型声明的方法
+        1. typescript 内置 DOM
+        2. 第三方
+           - 库内部已经有类型声明 axios
+           - react/rect-dom => @types/react, @types/react-dom
+        3. 自己写类型声明
+3. 主题
+
+   - 编写
+     ```ts
+     /** assets/theme/index.ts */
+     const theme = {
+       color: {
+         primary: '#C20C2C'
+       },
+       mixin: {
+         wrapv1: `
+           width: 1100px
+         `
+       }
+     };
+     ```
+   - 使用
+
+     ```tsx
+     /** index.tsx */
+     import { ThemeProvider } from 'styled-components';
+
+     root.render(
+       <Provider store={store}>
+         <ThemeProvider theme={theme}>
+           <App />
+         </ThemeProvider>
+       </Provider>
+     );
+     ```
+
+     ```ts
+     /** app-header/style.ts */
+     export const HeaderWrapper = styled.div`
+       .content {
+         ${(props) => props.theme.mixin.wrapv1}
+       }
+     `;
+     ```
+
+4. `HeaderLeft` 和 `HeaderRight`
+5. 路由数据 `assets/data/header-titles.json`
+   ```json
+   [
+     {
+       "title": "发现音乐",
+       "type": "path",
+       "path": "/discover"
+     },
+     {
+       "title": "商城",
+       "type": "link",
+       "link": "https:/"
+     }
+   ]
+   ```
+   - 使用 `<NavLink>`，可自动匹配当前匹配的路径 `.active`
