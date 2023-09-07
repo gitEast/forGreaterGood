@@ -644,6 +644,10 @@
   2. Know the types of bridge.
   3. Understand the working of bridge.
   4. Understand the difference between router and bridge.
+- Multi-layer switch(layer 3 switch)
+- Brouter
+- Modem
+- Firewall(Security Device)
 
 #### 1.4.2 Cisco Packet Tracer
 
@@ -665,7 +669,7 @@
     - cons
       1. issues with broadcast.
       2. no memory.
-      3. normally runs in half deplex mode.
+      3. normally runs in half duplex mode.
 
 #### 1.4.4 switch
 

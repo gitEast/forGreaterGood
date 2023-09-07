@@ -277,3 +277,84 @@ React + ts
    ]
    ```
    - 使用 `<NavLink>`，可自动匹配当前匹配的路径 `.active`
+6. 集成 AntDesign
+   1. `npm install antd`
+
+## 三、Discover 页面
+
+1. 小菜单 `discover/c-cpns/nav-bar`
+2. 按照业务划分文件夹
+
+   - 在页面文件夹下另开 `service` 和 `store` 文件夹
+   - `recommend/service/recommend.ts`
+
+     ```ts
+     import myRequest from '@/service';
+
+     export function getBanners() {
+       return myRequest.get({
+         url: '/banner'
+       });
+     }
+     ```
+
+   - `recommend/store/recommend.ts`
+
+     ```ts
+     import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+
+     export const fetchBannerDataAction = createAsyncThunk(
+       'banners',
+       async () => {
+         const res = await getBanners();
+         return res.data;
+       }
+     );
+     export const fetchBannerDataAction = createAsyncThunk(
+       'banners',
+       async (arg, { dispatch, getState }) => {
+         const res = await getBanners();
+         dispatch(changeBannersAction(res.banners));
+       }
+     );
+
+     const recommendSlice = createSlice({
+       reducers: {
+         changeBannersAction(state, { payload }) {
+           state.banners = payload;
+         }
+       },
+       extraReducers: (builder) => {
+         builder
+           .addCase(fetchBannerDataAction.pending, () => {
+             console.log('pending');
+           })
+           .addCase(fetchBannerDataAction.fulfilled, (state, { payload }) => {
+             state.banners = payload;
+           })
+           .addCase(fetchBannerDataAction.rejected, () => {
+             console.log('rejected');
+           });
+       }
+     });
+     ```
+
+   - `recommend/index.tsx`
+     ```tsx
+     const Recommend = () => {
+       const dispatch = useDispatch();
+       useEffect(() => {
+         dispatch(fetchBannerDataAction());
+       }, []);
+     };
+     ```
+
+3. 轮播图
+
+   ```tsx
+   import type { ElementRef } from 'react';
+
+   const TopBanner: FC<IProps> = () => {
+     const bannerRef = useRef<ElementRef<typeof Carousel>>(null);
+   };
+   ```
