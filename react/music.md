@@ -358,3 +358,47 @@ React + ts
      const bannerRef = useRef<ElementRef<typeof Carousel>>(null);
    };
    ```
+
+4. recommend 的内容部分
+   - TopBanner
+   - div.content.wrap-v2
+     - div.left
+       - hot-recommend
+         - @/components/area-header-v1
+           1. 隐藏最后的竖线
+              - by css
+                ```css
+                &:last-child {
+                  .divider {
+                    display: none;
+                  }
+                }
+                ```
+              - by JavaScript
+                ```tsx
+                {
+                  index < keywords.length && <span className="divider">|</span>;
+                }
+                ```
+           2. IProps
+              ```tsx
+              interface IProps {
+                children?: ReactNode;
+                title?: string;
+                keywords?: string[];
+                moreText?: string;
+                moreLink?: string;
+              }
+              ```
+         - @/views/discover/c-views/recommend/c-cpns/hot-recommend/index.tsx
+           - @/components/song-menu-item
+             - div.top
+               - @/utils/format.ts
+                 - `formatCount(count: number) {}`
+                 - `getImageSize(imageUrl: string, width: number, height: number) {}`
+             - div.bottom
+       - new-album
+     - div.right
+5. recommend 的网络请求
+   - `/personalized?limit=30`: 热门推荐 getHotRecommend
+   - `/album/newest`: 新碟上架 getNewAlbum
