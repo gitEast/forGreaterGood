@@ -402,3 +402,136 @@ React + ts
 5. recommend 的网络请求
    - `/personalized?limit=30`: 热门推荐 getHotRecommend
    - `/album/newest`: 新碟上架 getNewAlbum
+
+## 四、底部播放栏
+
+- 属于播放工具，但不属于 play 页面
+  - => `src/news/player/app-player-bar` 组件
+- 永远固定在页面底部，不依赖页面切换
+  - => 写在 App.tsx 中
+- div 布局
+  - content
+    - BarControl
+    - BarPlayerInfo
+      - Link
+      - info
+      - process 进度条
+        - Slider from 'antd'
+        - time
+    - BarOperator
+- 播放逻辑
+
+  - 对于要播放哪一首歌曲
+    - only 播放权，没有决定权
+    - => 从 state.currentSong 中 get
+  - 播放器 `<audio>`
+
+    ```tsx
+    function AppPlayerBar = () => {
+      const audioRef = useRef<HTMLAudioElement>(null)
+      const [isPlaying, setIsPlaying] = useState(false)
+
+      /** 组件内的副作用操作 */
+      useEffect(() => {
+        audioRef.current!.src = currentSong.id
+        audioRef.current?.play().then(res => {
+          console.log('歌曲播放成功')
+        }).catch(err => {
+          console.log('歌曲播放失败：', err)
+          setIsPlaying(false)
+        })
+      }, [currentSong])
+
+      return <audio ref={audioRef}></audio>
+    }
+    ```
+
+  - 进度条
+    ```tsx
+    function AppPlayerBar = () => {
+      const [progress, setProgress] = useState(0)
+      // 总时间
+      const [duration, setDuration] = useState(0)
+    }
+    ```
+
+- 歌词解析
+
+  ```ts
+  interface ILyric {
+    time: number;
+    text: string;
+  }
+
+  const timeRegExp = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+
+  export function parseLyric(lyricString: string) {
+    // 1. 拿到一行行的歌词
+    const lines: strings[] = lyricString.split('\n');
+
+    // 2. 对每句歌词进行解析，解析成对应的对象
+    const lyrics: ILric[] = [];
+    for (const line of lines) {
+      // 1. 匹配结果
+      const result = timeRegExp.exec(line);
+      if (!result) continue;
+
+      // 2. 获取每一组的结果
+      const time1 = Number(result[1]) * 60 * 1000;
+      const time2 = Number(result[2]) * 60;
+      const time3 =
+        result[3].length === 3 ? Number(result[3]) : Number(result[3]) * 10;
+      const time = time1 + time2 + time3;
+
+      // 3. 获取每一组的文本
+      const text = line.replace(timeRegExp, '');
+
+      lyrics.push({ time, text });
+    }
+    return lyrics;
+  }
+  ```
+
+- 获取对应时间的那一行歌词
+  ```ts
+  let index = lyrics.length - 1; // 默认是最后一个
+  for (let i = 0; i < lyrics.length; i++) {
+    const lyric = lyrics[i];
+    if (lyric.time > currentTime) {
+      index = i - 1;
+      break;
+    }
+  }
+  console.log(lyrics[index].text);
+  ```
+  - lyricIndex
+    - 在多个地方使用 => 在 store 中记录
+    - 匹配到相同歌词时，不改变
+      ```ts
+      if (lyricIndex === index || index === -1) return;
+      dispatch(changeLyricIndexAction(index));
+      ```
+- 播放列表
+  ```tsx
+  interface IPlayerState {
+    currentSong: any;
+    lyrics: ILyric[];
+    lyricIndex: number;
+    playSongList: any[];
+    playSongIndex: number;
+    playMode: number; // 0: 顺序播放; 1: 随机播放; 2: 单曲循环
+  }
+  ```
+  1. 如果播放列表没有正在播放的那首歌，将其加入
+  2. 重构 fetchCurrentSongAction
+     1. 准备播放某一首歌曲时，分成两种情况：从列表尝试是否可以获取到这首歌
+        - 可以 => 进入步骤 2
+        - 不可以 =>
+          1.
+          2.
+  3. 点击 next/previous 图标时
+     1. 获取 state 中的数据
+     2. 根据播放模式切换 下一首/上一首
+        - 即使是单曲循环，此时下一首也是顺序的 the next
+        - 注意下标越界问题
+     3.
