@@ -3,6 +3,15 @@
 - 两个阶段
   1. 语法
   2. 实战
+- TS 学习等级
+  1. 知道 ts，但从未用过
+  2. AnyScript
+  3. 大多数时候使用 `any`，但普通的类型用法也可以把握
+  4. 大多数时候类型使用正确，极少数情况下使用 `any`
+     - 业务代码没有问题
+  5. 使用 TS 封装高级类型，包括框架中某些特殊类型(例如 pinia, vuex, ...)
+     - 玩类型体操
+  6. TS 源码开发者
 
 ## 一、邂逅
 
@@ -55,6 +64,7 @@
 |            | never                                        |
 |            | void                                         |
 |            | 字面量类型                                   |
+|            | 枚举类型                                     |
 
 - any
   - 使用情况
@@ -83,14 +93,61 @@
     }
     ```
 - void: 函数返回为空的返回值类型
+- 枚举类型
+  ```ts
+  enum Direction {
+    LEFT,
+    RIGHT,
+    UP,
+    DOWN
+  }
+  const d1: Direction = Direction.LEFT;
+  ```
+  - 位运算
+    ```ts
+    enum Operation {
+      READ = 1 << 0, // 1 => 1
+      WRITE = 1 << 1, // 10 => 2
+      PICK = 1 << 3 // 100 => 4
+    }
+    ```
+    - 便于后续运算
 
 ### 2.4 函数类型
 
 #### 2.4.1 参数与返回值类型
 
 - 参数类型
-  - 一般函数: 必须明确指定参数的类型
-  - 匿名函数: 大多数情况会根据上下文类型自动推导，一般不需要明确指定
+
+  - 分类标准一
+    - 一般函数: 必须明确指定参数的类型
+    - 匿名函数: 大多数情况会根据上下文类型自动推导，一般不需要明确指定
+  - 分类标准二
+    - 可选参数: 指定类型 + `undefined` 的联合类型
+    - 参数默认值
+      1. 类型注解可以忽略
+      2. 可以接收 `undefined`
+    - 剩余参数
+  - 函数作为参数
+
+    ```ts
+    type CallbackType = (num1: number, num2: number) => number;
+
+    function foo(fn: CallbackType) {
+      fn(1, 2);
+    }
+    function add(num1: number, num2: number) {
+      return num1 + num2;
+    }
+
+    foo(add);
+    ```
+
+    - 检测原理
+      ```ts
+      type res = typeof add extends CallbackType ? true : false;
+      ```
+
 - 返回值类型: 可以通过推导，也可以明确指定
 
 #### 2.4.2 函数类型表达式
@@ -112,6 +169,77 @@ interface IBar {
 ```
 
 - 函数特性 + 对象特性
+
+#### 2.4.4 构造签名 Constructor Signatures
+
+```ts
+class Person {}
+
+interface ICTROPerson {
+  new (): Person;
+}
+
+function factory(fn: ICTORPerson) {
+  const f = new fn();
+  return f;
+}
+
+factory(Person);
+```
+
+#### 2.4.5 函数重载
+
+> by 重载签名 overload signatures
+
+```ts
+function add(num1: number, num2: number)
+function add(str1: string, str2: string)
+
+funciton add(arg1: any, arg2: any) {
+  return arg1 + arg2
+}
+```
+
+- 尽量使用联合类型而非重载签名
+
+#### 2.4.6 this
+
+- this 可推导
+  - default: `any`
+  - if 对 ts 进行配置
+    1. `tsc --init`
+    2. `"noImplicitThis": true` 配置为没有隐式的 this(默认 false)
+    3. 会根据上下文推导
+       - if 无法推导，则报错
+       - `this` 可以作为函数的第一个参数(编译过程中会除去 s)
+- this 相关内置工具
+
+  - `ThisParameterType`: 获取 this 的类型
+  - `OmitThisParameter`: 除 this 外的参数
+  - `ThisType`: 设置 `this` 的类型
+
+    ```ts
+    function foo() {}
+    type FooType = typeof foo;
+    type This_Type = ThisParameterType<FooType>;
+    type PureFooType = OmitThisParameter<FooType>;
+
+    /** 设置 this 的类型 */
+    interface IState {
+      name: string;
+    }
+    interface IStore {
+      state: IState;
+      getName: () => string;
+    }
+
+    const store: IStore & ThisType<IState> = {
+      state: { name: 'east' },
+      getName() {
+        return this.name;
+      }
+    };
+    ```
 
 ### 2.5 type 与 interface
 
@@ -141,3 +269,18 @@ interface IBar {
 2. `===`: 一般用于字面量类型
 3. `[obj] instanceof [class]`
 4. `in`: 对象是否拥有某个属性
+
+### 2.9 类
+
+#### 2.9.1 基本使用
+
+1. 属性需要先声明再使用
+2. 成员修饰符
+   - `public`
+   - `private`
+   - `protected`
+3. 属性修饰符
+   - `readonly`
+4. `getter/setter`
+   - 一般针对私有属性使用(`_[key]`)
+   - 进行拦截，防止不合理的操作 or 数据
