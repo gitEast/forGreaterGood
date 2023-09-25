@@ -272,6 +272,11 @@ funciton add(arg1: any, arg2: any) {
 
 ### 2.9 类
 
+- 作用
+  1. 创建实例对象
+  2. 作为对应实例对象的类型
+  3. 作为一个有构造签名的函数
+
 #### 2.9.1 基本使用
 
 1. 属性需要先声明再使用
@@ -279,8 +284,177 @@ funciton add(arg1: any, arg2: any) {
    - `public`
    - `private`
    - `protected`
+   ```ts
+   /** 省略写法 */
+   class Alligator {
+     constructor(
+       public name: string,
+       private age: number,
+       protected address: string
+     ) {}
+   }
+   ```
 3. 属性修饰符
    - `readonly`
 4. `getter/setter`
    - 一般针对私有属性使用(`_[key]`)
    - 进行拦截，防止不合理的操作 or 数据
+
+#### 2.9.2 抽象类
+
+```ts
+abstract class Animal {
+  abstract eating(); // 抽象方法，child 类必须实现该方法
+
+  // 可以拥有实现的方法
+  running() {
+    console.log('This Animal is running.');
+  }
+}
+```
+
+- **抽象类无法被实例化**
+- 抽象类与接口的区别
+  - 抽象类：事物的抽象，拥有 children 类的通用特性 => is
+  - 接口：一些行为的描述 => has
+
+#### 2.9.3 TS 类型检测原则
+
+鸭子类型
+
+- only cares 属性和行为
+- 不关心具体类型
+
+### 2.10 对象类型
+
+#### 2.10.1 基本使用
+
+- 修饰符
+  - `?`
+  - `readonly`
+
+#### 2.10.2 索引签名 Index Signatures
+
+```ts
+interface ICollection {
+  [aaa: number]: string;
+}
+```
+
+- 注意：`number` 类型的索引访问，最终都会被转化成 `string` 类型的索引访问
+
+  - => 两个索引的写法如下
+
+    ```ts
+    interface IIndex {
+      [index: number]: string;
+      [key: string]: any; // 不能使用 string 作为返回值类型的原因：数组有 forEach/map/reduce 等方法
+    }
+
+    const names: IIndex = ['郑鳄', 'wind', 'east', 'alligator'];
+    ```
+
+    - `number` 类型的值类型 一定是 `string` 类型的值类型的 child 集合
+
+#### 2.10.3 严格字面量赋值检测 fresh
+
+1. 第一次创建的字面量，标记为“新鲜的”(fresh)
+2. 对于新鲜的字面量，需严格满足类型要求
+3. 对于不新鲜的字面量，不严格要求
+
+### 2.11 interface 接口
+
+- 接口继承
+  - 优点：
+    1. 减少相同代码的重复编写
+    2. 使用第三方库时，可以自定义扩展类型
+- 接口的类实现
+  ```ts
+  class Alligator implements IAlligator {}
+  ```
+
+### 2.12 泛型
+
+#### 2.12.1 Why do we need 泛型？
+
+- 类型系统
+  - 各种语言都有，用于约束
+  - ts 的特别灵活
+    - 支持类型编程的类型系统
+    - => 难度 ↑↑↑
+    - 类型体操
+      - `type-changes` 题库
+      - `type-changes-solutions` 题解
+      - 解题思路
+        1. 映射类型
+        2. 条件类型
+           - `extends`
+             - `infer`
+             - `as`
+             - 分发
+        3. `keyof`
+
+#### 2.12.2 初步认识泛型
+
+- 常见缩写
+  - T: Type
+  - K, V: Key, Value
+  - E: Element
+  - O: Object
+  - R: ReturnType
+- `useState` 练习
+  ```ts
+  function useState<T>(arg: T) {
+    function setArg(newArg: T) {
+      arg = newArg;
+    }
+    return [arg, setArg];
+  }
+  ```
+
+#### 2.12.3 泛型约束 Generic Constraints
+
+1. 要求：必须有 `length` 属性，且保有原类型，不允许丢失
+
+   ```ts
+   interface ILength {
+     length: number;
+   }
+
+   function getInfo<T extends ILength>(arg: T): T {
+     return arg;
+   }
+
+   const names: string[] = ['郑鳄', 'wind', 'east', 'alligator'];
+   getInfo(names);
+   ```
+
+2. 要求：返回对象对应属性的值，且该属性在对象中存在
+
+   ```ts
+   function getObjectProperty<O, K extends keyof O>(obj: O, key: K) {
+     return obj[key];
+   }
+
+   interface IAlligator {
+     name: string;
+     age: number;
+   }
+   const info: IAlligator = {
+     name: '郑鳄',
+     age: 24
+   };
+
+   getObjectProperty(info, 'name');
+
+   // 注解
+   keyof IAlligator; // 'name' | 'age'
+   ```
+
+#### 2.12.4 映射类型 Mapped Types
+
+```ts
+type MapPerson<T> = {
+  -readonly [key in keyof T]-?: T[key];
+};
+```
