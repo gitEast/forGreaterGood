@@ -34,9 +34,53 @@
 
 ## 二、语法
 
-### 2.1 类型声明
+### 2.1 类型声明 Type Declaration
+
+> 类型定义 Type Definition.
 
 类型注解：Type Annotation.
+
+- [xxx].d.ts
+  - 只能用于类型声明(全局)
+  - 不编写逻辑代码
+- ts 查找类型声明三种方式 by [xxx].d.ts
+  1. 内置类型声明
+  2. 外部定义类型声明
+  3. 自定义类型声明
+- 自定义类型声明代码一览
+
+  ```ts
+  /** src/types/alligator.d.ts */
+  // 1. 全局变量
+  declare const name: string;
+
+  // 2. 全局函数
+  declare function sayLove(param: string): string;
+
+  // 3. 类
+  declare class Alligator {
+    name: string;
+    age: number;
+
+    constructor(name: string, age: number);
+  }
+
+  // 4. asset 文件
+  declare module '*.jpg';
+  declare module '*.jpeg';
+  declare module '*.png';
+  declare module '*.gif';
+
+  // 5. 第三方导入模块 (以 lodash 为例)
+  declare module lodash {
+    export function sum(num1: number, num2: number): number;
+  }
+
+  // 6. CDN 导入 (以 jQuery 为例)
+  declare namespace $ {
+    export function ajax(settings: any): any;
+  }
+  ```
 
 ### 2.2 类型推导
 
@@ -245,6 +289,9 @@ funciton add(arg1: any, arg2: any) {
 
 - type
   - 作用: 起别名
+  - tips
+    1. 导入类型时，建议添加 `type` 关键字
+       - 对非 ts 编辑器(如 Babel, swc, esbuild 等)，知道什么样的导入可以被安全移除
 - interface
   - 使用范围：仅限于对象类型
   - 更适配对象类型
