@@ -505,3 +505,180 @@ type MapPerson<T> = {
   -readonly [key in keyof T]-?: T[key];
 };
 ```
+
+## 三、tsconfig.json 配置
+
+- 作用
+  1. TS Compiler 知道如何编译、类型检测
+     - 编译成什么样的 JS 代码
+     - 类型检测的标准
+  2. 让编辑器正确识别
+     - vscode 提示
+     - ...
+- 配置解析(略，自行查文档)
+
+## 四、axios 封装
+
+## 五、类型体操(内置工具)
+
+### 5.1 条件类型 Conditional Types
+
+1. 在重载签名中使用
+
+   ```ts
+   /** 重复写法 */
+   function sum(arg1: number, arg2: number);
+   function sum(arg1: string, arg2: string);
+
+   /** 使用条件类型 Conditional Types */
+   type SumType = number | string;
+   function sum<T extends SumType>(
+     arg1: T,
+     arg2: T
+   ): T extends number ? number : string;
+
+   // 函数实现
+   function sum(arg1: any, arg2: any) {
+     return arg1 + arg2;
+   }
+   ```
+
+2. 在条件类型中进行 infer 推断
+
+   ```ts
+   type FooFnType = (arg: number) => string;
+
+   type FooReturnType = ReturnType<FooFnType>; // string
+
+   // 实现
+   type MyReturnType<T extends (...args: any[]) => any> = T extends (
+     ...args: any[]
+   ) => infer R
+     ? R
+     : never;
+   type MyFooReturnType = MyReturnType<FooFnType>;
+   ```
+
+### 5.2 分发条件类型 Distributive Conditional Type
+
+- 联合类型 -> 挨个执行 => 分发
+
+  ```ts
+  // 1. 初始状态
+  type ToArray<T> = T[];
+
+  // number[]
+  type NumberArray = ToArray<number>;
+
+  // number[] | string[]
+  type NumOrStrArray = ToArray<number | string>; // 不符合要求，为 (number | string)[]
+
+  // 2. 使用分发
+  type ToArray2<T> = T extends any ? T[] : never;
+  type NumOrStrArray2 = ToArray2<number | string>; // 符合要求 number[] | string[]
+  ```
+
+### 5.3 内置工具
+
+- Partial: 将一个对象类型的属性全部变为可选属性
+
+  ```ts
+  // 案例
+  type Alligator = {
+    name: string;
+    age: number;
+    id: string | number;
+    gender?: string;
+  };
+
+  type AlligatorPartial = Partial<Alligator>;
+
+  // 实现
+  type MyPartial<O> = {
+    [P in keyof O]?: O[P];
+  };
+
+  type AlligatorMyPartial = MyPartial<Alligator>;
+  ```
+
+- Required: 将一个对象类型的属性全部变为可选属性
+- Readonly: readonly 属性
+- Record
+
+  ```ts
+  // 案例
+  type Alligator = 'name' | 'nickname' | 'myName';
+
+  type AlligatorRecord = Record<Alligator, string>;
+  /*
+  结果
+  {
+    name: string;
+    nickname: string;
+    myName: string;
+  }
+  */
+
+  // 实现
+  type MyRecord<K extends keyof any, T> = {
+    [P in K]: T;
+  };
+
+  type AlligatorMyRecord = MyRecord<Alligator, string>;
+  ```
+
+- Pick
+
+  ```ts
+  // 案例
+  type Alligator = {
+    name: string;
+    age: number;
+    id: string | number;
+    gender?: string;
+  };
+
+  type AlligatorPick = Pick<Alligator, 'name' | 'age'>;
+  /* 结果
+  {
+    name: string;
+    age: number;
+  }
+  */
+
+  // 实现
+  type MyPick<O, K extends keyof O> = {
+    [P in K]: O[P];
+  };
+  type AlligatorMyPick = MyPick<Alligator, 'name' | 'age'>;
+  ```
+
+- Omit
+
+  ```ts
+  // 案例
+  type Alligator = {
+    name: string;
+    age: number;
+    id: string | number;
+    gender?: string;
+  };
+
+  type AlligatorOmit = Omit<Alligator, 'id' | 'gender'>;
+  /* 结果
+  {
+    name: string;
+    age: number;
+  }
+  */
+
+  // 实现
+  type MyOmit<O, K extends keyof O> = {
+    [P in keyof O as P extends K ? never : P]: O[P];
+  };
+
+  type AlligatorMyOmit = MyOmit<Alligator, 'id' | 'gender'>;
+  ```
+
+- InstanceType
+  - 太难了，再说吧
