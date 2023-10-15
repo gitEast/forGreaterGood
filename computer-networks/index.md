@@ -75,7 +75,7 @@
 
 1. Know "What is Data Communication"?
 2. Understand data flow
-3. Understand the importance of protocaols in computer network
+3. Understand the importance of protocols in computer network
 4. Know the elements of protocol
 
 #### 0.2.2 Data Communication and Data Flow
@@ -219,7 +219,7 @@
       - WI-FI
 - MAN
   - Metropolitan(大都市的) Area Network
-  - 定义：A metropolitan area network(WAN) is a computer network taht interconnects users with computer resources in a geographic region of the size of a metropolitan area(city).
+  - 定义：A metropolitan area network(WAN) is a computer network that interconnects users with computer resources in a geographic region of the size of a metropolitan area(city).
   - MAN devices
     - switches/hub
     - routers/bridges
@@ -240,7 +240,7 @@
 
 #### 0.5.1 be able to
 
-1. Understand various network topologies such as bus, ring, star, mesh adn hybrid.
+1. Understand various network topologies such as bus, ring, star, mesh and hybrid.
 2. Understand the advantages and disadvantages of each topology.
 
 #### 0.5.2 Topologies
@@ -352,7 +352,7 @@
 
 #### 0.6.4 Port Address
 
-- anology
+- analogy
   - Reaching our city = reaching our network(IP Address)
   - Reaching our Apartment = Reaching the host(MAC Address)
   - Reaching the right person = Reaching the right process(Port Address)
@@ -361,10 +361,10 @@
   2. Data which are sent/received must reach the right process.
   3. Every process in a node is uniquely identified using port numbers.
   4. Port = Communication endpoint.
-  5. Fixed port numbers and dynamic port numbers(0 - 65535)
+  5. Fixed port numbers and dynamic port numbers(0 - 65535).
 - 3 keys points to ponder
   - before sending the data, any node must
-  1. Attch source IP address den destination IP address.
+  1. Attch source IP address and destination IP address.
   2. Attach source MAC address and destination MAC address.
   3. Attach source port number and destination port number.
 
@@ -734,6 +734,116 @@
     2. Reconfiguration of the stations is unneccessary even if bridges is added or removed from network.
   - Source Routing Bridges
     1. in these bridges, routing operation is performed by source station and the frame specifies which route to follow.
+
+### 1.5 Physical Layer
+
+#### 1.5.1 Physical Layer and Media
+
+- Outcomes
+  1. Understand the fundmental principles of physical layer.
+  2. Know about data and signals.
+  3. Understand analog and digital signals.
+  4. Know various physical layer media.
+  5. Compare various physical media.
+  6. Understand wired and wireless media.
+  7. Understand UTP and STP.
+  8. Compare copper media and fiber optic media.
+  9. Know the popular wireless technologies.
+- content
+  1. One of the major functions of the physical layer is to **move data in the form of electromagnetic signals** accross a transmission medium(媒介).
+  2. To be transmitted, data must be transformed to electromagnetic signals.
+  3. Signal
+     - It is a function that represents the variation of a physical quantity with respect to time.
+     1. analog signal
+        - take any value in the defined range.
+        - All real-life signals are analog in nature.
+     2. digital signal
+        - take on of the finite values(取一个有限值) at any given time.
+        - In case of digital signals, we discretize both time and magnitude.
+  4. various physical media
+     - Copper Cable
+     - Fiber Optic Cable
+     - Wireless Media
+  5. Comparion of various physical media
+     | Media | Physical Components | Signal |
+     | --- | --- | ---- |
+     | Copper Cable(Wired) | UTP/STP, Coaxial, Connectors, NICs, Ports/Interfaces | Electromagnetic Signal |
+     | Fiber Optic Cable(Wired) | Single-mode/Multimode Fiber, Connectors, NICs and Interfaces, Lasers and LEDs | A light pulse equals 1, No light pulse is 0 |
+     | Wireless Media | Access Points, NICs, Radio, Antennae | Radio waves |
+     - NIC: Network Interface Card 网络接口卡
+  6. Wired and Wireless media
+     - wired
+       - copper cable(Ethernet cable)
+         - Unshielded Twisted Pair(UTP) 无屏蔽双绞线
+         - Shielded Twisted Pair(STP) 屏蔽双绞线
+       - copper coaxial(同轴的) cable
+       - fiber optic cable
+     - wireless
+       - WiFi
+       - bluetooth
+       - Wi MAX
+  7. UTP and STP
+     - a metallic shield
+       1. costlier(costly) 更昂贵的
+       2. decrease the crosstalk
+          - EMI: Electro-Magnetic Interference 电磁干扰
+          - RFI： Radio Frequency Interference 射频干扰
+     - UTP: varying the number of twists per wire pair to limit the negative effect of crosstalk.
+  8. Comparion of copper media and fiber optic media
+     - fiber optic media
+       - light waves
+       - high speed transmission
+         | Implementation Points | Copper | Fiber Optic |
+         | --- | --- | --- |
+         | Bandwidth(带宽) Supported | 10 Mbps - 10 Gbps | 10 Mbps - 100 Gbps |
+         | Range | Relatively short(upto 100m) | Relatively high(upto 100,000)m |
+         | Immunity(免疫力) to EMI and RFI | low | high |
+         | Immunity to Electrical Hazards(电气危险) | low | high |
+         | media and connector costs | low | high |
+         | Installation skills required | low | high |
+         | safety | low | high |
+  9. Wireless Technologies
+     - the following areas of concern
+       1. Coverage area
+       2. Interference
+       3. Security
+     - technologies
+       - WiFi
+         1. IEEE 802.11 standard
+       - bluetooth
+         1. IEEE 802.15 standard
+         2. 3 Mb/s
+         3. distance: 1 - 100m
+       - Wi MAX
+         1. IEEE 802.16 standard
+         2. 1 Gbps
+         3. uses a point-to-multipoint topology to provide wireless bradband access.
+
+#### 1.5.2 Line Configuration
+
+- Outcomes
+  1. Recapture the services offered by physical layer of the OSI model.
+  2. Understand the line configuration.
+  3. Understand the types of line configuration.
+- content
+  1. services offered by Physical Layer
+     - Physical characteristics of the media
+     - representation of bits
+     - data rate
+     - synchronization of bits
+     - **line configuration**
+     - physical topology
+     - transmission mode
+  2. For communication to happen, two nodes must be connected to the same link at the same time.
+  3. types of line configuration
+     - point-point connection
+       1. Provides a dedicated link between two devices.
+       2. The entire capacity of the link is reserved for transmission between those two devices.
+     - multipoint connection(multidrop connection)
+       1. Two or more devices share a single link.
+       2. The capacity of the channel is shared.
+          - spatial sharing 空间
+          - temporal sharing 时间上的
 
 ## 2. Data Link Layer
 
