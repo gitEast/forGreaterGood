@@ -847,6 +847,58 @@
 
 ## 2. Data Link Layer
 
+### 2.1 Services Provided
+
+- Outcomes
+  1. Know the various services offered by data link layer.
+  2. Understand the services offered by data link layer.
+- content
+  1. Various services
+     - Framing
+     - Physical Addressing
+     - Flow Control
+     - Error Control
+     - Access Control
+  2. the services
+     - Framing
+       - pack bits into frames
+       - each frame has to be distinguish from another.
+     - Physical Addressing
+       - the header of the encapsulation: the source and the destination MAC address are dealt.
+     - Flow Control
+       - end to end flow control
+       - speed matching mechanism
+       - coordinates the amount of data that can be sent before receiving an acknowledgement.
+     - Access Control
+       - Media Access Control
+     - Error Control
+       - Error Detection
+       - Error Correction
+
+### 2.2 Sublayers of the Data Link Layer
+
+- Outcomes
+  1. Understand the sublayers of data link layer.
+  2. Know the responsibility of LLC or DLC.
+  3. Know the responsibility of MAC sublayer.
+- content
+  1. sublayers of the data link layer
+     - Logical Link Control(LLC) or Data Link Control(DLC) Sublayer
+     - MAC Sublayer
+  2. LLC or DLC Sublayer
+     1. hanles comunication between upper and lower layers.
+     2. takes the network protocols data and adds control information to help deliver the packet to the destination.(Flow Control)
+  3. MAC Sublayer: Implemented by hardware, typically in the computer NIC.
+     - Data Encapsulation
+       - take place on frame assembly before transmission and frame disassembly upon reception of a frame
+       - add a header and tailer to the network layer PDU. -- Physical Addressing or MAC Addressing
+     - Media Access Control
+     - Framing
+     - Error Control
+     - other functions
+       1. Responsible for the placement of frames on the media and the removal of frames from the media.
+       2. Communicates directly with the physical layer.
+
 ## 3. Network Layer
 
 ## 4. Transport Layer
