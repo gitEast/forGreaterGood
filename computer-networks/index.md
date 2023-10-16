@@ -891,13 +891,50 @@
   3. MAC Sublayer: Implemented by hardware, typically in the computer NIC.
      - Data Encapsulation
        - take place on frame assembly before transmission and frame disassembly upon reception of a frame
-       - add a header and tailer to the network layer PDU. -- Physical Addressing or MAC Addressing
+       - add a header and trailer to the network layer PDU. -- Physical Addressing or MAC Addressing
      - Media Access Control
      - Framing
      - Error Control
      - other functions
        1. Responsible for the placement of frames on the media and the removal of frames from the media.
        2. Communicates directly with the physical layer.
+
+### 2.3 Framing
+
+#### 2.3.1 basics
+
+- Every node will have an adaptor.
+- exchange
+  - 前提：Before they start the communication, they mutually agree upon a protocol.
+  - then,
+    - Bits flow between adaptors
+    - Frames flow between hosts
+- Frame = Header + Network Layer PDU + Trailer
+
+#### 2.3.2 Types of Framing
+
+- fixed-size framing
+  - the size is fixed
+  - => **the frame length acts as delimiter** of the frame
+  - => no additional boundary bits to identify the start and end of the frame.
+- variable-size framing
+  - the size may be different
+  - => **additional mechanisms are kept to mark** the end of one frame and the beginning of the next frame.
+
+#### 2.3.3 Various framing approaches
+
+- bit oriented approach
+  - be viewed as a collection of bits
+  - bit oriented protocol
+    - HDLC: High-Level Data Link Control
+- byte oriented approach
+  - be viewed as a collection of bytes(characters)
+    - one of the oldest approaches to framing
+  - byte oriented protocol
+    - BISYNC: Binary Synchronous Communication Protocol
+    - DDCMP: Digital Data Communication Message Protocol
+    - PPP: Point-to-Point Protocol
+- clock based framing
 
 ## 3. Network Layer
 
