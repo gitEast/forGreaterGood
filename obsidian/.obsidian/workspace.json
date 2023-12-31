@@ -4,21 +4,15 @@
     "type": "split",
     "children": [
       {
-        "id": "8a75b88883f3038f",
+        "id": "1cf90f4666484992",
         "type": "tabs",
         "children": [
           {
-            "id": "f728057bef497ac4",
+            "id": "888830d0a7289e00",
             "type": "leaf",
-            "pinned": true,
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "01-diary/week/2022-week49.md",
-                "mode": "source",
-                "source": false
-              },
-              "pinned": true
+              "type": "empty",
+              "state": {}
             }
           }
         ]
@@ -50,7 +44,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "tag:#coderwhy",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -87,7 +81,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "01-diary/week/2022-week49.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +97,6 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "01-diary/week/2022-week49.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -126,9 +118,7 @@
             "type": "leaf",
             "state": {
               "type": "outline",
-              "state": {
-                "file": "01-diary/week/2022-week49.md"
-              }
+              "state": {}
             }
           },
           {
@@ -144,19 +134,20 @@
       }
     ],
     "direction": "horizontal",
-    "width": 319.5
+    "width": 319.5,
+    "collapsed": true
   },
-  "active": "f728057bef497ac4",
+  "active": "9904d497c0a72107",
   "lastOpenFiles": [
-    "01-diary/week/2022-week48.md",
-    "01-diary/week/2022-week47.md",
-    "01-diary/week/2022-week49.md",
-    "01-diary/2022年.md",
-    "01-diary/week/2022-week46.md",
-    "00-fleeting/前端引言.md",
-    "01-diary/week/2022-week44.md",
     "00-fleeting/webpack.md",
     "00-fleeting/Vue3 + TypeScript.md",
-    "01-diary/week/2022-week42.md"
+    "00-fleeting/TypeScript 213-214.md",
+    "00-fleeting/TypeScript 211-212.md",
+    "00-fleeting/TypeScript 209-210.md",
+    "00-fleeting/TypeScript 207-208.md",
+    "00-fleeting/前端引言.md",
+    "03-learning/03-1 TypeScript.md",
+    "asstes/03-1-a-vue+ts-createProject.png",
+    "asstes/03-1-TypeScript-ts与js的关系.png"
   ]
 }
